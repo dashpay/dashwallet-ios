@@ -989,12 +989,18 @@ final class ConnectionsViewModelPurchaseTests: XCTestCase {
         XCTAssertNil(viewModel.approveError)
     }
 
-    /// An App Connect request with a callback, approved from a scanned QR
-    /// code or from a link opened on this phone.
-    private func approveAppConnectRequest(byLink: Bool) async throws -> (opened: [URL], asked: URL?) {
+    /// An App Connect request, with a callback unless `withCallback` is
+    /// false, approved from a scanned QR code or from a link opened on this
+    /// phone.
+    private func approveAppConnectRequest(
+        byLink: Bool,
+        withCallback: Bool = true
+    ) async throws -> (opened: [URL], asked: URL?, message: ConnectionsScreenMessage?) {
+        // The same v2 request either way; only the `cb` parameter is left out.
+        let uri = "dash-key:2fAANHHASdojyjV9Sqa2wf2nwZE8kLLqmeHpZWa8sBfaGsddVqyMG2ZVte7xJkTKsXvmFYbXzXbNnMo7bJQBxNcf79N8YWi7pLKyb39Rqv6b1KUmxw9UeJGYz2CV9hFGNUQtcyMYVq2Fg6vAxtxpYays61H8gLMcWqaG8TfgGA3H7setGAYiBsM5YmdZgeuCdGAHSwfNfav5cfFjXNDkPWv37UNSgFxj6o58jfXc3kCLKqLJtc5ZPjm1thEGYxK8HVYBi8fRQeEVy76n27DXGrVTyHz94CfJRuMnH76xGYbMgeuvurxjJMLrQgWUu53cjocYyzzNWdJrgs2D5?n=d&v=2&cb=https%3A%2F%2Fyap.pr%2Fconnect%3Fr%3Dd77dc0da9df83a47755a15c42c5d9db9d7a7fd62"
         var request = MockDashConnectDataSource.sampleLoginRequest
         request.appConnect = try DashConnectUri.parseAppConnectRequest(
-            "dash-key:2fAANHHASdojyjV9Sqa2wf2nwZE8kLLqmeHpZWa8sBfaGsddVqyMG2ZVte7xJkTKsXvmFYbXzXbNnMo7bJQBxNcf79N8YWi7pLKyb39Rqv6b1KUmxw9UeJGYz2CV9hFGNUQtcyMYVq2Fg6vAxtxpYays61H8gLMcWqaG8TfgGA3H7setGAYiBsM5YmdZgeuCdGAHSwfNfav5cfFjXNDkPWv37UNSgFxj6o58jfXc3kCLKqLJtc5ZPjm1thEGYxK8HVYBi8fRQeEVy76n27DXGrVTyHz94CfJRuMnH76xGYbMgeuvurxjJMLrQgWUu53cjocYyzzNWdJrgs2D5?n=d&v=2&cb=https%3A%2F%2Fyap.pr%2Fconnect%3Fr%3Dd77dc0da9df83a47755a15c42c5d9db9d7a7fd62")
+            withCallback ? uri : uri.components(separatedBy: "&cb=")[0])
         let spy = LoginApprovalSpy(shown: [Self.consent(identityId: "identity-a")], loginRequest: request)
         let opened = OpenedURLs()
         let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false, openURL: { opened.urls.append($0) })
@@ -1008,7 +1014,50 @@ final class ConnectionsViewModelPurchaseTests: XCTestCase {
         viewModel.approvePendingRequest()
         await waitUntil { viewModel.pendingRequest == nil }
         XCTAssertEqual(spy.approvedConsents.count, 1)
-        return (opened.urls, viewModel.pendingReturn)
+        // The page cannot show an alert while the approve sheet is still up.
+        XCTAssertNil(viewModel.message, "nothing is said before the sheet has gone")
+        viewModel.approveSheetDismissed()
+        return (opened.urls, viewModel.pendingReturn, viewModel.message)
+    }
+
+    /// The app of a scanned code is on another screen, and nothing returns
+    /// to it from here: the user is told to go back to it.
+    func testApprovingAScannedRequestSaysToGoBackToTheBrowser() async throws {
+        let answered = try await approveAppConnectRequest(byLink: false)
+        XCTAssertEqual(answered.message?.kind, .success)
+        XCTAssertEqual(answered.message?.text.contains("App"), true, "names the app")
+    }
+
+    /// A link with a callback goes on to ask about the return instead.
+    func testApprovingALinkWithACallbackSaysNothingOnThePage() async throws {
+        let answered = try await approveAppConnectRequest(byLink: true)
+        XCTAssertNotNil(answered.asked)
+        XCTAssertNil(answered.message)
+    }
+
+    /// A login QR opened with the iPhone Camera arrives as a link with no
+    /// callback: nothing returns to the app, so the user is told as for a scan.
+    func testApprovingALinkWithNoCallbackSaysToGoBackToTheBrowser() async throws {
+        let answered = try await approveAppConnectRequest(byLink: true, withCallback: false)
+        XCTAssertNil(answered.asked)
+        XCTAssertEqual(answered.message?.kind, .success)
+    }
+
+    /// An approval that failed connected nothing, and says so on the sheet only.
+    func testAFailedScannedApprovalDoesNotSayConnected() async {
+        let spy = LoginApprovalSpy(shown: [Self.consent(identityId: "identity-a")])
+        spy.approveFailures = [DashConnectPlatformError.noIdentity]
+        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
+
+        viewModel.onQRScanned("login")
+        await waitUntil { viewModel.pendingRequest != nil }
+        viewModel.approvePendingRequest()
+        await waitUntil { spy.approvedConsents.count == 1 && !viewModel.isApproving }
+
+        XCTAssertNotNil(viewModel.pendingRequest, "the sheet stays up")
+        viewModel.denyPendingRequest(asksToReturn: false)
+        viewModel.approveSheetDismissed()
+        XCTAssertNil(viewModel.message)
     }
 
     /// A QR code scanned off another screen is answered there: opening the
@@ -6928,8 +6977,8 @@ final class ConnectionsViewModelTermsTests: XCTestCase {
         XCTAssertNil(viewModel.termsAppliedPlan)
         XCTAssertEqual(
             viewModel.approveDisabledReason,
-            NSLocalizedString(
-                "This expiry has passed. Pick another one, then approve.",
+            String(
+                localized: "This expiry has passed. Pick another one, then approve.",
                 comment: "DashConnect approve sheet: the chosen expiry is in the past"))
     }
 
@@ -7026,8 +7075,8 @@ final class ConnectionsViewModelTermsTests: XCTestCase {
         XCTAssertNil(viewModel.termsAppliedPlan)
         XCTAssertEqual(
             viewModel.approveDisabledReason,
-            NSLocalizedString(
-                "This expiry has passed. Pick another one, then approve.",
+            String(
+                localized: "This expiry has passed. Pick another one, then approve.",
                 comment: "DashConnect approve sheet: the chosen expiry is in the past"))
         XCTAssertNotNil(viewModel.pendingRequest)
     }

@@ -114,8 +114,8 @@ final class PreparedStandardSend: NSObject {
             claimLock.unlock()
             throw WalletSendService.makeError(
                 code: .alreadyBroadcast,
-                description: NSLocalizedString(
-                    "Transaction was already broadcast or is being broadcast",
+                description: String(
+                    localized: "Transaction was already broadcast or is being broadcast",
                     comment: "Send refused because the transaction already went out")
             )
         }
@@ -283,6 +283,11 @@ final class WalletSendService: NSObject {
     /// tests in other files can read it back.
     static let diagnosticKey = "org.dashfoundation.dash.send.diagnostic"
 
+    /// What the user is told when a send's broadcast outcome is unknown
+    /// (`BroadcastOutcomeCopy.unknown`): the description of the error `send` throws for
+    /// it, for a caller that shows it without that error in hand.
+    static var unknownBroadcastOutcomeNotice: String { BroadcastOutcomeCopy.unknown }
+
     /// See `RecentSendsRegistry` — the send-success screen's fallback source.
     let recentSends = RecentSendsRegistry()
     #if DASHPAY
@@ -315,8 +320,8 @@ final class WalletSendService: NSObject {
         ) else {
             throw Self.makeError(
                 code: .initialRestoreSync,
-                description: NSLocalizedString(
-                    "Your restored wallet is completing its initial sync. Sending from your Transparent balance will be available once it finishes.",
+                description: String(
+                    localized: "Your restored wallet is completing its initial sync. Sending from your Transparent balance will be available once it finishes.",
                     comment: "Core send blocked during a restored wallet's initial sync"))
         }
     }
@@ -332,8 +337,8 @@ final class WalletSendService: NSObject {
         if NetworkReachability.shared.isMonitoring, !NetworkReachability.shared.isReachable {
             throw Self.makeError(
                 code: .offline,
-                description: NSLocalizedString(
-                    "No internet connection. Reconnect to the network and try again.",
+                description: String(
+                    localized: "No internet connection. Reconnect to the network and try again.",
                     comment: "Send blocked while the device is offline"))
         }
     }
@@ -354,12 +359,51 @@ final class WalletSendService: NSObject {
         amount: UInt64,
         sessionAuthSufficient: Bool = false
     ) async throws -> Data {
+        do {
+            return try await sendCarryingUnknownOutcome(
+                address: address, amount: amount, sessionAuthSufficient: sessionAuthSufficient)
+        } catch let unknown as BroadcastOutcomeUnknown {
+            throw unknown.underlying
+        }
+    }
+
+    /// A broadcast whose outcome is unknown, with the txid of the transaction it is about.
+    struct BroadcastOutcomeUnknown: Error {
+        /// Wire-order txid (`Transaction.txHashData` convention) of the transaction that
+        /// was handed to the network.
+        let txidWire: Data
+        /// The error `send` throws for this outcome (`isBroadcastUnknownError`).
+        let underlying: NSError
+    }
+
+    /// `send`, for a caller that records the payment against its txid: an unknown broadcast
+    /// outcome is thrown as `BroadcastOutcomeUnknown`, which carries the txid. Every other
+    /// failure is thrown as `send` throws it.
+    ///
+    /// - Returns: the wire-order txid of the broadcast transaction
+    ///   (`Transaction.txHashData` convention).
+    func sendCarryingUnknownOutcome(
+        address: String,
+        amount: UInt64,
+        sessionAuthSufficient: Bool = false
+    ) async throws -> Data {
         try Self.ensureInitialRestoreSyncCompleted()
         try Self.ensureOnline()
         let preparedSend = try await prepareStandardSendForConfirmation(
             address: address, amount: amount, sessionAuthSufficient: sessionAuthSufficient)
-        try preparedSend.broadcast()
-        return preparedSend.txidWire
+        return try Self.broadcastCarryingUnknownOutcome(preparedSend)
+    }
+
+    /// Broadcasts `prepared` and returns its wire-order txid. An unknown outcome is thrown as
+    /// `BroadcastOutcomeUnknown`; every other failure as `PreparedStandardSend.broadcast`
+    /// throws it.
+    static func broadcastCarryingUnknownOutcome(_ prepared: PreparedStandardSend) throws -> Data {
+        do {
+            try prepared.broadcast()
+        } catch let error as NSError where isBroadcastUnknownError(error) {
+            throw BroadcastOutcomeUnknown(txidWire: prepared.txidWire, underlying: error)
+        }
+        return prepared.txidWire
     }
 
     /// - Returns: the wire-order txid of the broadcast transaction
@@ -421,7 +465,7 @@ final class WalletSendService: NSObject {
         guard amount > 0 else {
             throw Self.makeError(
                 code: .coinJoinSweepUnavailable,
-                description: NSLocalizedString("No CoinJoin balance to move", comment: "Send error: CoinJoin move funds")
+                description: String(localized: "No CoinJoin balance to move", comment: "Send error: CoinJoin move funds")
             )
         }
 
@@ -431,7 +475,7 @@ final class WalletSendService: NSObject {
         guard let resolved = SwiftDashSDKReceiveAddressReader.receiveDestination() else {
             throw Self.makeError(
                 code: .coinJoinSweepUnavailable,
-                description: NSLocalizedString("Could not resolve a destination address for the CoinJoin sweep", comment: "Send error: CoinJoin move funds")
+                description: String(localized: "Could not resolve a destination address for the CoinJoin sweep", comment: "Send error: CoinJoin move funds")
             )
         }
         // The address must be the pinned wallet's own; the sweep itself
@@ -465,7 +509,7 @@ final class WalletSendService: NSObject {
             Self.logger.error("💸 TXSEND :: CoinJoin sweep returned no transactions for \(amount, privacy: .public) duffs — treating as failure")
             throw Self.makeError(
                 code: .coinJoinSweepUnavailable,
-                description: NSLocalizedString("CoinJoin sweep produced no transactions", comment: "Send error: CoinJoin move funds")
+                description: String(localized: "CoinJoin sweep produced no transactions", comment: "Send error: CoinJoin move funds")
             )
         }
         // Tag every sweep tx's txid so the home screen groups them into the
@@ -576,8 +620,8 @@ final class WalletSendService: NSObject {
         guard let context else {
             throw Self.makeError(
                 code: .dashPayPaymentUnavailable,
-                description: NSLocalizedString(
-                    "Wallet or DashPay identity is not ready",
+                description: String(
+                    localized: "Wallet or DashPay identity is not ready",
                     comment: "Send to contact: wallet or identity not available")
             )
         }
@@ -707,8 +751,8 @@ final class WalletSendService: NSObject {
         if unknownContactPaymentOutcomes.contains(contactIdentityId: contactIdentityId) {
             throw Self.makeError(
                 code: .broadcastUnknown,
-                description: NSLocalizedString(
-                    "A previous payment to this contact could not be confirmed. Don't send it again; wait for wallet synchronization.",
+                description: String(
+                    localized: "A previous payment to this contact could not be confirmed. Don't send it again; wait for wallet synchronization.",
                     comment: "Send to contact: an earlier payment's broadcast outcome is unknown")
             )
         }
@@ -758,9 +802,24 @@ final class WalletSendService: NSObject {
     /// never calling back.
     @objc(authenticateSpendWithCompletion:)
     static func authenticateSpend(completion: @escaping (_ authenticated: Bool, _ cancelled: Bool) -> Void) {
+        authenticateSpend(spendAmount: nil, completion: completion)
+    }
+
+    /// `authenticateSpend(completion:)` with the amount being spent, so the biometric spending
+    /// limit applies: over the remaining allowance the PIN is asked for, and a biometric
+    /// approval counts against the allowance.
+    @objc(authenticateSpendOfAmount:completion:)
+    static func authenticateSpend(amount: UInt64, completion: @escaping (_ authenticated: Bool, _ cancelled: Bool) -> Void) {
+        authenticateSpend(spendAmount: amount, completion: completion)
+    }
+
+    /// The one gate call behind both Objective-C selectors.
+    private static func authenticateSpend(spendAmount: UInt64?,
+                                          completion: @escaping (_ authenticated: Bool, _ cancelled: Bool) -> Void) {
         Task { @MainActor in
             let outcome = await AuthenticationGate.authenticate(
-                biometric: DWGlobalOptions.sharedInstance().biometricAuthEnabled)
+                biometric: DWGlobalOptions.sharedInstance().biometricAuthEnabled,
+                spendAmount: spendAmount)
             completion(outcome == .ok, outcome == .cancelled)
         }
     }
@@ -848,7 +907,7 @@ final class WalletSendService: NSObject {
         }
         guard acceptedCount > 0 || unknownChunkCount > 0 else { return nil }
         return makeError(code: .coinJoinSweepPartial,
-                         description: NSLocalizedString("CoinJoin sweep incomplete", comment: "Send error: CoinJoin move funds"),
+                         description: String(localized: "CoinJoin sweep incomplete", comment: "Send error: CoinJoin move funds"),
                          diagnostic: diagnostic)
     }
 
@@ -873,12 +932,12 @@ final class WalletSendService: NSObject {
             return nsError.localizedDescription
         }
         if nsError.domain == errorDomain, nsError.code == ErrorCode.coinJoinSweepPartial.rawValue {
-            return NSLocalizedString(
-                "Some of your CoinJoin funds were moved. Please try again to move the rest.",
+            return String(
+                localized: "Some of your CoinJoin funds were moved. Please try again to move the rest.",
                 comment: "CoinJoin")
         }
-        return NSLocalizedString(
-            "Couldn't move your CoinJoin funds. Please try again.", comment: "CoinJoin")
+        return String(
+            localized: "Couldn't move your CoinJoin funds. Please try again.", comment: "CoinJoin")
     }
 
     private func buildPreparedStandardSend(address: String, amount: UInt64) throws -> PreparedStandardSend {
@@ -996,13 +1055,13 @@ private final class SendAuthorizer {
             WalletSendService.logger.info("💸 TXSEND :: user cancelled authentication")
             throw WalletSendService.makeError(
                 code: .authenticationCancelled,
-                description: NSLocalizedString("Authentication cancelled", comment: "Send error")
+                description: String(localized: "Authentication cancelled", comment: "Send error")
             )
         case .failed, .timedOut:
             WalletSendService.logger.error("💸 TXSEND :: authentication failed (\(outcome == .timedOut ? "timed out" : "failed"))")
             throw WalletSendService.makeError(
                 code: .authenticationFailed,
-                description: NSLocalizedString("Authentication failed", comment: "")
+                description: String(localized: "Authentication failed", comment: "")
             )
         }
     }
@@ -1055,20 +1114,12 @@ private extension WalletSendService {
         case .transactionBroadcastUnconfirmed(let reason):
             return makeError(
                 code: .broadcastUnknown,
-                description: String(
-                    format: NSLocalizedString(
-                        "We couldn't confirm whether the transaction was accepted. Don't send it again; wait for wallet synchronization. %@",
-                        comment: "Send: broadcast outcome unknown; the argument is the SDK's reason"),
-                    reason)
+                description: String(localized: "We couldn't confirm whether the transaction was accepted. Don't send it again; wait for wallet synchronization. \(reason)", comment: "Send: broadcast outcome unknown; the argument is the SDK's reason")
             )
         case .transactionBroadcastRejected(let reason):
             return makeError(
                 code: .broadcastRejected,
-                description: String(
-                    format: NSLocalizedString(
-                        "The transaction wasn't sent. You can try again. %@",
-                        comment: "Send: broadcast rejected; the argument is the SDK's reason"),
-                    reason)
+                description: String(localized: "The transaction wasn't sent. You can try again. \(reason)", comment: "Send: broadcast rejected; the argument is the SDK's reason")
             )
         case .staleReservationToken:
             // Either the reserved inputs aged out while the user confirmed (a
@@ -1091,8 +1142,8 @@ private extension WalletSendService {
         }
         return makeError(
             code: .dashPayPaymentUnavailable,
-            description: NSLocalizedString(
-                "This contact's payment channel isn't ready yet. It's still being set up in the background — please try again in a few minutes.",
+            description: String(
+                localized: "This contact's payment channel isn't ready yet. It's still being set up in the background — please try again in a few minutes.",
                 comment: "DashPay Contacts"))
     }
 
@@ -1106,8 +1157,8 @@ private extension WalletSendService {
         /// Nothing reached the network, so the money is provably still here —
         /// say that, because "wasn't sent" alone reads as a loss.
         static var rejected: String {
-            NSLocalizedString(
-                "The transaction wasn't sent, so nothing left your wallet. You can try again.",
+            String(
+                localized: "The transaction wasn't sent, so nothing left your wallet. You can try again.",
                 comment: "Send failed before any bytes reached the network")
         }
 
@@ -1115,8 +1166,8 @@ private extension WalletSendService {
         /// stale, or the wallet or identity that signed it is no longer the
         /// active one. Everything it reserved is released.
         static var contactPaymentChanged: String {
-            NSLocalizedString(
-                "The payment changed while you were confirming, so it wasn't sent. Nothing left your wallet. Please try again.",
+            String(
+                localized: "The payment changed while you were confirming, so it wasn't sent. Nothing left your wallet. Please try again.",
                 comment: "Send to contact: the prepared payment went stale before broadcast")
         }
 
@@ -1134,16 +1185,16 @@ private extension WalletSendService {
         /// at every launch, which makes closing the app harmless. This sentence
         /// stays true either way; it can lose the qualifier once that ships.
         static var unknown: String {
-            NSLocalizedString(
-                "We couldn't confirm the transaction reached the network. Don't send it again — the wallet keeps trying while it's open, and your balance will update as soon as it goes through.",
+            String(
+                localized: "We couldn't confirm the transaction reached the network. Don't send it again — the wallet keeps trying while it's open, and your balance will update as soon as it goes through.",
                 comment: "Send dispatched but no network acceptance signal arrived")
         }
 
         /// `unknown` for a CoinJoin sweep, whose chunks were not all
         /// confirmed. Same "while it's open" qualifier, for the same reason.
         static var coinJoinSweepUnknown: String {
-            NSLocalizedString(
-                "We couldn't confirm all of your CoinJoin funds reached the network. Don't move them again — the wallet keeps trying while it's open, and your balance will update as soon as they go through.",
+            String(
+                localized: "We couldn't confirm all of your CoinJoin funds reached the network. Don't move them again — the wallet keeps trying while it's open, and your balance will update as soon as they go through.",
                 comment: "CoinJoin sweep dispatched but no network acceptance signal arrived for some of it")
         }
     }

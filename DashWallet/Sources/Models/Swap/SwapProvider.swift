@@ -100,7 +100,7 @@ enum SwapProviderError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .unsupportedBuyOrder:
-            return NSLocalizedString("Buy flow is not supported by this swap backend", comment: "Swap")
+            return String(localized: "Buy flow is not supported by this swap backend", comment: "Swap")
         }
     }
 }

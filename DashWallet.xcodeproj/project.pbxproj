@@ -175,7 +175,7 @@
 		2A63004E2328F37C00827825 /* DWLockScreenViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A63004D2328F37C00827825 /* DWLockScreenViewController.m */; };
 		2A6B1257A51E609B8025BF3A /* ShieldedTransferCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D2C8F8102C5C603DB63569F /* ShieldedTransferCoordinator.swift */; };
 		2A741DC223639A9700840ADF /* TodayExtension.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A741DC123639A9700840ADF /* TodayExtension.storyboard */; };
-		2A741DC323639C7E00840ADF /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 757E09971ADB8EEB006FD352 /* Localizable.strings */; };
+		2A741DC323639C7E00840ADF /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 757E09971ADB8EEB006FD352 /* Localizable.xcstrings */; };
 		2A741DC62363A06000840ADF /* DWURLParser.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A741DC52363A06000840ADF /* DWURLParser.m */; };
 		2A74EFE92305264200C475EB /* DWBaseActionButtonViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A74EFE82305264200C475EB /* DWBaseActionButtonViewController.m */; };
 		2A74EFED2305318000C475EB /* DWRecoverViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A74EFEC2305318000C475EB /* DWRecoverViewController.m */; };
@@ -277,7 +277,6 @@
 		2AD46232232A286000C71557 /* DWLockScreenModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AD46231232A286000C71557 /* DWLockScreenModel.m */; };
 		2AD85A9F245881740045B480 /* DWQRScanStatusView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AD85A9E245881740045B480 /* DWQRScanStatusView.m */; };
 		2ADB396C242615C200A6F898 /* CALayer+MBAnimationPersistence.m in Sources */ = {isa = PBXBuildFile; fileRef = 2ADB396B242615C200A6F898 /* CALayer+MBAnimationPersistence.m */; };
-		2ADC722923B5547000D9DD37 /* Localizable.stringsdict in Resources */ = {isa = PBXBuildFile; fileRef = 2ADC722723B5547000D9DD37 /* Localizable.stringsdict */; };
 		2ADC9D1C24603C4F001D7C0D /* UISearchBar+DWAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 2ADC9D1B24603C4F001D7C0D /* UISearchBar+DWAdditions.m */; };
 		2ADF83FA23632D1C008459A7 /* BRBubbleView.m in Sources */ = {isa = PBXBuildFile; fileRef = 759816E619357D6F005060EA /* BRBubbleView.m */; };
 		2ADF83FF23633116008459A7 /* SharedAssets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2ADF83FE23633116008459A7 /* SharedAssets.xcassets */; };
@@ -831,7 +830,7 @@
 		757514E52B1735370026AD8E /* JoinDashPayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 757514E42B1735370026AD8E /* JoinDashPayView.swift */; };
 		757B937D2BFF4F93002046A5 /* GroupedTransactionsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 757B937C2BFF4F93002046A5 /* GroupedTransactionsScreen.swift */; };
 		757B937E2BFF4F93002046A5 /* GroupedTransactionsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 757B937C2BFF4F93002046A5 /* GroupedTransactionsScreen.swift */; };
-		757E09991ADB8EEB006FD352 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 757E09971ADB8EEB006FD352 /* Localizable.strings */; };
+		757E09991ADB8EEB006FD352 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 757E09971ADB8EEB006FD352 /* Localizable.xcstrings */; };
 		7581B19A2CE349BB00714007 /* ConfirmSpendDialog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7581B1992CE349BB00714007 /* ConfirmSpendDialog.swift */; };
 		7581B19B2CE349BB00714007 /* ConfirmSpendDialog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7581B1992CE349BB00714007 /* ConfirmSpendDialog.swift */; };
 		758A8F172C4D35A80012FA41 /* NSLayoutConstraint+DashWallet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 758A8F162C4D35A80012FA41 /* NSLayoutConstraint+DashWallet.swift */; };
@@ -942,6 +941,8 @@ F992AE17D040F0C0E6E79AF7 /* QuickVotingSheet.swift in Sources */ = {isa = PBXBui
 		75EBAA2A2BBBE385004488E3 /* ZenLedgerViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75EBAA282BBBE385004488E3 /* ZenLedgerViewModel.swift */; };
 		75EE9F422DE2F750000AD1AD /* DashSpendConfirmationDialog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75EE9F412DE2F74B000AD1AD /* DashSpendConfirmationDialog.swift */; };
 		75EE9F432DE2F750000AD1AD /* DashSpendConfirmationDialog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75EE9F412DE2F74B000AD1AD /* DashSpendConfirmationDialog.swift */; };
+		6C1F7A00000000000000A011 /* DashSpendPriceUpdatedDialog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C1F7A00000000000000A013 /* DashSpendPriceUpdatedDialog.swift */; };
+		6C1F7A00000000000000A012 /* DashSpendPriceUpdatedDialog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C1F7A00000000000000A013 /* DashSpendPriceUpdatedDialog.swift */; };
 		75F3F00D2C48F819004470EA /* RootEditProfileViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 759063EC2C42687F002F2AA9 /* RootEditProfileViewController.swift */; };
 		75F51AAD2ABD8C800057B499 /* IntegrationViewController+Uphold.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75F51AAC2ABD8C800057B499 /* IntegrationViewController+Uphold.swift */; };
 		75F51AAF2ABD8D070057B499 /* IntegrationViewController+Coinbase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75F51AAE2ABD8D070057B499 /* IntegrationViewController+Coinbase.swift */; };
@@ -1128,6 +1129,7 @@ F992AE17D040F0C0E6E79AF7 /* QuickVotingSheet.swift in Sources */ = {isa = PBXBui
 		AA00100B2CA0B10001A0B10B /* SwapKitAPIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00100A2CA0B10001A0B10A /* SwapKitAPIService.swift */; };
 		AA00100C2CA0B10001A0B10C /* SwapKitAPIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00100A2CA0B10001A0B10A /* SwapKitAPIService.swift */; };
 		AA00100E2CA0B10001A0B10E /* SwapKitQuoteDecodingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00100D2CA0B10001A0B10D /* SwapKitQuoteDecodingTests.swift */; };
+		C7C3D0DE1F0A4B2C8D9E7A02 /* CTXMerchantResponseDecodingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7C3D0DE1F0A4B2C8D9E7A01 /* CTXMerchantResponseDecodingTests.swift */; };
 		C5A11E000000000000000005 /* SwapRouteAvailabilityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5A11E000000000000000004 /* SwapRouteAvailabilityTests.swift */; };
 		AA00100F2CA0B10001A0B10F /* swapkit_quote_response.json in Resources */ = {isa = PBXBuildFile; fileRef = AA0010102CA0B10001A0B110 /* swapkit_quote_response.json */; };
 		AA0010122CA0B10001A0B112 /* SwapKitSwapProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0010112CA0B10001A0B111 /* SwapKitSwapProvider.swift */; };
@@ -1251,6 +1253,10 @@ F992AE17D040F0C0E6E79AF7 /* QuickVotingSheet.swift in Sources */ = {isa = PBXBui
 		BAA6E3F11BD5CA5900773205 /* BRAWReceiveMoneyInterfaceController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAA6E3F01BD5CA5900773205 /* BRAWReceiveMoneyInterfaceController.swift */; };
 		BAE12C061B2DEEF700895CC5 /* DWTodayViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = BAE12C051B2DEEF700895CC5 /* DWTodayViewController.m */; };
 		BB0000012DUMMYID001234567 /* DashSpend/DashSpendError.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB0000072DUMMYID001234567 /* DashSpend/DashSpendError.swift */; };
+		6C1F7A00000000000000A001 /* DashSpend/GiftCardPaymentGuard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C1F7A00000000000000A003 /* DashSpend/GiftCardPaymentGuard.swift */; };
+		6C1F7A00000000000000B001 /* DashSpend/GiftCardPurchaseSeams.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C1F7A00000000000000B003 /* DashSpend/GiftCardPurchaseSeams.swift */; };
+		6C1F7A00000000000000A002 /* DashSpend/GiftCardPaymentGuard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C1F7A00000000000000A003 /* DashSpend/GiftCardPaymentGuard.swift */; };
+		6C1F7A00000000000000B002 /* DashSpend/GiftCardPurchaseSeams.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C1F7A00000000000000B003 /* DashSpend/GiftCardPurchaseSeams.swift */; };
 		BB0000022DUMMYID001234567 /* DashSpend/DashSpendError.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB0000072DUMMYID001234567 /* DashSpend/DashSpendError.swift */; };
 		BB0000032DUMMYID001234567 /* DashSpend/DashSpendRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB0000082DUMMYID001234567 /* DashSpend/DashSpendRepository.swift */; };
 		BB0000042DUMMYID001234567 /* DashSpend/DashSpendRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB0000082DUMMYID001234567 /* DashSpend/DashSpendRepository.swift */; };
@@ -1760,11 +1766,10 @@ F992AE17D040F0C0E6E79AF7 /* QuickVotingSheet.swift in Sources */ = {isa = PBXBui
 		C9D2C8F32A320AA000D15901 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 75D5F3CD191EC270004AB296 /* main.m */; settings = {COMPILER_FLAGS = "-DASHPAY"; }; };
 		C9D2C90E2A320AA000D15901 /* TxDetailHeaderCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 474C720C298A19D100475CA6 /* TxDetailHeaderCell.xib */; };
 		C9D2C9132A320AA000D15901 /* BiometricAuth.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A44314822CF82EF009BAF7F /* BiometricAuth.storyboard */; };
-		C9D2C9172A320AA000D15901 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 757E09971ADB8EEB006FD352 /* Localizable.strings */; };
+		C9D2C9172A320AA000D15901 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 757E09971ADB8EEB006FD352 /* Localizable.xcstrings */; };
 		C9D2C9182A320AA000D15901 /* LockScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A6300412328CCE900827825 /* LockScreen.storyboard */; };
 		C9D2C91A2A320AA000D15901 /* Migrations.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 4709C30E287E787700B4BD48 /* Migrations.bundle */; };
 		C9D2C91B2A320AA000D15901 /* TxDetailTaxCategoryCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 474C720E298A1A3E00475CA6 /* TxDetailTaxCategoryCell.xib */; };
-		C9D2C91C2A320AA000D15901 /* Localizable.stringsdict in Resources */ = {isa = PBXBuildFile; fileRef = 2ADC722723B5547000D9DD37 /* Localizable.stringsdict */; };
 		C9D2C9202A320AA000D15901 /* TxDetailInfoCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 474C7212298A1EFC00475CA6 /* TxDetailInfoCell.xib */; };
 		C9D2C9212A320AA000D15901 /* UpholdOTPStoryboard.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A9FFE552230FF4600956D5F /* UpholdOTPStoryboard.storyboard */; };
 		C9D2C9222A320AA000D15901 /* AppAssets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2A4430F122CBD57A009BAF7F /* AppAssets.xcassets */; };
@@ -1996,6 +2001,9 @@ DAE095D479EF3385C63F64D3 /* QuickVotingSheet.swift in Sources */ = {isa = PBXBui
 		149D439536B3216FDAEEB975 /* VotingListSectionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4C123B1612DD272D1371C17 /* VotingListSectionTests.swift */; };
 		C0F7A1D2E3B4C5D6E7F80901 /* CountedPhrasePluralTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0F7A1D2E3B4C5D6E7F80902 /* CountedPhrasePluralTests.swift */; };
 		C0F7A1D2E3B4C5D6E7F80903 /* WalletSetupErrorTextTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0F7A1D2E3B4C5D6E7F80904 /* WalletSetupErrorTextTests.swift */; };
+		5CA716000000000000000A01 /* PluralFidelityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CA716000000000000000A02 /* PluralFidelityTests.swift */; };
+		5CA716000000000000000A05 /* UngroupedCountTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CA716000000000000000A06 /* UngroupedCountTests.swift */; };
+		5CA716000000000000000A03 /* BaselinePluralForms.json in Resources */ = {isa = PBXBuildFile; fileRef = 5CA716000000000000000A04 /* BaselinePluralForms.json */; };
 		C406D69E0253120CCB522801 /* XCTestCase+YieldUntil.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23024DB0717753438C96FF01 /* XCTestCase+YieldUntil.swift */; };
 		9D097D529CF2AF9A63A649DE /* VotingFilterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2ED90B9CB9B2FB3E1259FEA6 /* VotingFilterTests.swift */; };
 		F0250BFF15DAFCF2E68BDFC3 /* VoteAttemptCoordinatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2BAC6F0BFC8B97945BFF83E /* VoteAttemptCoordinatorTests.swift */; };
@@ -2013,6 +2021,8 @@ FF9D88432B0292498590D377 /* QuickVotingViewModelTests.swift in Sources */ = {isa
 		BABA10000000000000000006 /* DashPayUserLinkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABA10000000000000000005 /* DashPayUserLinkTests.swift */; };
 		BABA10000000000000000008 /* DiagnosticLogExporterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABA10000000000000000007 /* DiagnosticLogExporterTests.swift */; };
 		BABA1000000000000000000A /* PaymentProtocolTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABA10000000000000000009 /* PaymentProtocolTests.swift */; };
+		6C1F7A00000000000000A004 /* GiftCardPaymentGuardTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C1F7A00000000000000A005 /* GiftCardPaymentGuardTests.swift */; };
+		6C1F7A00000000000000B004 /* DashSpendPurchaseTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C1F7A00000000000000B005 /* DashSpendPurchaseTests.swift */; };
 		BABA1000000000000000000C /* PhraseRepairEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABA1000000000000000000B /* PhraseRepairEngineTests.swift */; };
 		BABA1000000000000000000E /* WalletLifecycleTransitionStateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABA1000000000000000000D /* WalletLifecycleTransitionStateTests.swift */; };
 		BABA10000000000000000010 /* WalletLocalStoreResetterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABA1000000000000000000F /* WalletLocalStoreResetterTests.swift */; };
@@ -2120,6 +2130,7 @@ FF9D88432B0292498590D377 /* QuickVotingViewModelTests.swift in Sources */ = {isa
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		757E09971ADB8EEB006FD352 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		A11C00001274000000000001 /* AssetLockInputPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetLockInputPolicy.swift; sourceTree = "<group>"; };
 		A11C00001274000000000011 /* CoreCoinConsolidationViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreCoinConsolidationViewModel.swift; sourceTree = "<group>"; };
 		A11C00001274000000000021 /* CoreCoinConsolidationSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreCoinConsolidationSheet.swift; sourceTree = "<group>"; };
@@ -2409,11 +2420,8 @@ FF9D88432B0292498590D377 /* QuickVotingViewModelTests.swift in Sources */ = {isa
 		2A8B9E792302E67400FF8653 /* DWReceiveModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWReceiveModel.m; sourceTree = "<group>"; };
 		2A8B9E7B23034AC100FF8653 /* DWAppGroupOptions.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWAppGroupOptions.h; sourceTree = "<group>"; };
 		2A8B9E7C23034AC100FF8653 /* DWAppGroupOptions.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWAppGroupOptions.m; sourceTree = "<group>"; };
-		2A8E79B9240676D400AA7C3D /* sk */ = {isa = PBXFileReference; lastKnownFileType = text.plist.stringsdict; name = sk; path = sk.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
 		2A8E79BA240676D400AA7C3D /* sk */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = sk; path = sk.lproj/Interface.strings; sourceTree = "<group>"; };
 		2A8E79BB2406772900AA7C3D /* cs */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = cs; path = cs.lproj/Interface.strings; sourceTree = "<group>"; };
-		2A8E79BC2406772900AA7C3D /* cs */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = cs; path = cs.lproj/Localizable.strings; sourceTree = "<group>"; };
-		2A8E79BD2406772900AA7C3D /* cs */ = {isa = PBXFileReference; lastKnownFileType = text.plist.stringsdict; name = cs; path = cs.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
 		2A8F421E21BEFEEA00858B91 /* DWAboutModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWAboutModel.h; sourceTree = "<group>"; };
 		2A8F421F21BEFEEA00858B91 /* DWAboutModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWAboutModel.m; sourceTree = "<group>"; };
 		2A913E6023A11DCA006A2A59 /* DWURLRequestHandler.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWURLRequestHandler.h; sourceTree = "<group>"; };
@@ -2486,7 +2494,6 @@ FF9D88432B0292498590D377 /* QuickVotingViewModelTests.swift in Sources */ = {isa
 		2A9FFF252233E5CF00956D5F /* DWDecimalInputValidator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWDecimalInputValidator.m; sourceTree = "<group>"; };
 		2A9FFF262233E5D000956D5F /* DWInputValidator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWInputValidator.h; sourceTree = "<group>"; };
 		2A9FFF40223654D300956D5F /* id */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = id; path = id.lproj/Interface.strings; sourceTree = "<group>"; };
-		2A9FFF41223654D300956D5F /* id */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = id; path = id.lproj/Localizable.strings; sourceTree = "<group>"; };
 		2AA08533237D6CF500797F95 /* CloudKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CloudKit.framework; path = System/Library/Frameworks/CloudKit.framework; sourceTree = SDKROOT; };
 		2AB231D02196E25D00A6E7E6 /* DWStartViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWStartViewController.h; sourceTree = "<group>"; };
 		2AB231D12196E25D00A6E7E6 /* DWStartViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWStartViewController.m; sourceTree = "<group>"; };
@@ -2576,7 +2583,6 @@ FF9D88432B0292498590D377 /* QuickVotingViewModelTests.swift in Sources */ = {isa
 		2AD85A9E245881740045B480 /* DWQRScanStatusView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWQRScanStatusView.m; sourceTree = "<group>"; };
 		2ADB396A242615C200A6F898 /* CALayer+MBAnimationPersistence.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "CALayer+MBAnimationPersistence.h"; sourceTree = "<group>"; };
 		2ADB396B242615C200A6F898 /* CALayer+MBAnimationPersistence.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "CALayer+MBAnimationPersistence.m"; sourceTree = "<group>"; };
-		2ADC722823B5547000D9DD37 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.stringsdict; name = en; path = en.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
 		2ADC9D1A24603C4F001D7C0D /* UISearchBar+DWAdditions.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UISearchBar+DWAdditions.h"; sourceTree = "<group>"; };
 		2ADC9D1B24603C4F001D7C0D /* UISearchBar+DWAdditions.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "UISearchBar+DWAdditions.m"; sourceTree = "<group>"; };
 		2ADF83FE23633116008459A7 /* SharedAssets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = SharedAssets.xcassets; sourceTree = "<group>"; };
@@ -2674,8 +2680,6 @@ FF9D88432B0292498590D377 /* QuickVotingViewModelTests.swift in Sources */ = {isa
 		4774DCE028F44BA3008CF87D /* ServiceDataProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServiceDataProvider.swift; sourceTree = "<group>"; };
 		4774DCE428F4668B008CF87D /* BuySellServiceItemCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BuySellServiceItemCell.swift; sourceTree = "<group>"; };
 		477A963A292BA4B90013605B /* uk */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = uk; path = uk.lproj/Interface.strings; sourceTree = "<group>"; };
-		477A963B292BA4B90013605B /* uk */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = uk; path = uk.lproj/Localizable.strings; sourceTree = "<group>"; };
-		477A963C292BA4B90013605B /* uk */ = {isa = PBXFileReference; lastKnownFileType = text.plist.stringsdict; name = uk; path = uk.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
 		477A963D292CD27D0013605B /* NetworkUnavailableView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkUnavailableView.swift; sourceTree = "<group>"; };
 		477F500F2950A55A003C7508 /* Coinbase+Error.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Coinbase+Error.swift"; sourceTree = "<group>"; };
 		477F501429531C07003C7508 /* ViewModel+Coinbase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ViewModel+Coinbase.swift"; sourceTree = "<group>"; };
@@ -2722,24 +2726,6 @@ FF9D88432B0292498590D377 /* QuickVotingViewModelTests.swift in Sources */ = {isa
 		C017200000000000000AA1 /* RequestAmountScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RequestAmountScreen.swift; sourceTree = "<group>"; };
 		C017200000000000000BA1 /* RequestAmountHostingController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RequestAmountHostingController.swift; sourceTree = "<group>"; };
 		C0172000000000000009A1 /* SpecifyAmountView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpecifyAmountView.swift; sourceTree = "<group>"; };
-		51D1C700000D10CA1E000000 /* fr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.stringsdict; name = fr; path = fr.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
-		51D1C700000D10CA1E000001 /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.stringsdict; name = ja; path = ja.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
-		51D1C700000D10CA1E000002 /* ko */ = {isa = PBXFileReference; lastKnownFileType = text.plist.stringsdict; name = ko; path = ko.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
-		51D1C700000D10CA1E000003 /* nl */ = {isa = PBXFileReference; lastKnownFileType = text.plist.stringsdict; name = nl; path = nl.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
-		51D1C700000D10CA1E000004 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.stringsdict; name = de; path = de.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
-		51D1C700000D10CA1E000005 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.stringsdict; name = "zh-Hans"; path = "zh-Hans.lproj/Localizable.stringsdict"; sourceTree = "<group>"; };
-		51D1C700000D10CA1E000006 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.stringsdict; name = es; path = es.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
-		51D1C700000D10CA1E000007 /* it */ = {isa = PBXFileReference; lastKnownFileType = text.plist.stringsdict; name = it; path = it.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
-		51D1C700000D10CA1E000008 /* tr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.stringsdict; name = tr; path = tr.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
-		51D1C700000D10CA1E000009 /* pl */ = {isa = PBXFileReference; lastKnownFileType = text.plist.stringsdict; name = pl; path = pl.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
-		51D1C700000D10CA1E00000A /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.stringsdict; name = ru; path = ru.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
-		51D1C700000D10CA1E00000B /* el */ = {isa = PBXFileReference; lastKnownFileType = text.plist.stringsdict; name = el; path = el.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
-		51D1C700000D10CA1E00000C /* pt */ = {isa = PBXFileReference; lastKnownFileType = text.plist.stringsdict; name = pt; path = pt.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
-		51D1C700000D10CA1E00000D /* bg */ = {isa = PBXFileReference; lastKnownFileType = text.plist.stringsdict; name = bg; path = bg.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
-		51D1C700000D10CA1E00000E /* vi */ = {isa = PBXFileReference; lastKnownFileType = text.plist.stringsdict; name = vi; path = vi.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
-		51D1C700000D10CA1E00000F /* th */ = {isa = PBXFileReference; lastKnownFileType = text.plist.stringsdict; name = th; path = th.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
-		51D1C700000D10CA1E000010 /* zh-Hant-TW */ = {isa = PBXFileReference; lastKnownFileType = text.plist.stringsdict; name = "zh-Hant-TW"; path = "zh-Hant-TW.lproj/Localizable.stringsdict"; sourceTree = "<group>"; };
-		51D1C700000D10CA1E000011 /* id */ = {isa = PBXFileReference; lastKnownFileType = text.plist.stringsdict; name = id; path = id.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
 		A1C0DE0000000000000BADA1 /* TxDetailContactViews.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TxDetailContactViews.swift; sourceTree = "<group>"; };
 		47AC8412297822E000BD1B49 /* SpecifyAmountViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpecifyAmountViewController.swift; sourceTree = "<group>"; };
 		47AE8B9428BFACA100490F5E /* ExploreDash.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExploreDash.swift; sourceTree = "<group>"; };
@@ -2793,7 +2779,6 @@ FF9D88432B0292498590D377 /* QuickVotingViewModelTests.swift in Sources */ = {isa
 		47CDEEC62949DC38008AE06D /* BasicInfoController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BasicInfoController.swift; sourceTree = "<group>"; };
 		47CDEECB294A2BAD008AE06D /* UIViewController+Coinbase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIViewController+Coinbase.swift"; sourceTree = "<group>"; };
 		47CDEECD294A3CF2008AE06D /* UIViewController+DashWallet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIViewController+DashWallet.swift"; sourceTree = "<group>"; };
-		47CDEED0294B8230008AE06D /* sk */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = sk; path = sk.lproj/Localizable.strings; sourceTree = "<group>"; };
 		47CF469E296540E40067B6EE /* AccountRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountRepository.swift; sourceTree = "<group>"; };
 		47CF46A0296540EF0067B6EE /* AccountService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountService.swift; sourceTree = "<group>"; };
 		47CF46A429654E190067B6EE /* CBAccount.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CBAccount.swift; sourceTree = "<group>"; };
@@ -2915,18 +2900,10 @@ FF9D88432B0292498590D377 /* QuickVotingViewModelTests.swift in Sources */ = {isa
 		7503643D2C89D49A0029EC0D /* CoinJoinService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinJoinService.swift; sourceTree = "<group>"; };
 		75050CCD2DF2CB0E00F586D6 /* GiftCardMetadataProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GiftCardMetadataProvider.swift; sourceTree = "<group>"; };
 		75050CD02DF2FCBF00F586D6 /* ServiceName.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServiceName.swift; sourceTree = "<group>"; };
-		7509C10E1AF3076100D03FD5 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Localizable.strings"; sourceTree = "<group>"; };
-		7509C1121AF3720100D03FD5 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/Localizable.strings; sourceTree = "<group>"; };
-		750C6CC01B5C8EB60038AAE9 /* el */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = el; path = el.lproj/Localizable.strings; sourceTree = "<group>"; };
 		750CED5F2C94BFD7000FB837 /* SettingsMenuViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsMenuViewModel.swift; sourceTree = "<group>"; };
 		750CEFA02CCA6EA100E87A32 /* TextInput.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextInput.swift; sourceTree = "<group>"; };
 		516FBC2E8DE4BEE90D103F68 /* HardwareNumericKeyboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HardwareNumericKeyboardView.swift; sourceTree = "<group>"; };
 		750CEFA32CCA712E00E87A32 /* CreateUsernameViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateUsernameViewController.swift; sourceTree = "<group>"; };
-		7511E8CB1AE5FF240025F1B3 /* fr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; lineEnding = 0; name = fr; path = fr.lproj/Localizable.strings; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.simpleColoring; };
-		7511E8CF1AE5FF2D0025F1B3 /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/Localizable.strings; sourceTree = "<group>"; };
-		7511E8D31AE5FF390025F1B3 /* ko */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ko; path = ko.lproj/Localizable.strings; sourceTree = "<group>"; };
-		7511E8E31AE5FFCC0025F1B3 /* nl */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; lineEnding = 0; name = nl; path = nl.lproj/Localizable.strings; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.simpleColoring; };
-		7511E8EB1AE600220025F1B3 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/Localizable.strings; sourceTree = "<group>"; };
 		7513056584D6F9A1B5E8E79B /* Pods-dashpay.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dashpay.release.xcconfig"; path = "Target Support Files/Pods-dashpay/Pods-dashpay.release.xcconfig"; sourceTree = "<group>"; };
 		7513DA8B2AB9643F005D55F6 /* BaseIntegrationModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseIntegrationModel.swift; sourceTree = "<group>"; };
 		751B61C72AE0EDD000D1C2EF /* CoinJoinLevelsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinJoinLevelsViewController.swift; sourceTree = "<group>"; };
@@ -3003,7 +2980,6 @@ FF9D88432B0292498590D377 /* QuickVotingViewModelTests.swift in Sources */ = {isa
 		757514E12B15DB510026AD8E /* ShadowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShadowView.swift; sourceTree = "<group>"; };
 		757514E42B1735370026AD8E /* JoinDashPayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoinDashPayView.swift; sourceTree = "<group>"; };
 		757B937C2BFF4F93002046A5 /* GroupedTransactionsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GroupedTransactionsScreen.swift; sourceTree = "<group>"; };
-		757E09981ADB8EEB006FD352 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		7581B1992CE349BB00714007 /* ConfirmSpendDialog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfirmSpendDialog.swift; sourceTree = "<group>"; };
 		75889B752AD296E700C17F5D /* CoinJoinInfoViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinJoinInfoViewController.swift; sourceTree = "<group>"; };
 		75889B802AD2D7F800C17F5D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/CoinJoin.storyboard; sourceTree = "<group>"; };
@@ -3058,7 +3034,6 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 		75CDD77F2C0898E400F433D2 /* Shape.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shape.swift; sourceTree = "<group>"; };
 		75CDD7822C0898FA00F433D2 /* Wrapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Wrapper.swift; sourceTree = "<group>"; };
 		75CDD7852C08D61300F433D2 /* DashAmount.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashAmount.swift; sourceTree = "<group>"; };
-		75CE194E1B9642EB000778E4 /* pt */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = pt; path = pt.lproj/Localizable.strings; sourceTree = "<group>"; };
 		75CE50B51B5216F100DBC18C /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = DashWalletTests/Info.plist; sourceTree = SOURCE_ROOT; };
 		75CED09D2ACFD0ED0095F10C /* CoinbaseDepositRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinbaseDepositRequest.swift; sourceTree = "<group>"; };
 		75CED09F2ACFED200095F10C /* CoinbaseDepositResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinbaseDepositResponse.swift; sourceTree = "<group>"; };
@@ -3076,10 +3051,6 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 		75D9EBC12DE5CD9C009416A2 /* GiftCardsDAO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GiftCardsDAO.swift; sourceTree = "<group>"; };
 		75D9EBC42DE5CE14009416A2 /* GiftCardDetailsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GiftCardDetailsView.swift; sourceTree = "<group>"; };
 		75D9EBC52DE5CE14009416A2 /* GiftCardDetailsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GiftCardDetailsViewModel.swift; sourceTree = "<group>"; };
-		75DE02411B0EB79A0027FF08 /* it */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = it; path = it.lproj/Localizable.strings; sourceTree = "<group>"; };
-		75DE02491B0EB7C80027FF08 /* tr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = tr; path = tr.lproj/Localizable.strings; sourceTree = "<group>"; };
-		75DE024D1B0EB7FC0027FF08 /* pl */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = pl; path = pl.lproj/Localizable.strings; sourceTree = "<group>"; };
-		75DE02511B0EB8030027FF08 /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; lineEnding = 0; name = ru; path = ru.lproj/Localizable.strings; sourceTree = "<group>"; };
 		75DFA10175DFA10175DFA101 /* DashStepper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashStepper.swift; sourceTree = "<group>"; };
 		75DFA10275DFA10275DFA102 /* SegmentedControl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SegmentedControl.swift; sourceTree = "<group>"; };
 		75E2F3C72AA4CF1900C3B458 /* Topper-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Topper-Info.plist"; sourceTree = "<group>"; };
@@ -3095,6 +3066,7 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 		75EBAA282BBBE385004488E3 /* ZenLedgerViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZenLedgerViewModel.swift; sourceTree = "<group>"; };
 		75EE38D72CBFE52B00845FFF /* ContactsPlaceholderViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContactsPlaceholderViewController.swift; sourceTree = "<group>"; };
 		75EE9F412DE2F74B000AD1AD /* DashSpendConfirmationDialog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashSpendConfirmationDialog.swift; sourceTree = "<group>"; };
+		6C1F7A00000000000000A013 /* DashSpendPriceUpdatedDialog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashSpendPriceUpdatedDialog.swift; sourceTree = "<group>"; };
 		75F2E0B61BE2D5F000EAE861 /* Accelerate.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accelerate.framework; path = System/Library/Frameworks/Accelerate.framework; sourceTree = SDKROOT; };
 		75F51AAC2ABD8C800057B499 /* IntegrationViewController+Uphold.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "IntegrationViewController+Uphold.swift"; sourceTree = "<group>"; };
 		75F51AAE2ABD8D070057B499 /* IntegrationViewController+Coinbase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "IntegrationViewController+Coinbase.swift"; sourceTree = "<group>"; };
@@ -3214,6 +3186,7 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 		AA0010072CA0B10001A0B107 /* SwapKitModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapKitModels.swift; sourceTree = "<group>"; };
 		AA00100A2CA0B10001A0B10A /* SwapKitAPIService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapKitAPIService.swift; sourceTree = "<group>"; };
 		AA00100D2CA0B10001A0B10D /* SwapKitQuoteDecodingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapKitQuoteDecodingTests.swift; sourceTree = "<group>"; };
+		C7C3D0DE1F0A4B2C8D9E7A01 /* CTXMerchantResponseDecodingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CTXMerchantResponseDecodingTests.swift; sourceTree = "<group>"; };
 		C5A11E000000000000000004 /* SwapRouteAvailabilityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapRouteAvailabilityTests.swift; sourceTree = "<group>"; };
 		AA0010102CA0B10001A0B110 /* swapkit_quote_response.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = swapkit_quote_response.json; sourceTree = "<group>"; };
 		AA0010112CA0B10001A0B111 /* SwapKitSwapProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapKitSwapProvider.swift; sourceTree = "<group>"; };
@@ -3305,6 +3278,8 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 		BAE12BEA1B2DEE7F00895CC5 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		BAE12C051B2DEEF700895CC5 /* DWTodayViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWTodayViewController.m; sourceTree = "<group>"; };
 		BB0000072DUMMYID001234567 /* DashSpend/DashSpendError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashSpend/DashSpendError.swift; sourceTree = "<group>"; };
+		6C1F7A00000000000000A003 /* DashSpend/GiftCardPaymentGuard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashSpend/GiftCardPaymentGuard.swift; sourceTree = "<group>"; };
+		6C1F7A00000000000000B003 /* DashSpend/GiftCardPurchaseSeams.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashSpend/GiftCardPurchaseSeams.swift; sourceTree = "<group>"; };
 		BB0000082DUMMYID001234567 /* DashSpend/DashSpendRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashSpend/DashSpendRepository.swift; sourceTree = "<group>"; };
 		BB0000092DUMMYID001234567 /* DashSpend/DashSpendRepositoryFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashSpend/DashSpendRepositoryFactory.swift; sourceTree = "<group>"; };
 		BCD0199D74601A6150ABC8D1 /* WalletAccountDetailViewModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WalletAccountDetailViewModel.swift; sourceTree = "<group>"; };
@@ -3724,8 +3699,6 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 		F5121ED6CEEEAEDBE95414EE /* Pods-DashWalletTests.testflight.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DashWalletTests.testflight.xcconfig"; path = "Target Support Files/Pods-DashWalletTests/Pods-DashWalletTests.testflight.xcconfig"; sourceTree = "<group>"; };
 		F57DA9DBE5AAF88B3727E148 /* InternalTransferHostingController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = InternalTransferHostingController.swift; sourceTree = "<group>"; };
 		F6BFD41DDFE194362A163BC7 /* WalletAccountDetailScreen.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WalletAccountDetailScreen.swift; sourceTree = "<group>"; };
-		FB0ACB9E1F9AB76800F4AB52 /* bg */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = bg; path = bg.lproj/Localizable.strings; sourceTree = "<group>"; };
-		FB0ACBA01F9ABB6200F4AB52 /* vi */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = vi; path = vi.lproj/Localizable.strings; sourceTree = "<group>"; };
 		FB1212A91FFFB0F3000E407E /* dashwalletTodayExtension.entitlements */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.entitlements; name = dashwalletTodayExtension.entitlements; path = DashWallet/dashwalletTodayExtension.entitlements; sourceTree = SOURCE_ROOT; };
 		FB248B5C1F73803100405AE0 /* UserNotifications.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UserNotifications.framework; path = System/Library/Frameworks/UserNotifications.framework; sourceTree = SDKROOT; };
 		FB248B621F79BB7C00405AE0 /* SafariServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SafariServices.framework; path = System/Library/Frameworks/SafariServices.framework; sourceTree = SDKROOT; };
@@ -3733,8 +3706,6 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 		FB2E5536218BA161003A1B7C /* DWVersionManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWVersionManager.m; sourceTree = "<group>"; };
 		FB3E9F5F236125F600C09C5C /* BackgroundTasks.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = BackgroundTasks.framework; path = System/Library/Frameworks/BackgroundTasks.framework; sourceTree = SDKROOT; };
 		FB4310F01FA027DB00784EBC /* th */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = th; path = th.lproj/Interface.strings; sourceTree = "<group>"; };
-		FB4310F11FA027DB00784EBC /* th */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = th; path = th.lproj/Localizable.strings; sourceTree = "<group>"; };
-		FB43BC8D21217BB900BC9879 /* zh-Hant-TW */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hant-TW"; path = "zh-Hant-TW.lproj/Localizable.strings"; sourceTree = "<group>"; };
 		FB4FA9C222505DD60060B017 /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
 		FB586CB4213D5EF600836ACC /* pt */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = pt; path = pt.lproj/Interface.strings; sourceTree = "<group>"; };
 		FB586CB6213D5F8200836ACC /* vi */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = vi; path = vi.lproj/Interface.strings; sourceTree = "<group>"; };
@@ -3800,6 +3771,9 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 		A4C123B1612DD272D1371C17 /* VotingListSectionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VotingListSectionTests.swift; sourceTree = "<group>"; };
 		C0F7A1D2E3B4C5D6E7F80902 /* CountedPhrasePluralTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CountedPhrasePluralTests.swift; sourceTree = "<group>"; };
 		C0F7A1D2E3B4C5D6E7F80904 /* WalletSetupErrorTextTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletSetupErrorTextTests.swift; sourceTree = "<group>"; };
+		5CA716000000000000000A02 /* PluralFidelityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PluralFidelityTests.swift; path = Localization/PluralFidelityTests.swift; sourceTree = "<group>"; };
+		5CA716000000000000000A06 /* UngroupedCountTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = UngroupedCountTests.swift; path = Localization/UngroupedCountTests.swift; sourceTree = "<group>"; };
+		5CA716000000000000000A04 /* BaselinePluralForms.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; name = BaselinePluralForms.json; path = Localization/BaselinePluralForms.json; sourceTree = "<group>"; };
 		23024DB0717753438C96FF01 /* XCTestCase+YieldUntil.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "XCTestCase+YieldUntil.swift"; sourceTree = "<group>"; };
 		2ED90B9CB9B2FB3E1259FEA6 /* VotingFilterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VotingFilterTests.swift; sourceTree = "<group>"; };
 		D2BAC6F0BFC8B97945BFF83E /* VoteAttemptCoordinatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoteAttemptCoordinatorTests.swift; sourceTree = "<group>"; };
@@ -3817,6 +3791,8 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 		BABA10000000000000000005 /* DashPayUserLinkTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashPayUserLinkTests.swift; sourceTree = "<group>"; };
 		BABA10000000000000000007 /* DiagnosticLogExporterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiagnosticLogExporterTests.swift; sourceTree = "<group>"; };
 		BABA10000000000000000009 /* PaymentProtocolTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentProtocolTests.swift; sourceTree = "<group>"; };
+		6C1F7A00000000000000A005 /* GiftCardPaymentGuardTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GiftCardPaymentGuardTests.swift; sourceTree = "<group>"; };
+		6C1F7A00000000000000B005 /* DashSpendPurchaseTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashSpendPurchaseTests.swift; sourceTree = "<group>"; };
 		BABA1000000000000000000B /* PhraseRepairEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhraseRepairEngineTests.swift; sourceTree = "<group>"; };
 		BABA1000000000000000000D /* WalletLifecycleTransitionStateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletLifecycleTransitionStateTests.swift; sourceTree = "<group>"; };
 		BABA1000000000000000000F /* WalletLocalStoreResetterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletLocalStoreResetterTests.swift; sourceTree = "<group>"; };
@@ -6217,6 +6193,8 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				754565C52DAA52A000DA4E8E /* DashSpend/CTX/CTXSpendEndpoint.swift */,
 				754565C72DAA52A000DA4E8E /* DashSpend/CTX/CTXSpendRepository.swift */,
 				BB0000072DUMMYID001234567 /* DashSpend/DashSpendError.swift */,
+				6C1F7A00000000000000A003 /* DashSpend/GiftCardPaymentGuard.swift */,
+				6C1F7A00000000000000B003 /* DashSpend/GiftCardPurchaseSeams.swift */,
 				BB0000082DUMMYID001234567 /* DashSpend/DashSpendRepository.swift */,
 				BB0000092DUMMYID001234567 /* DashSpend/DashSpendRepositoryFactory.swift */,
 				GG0000032DUMMYID001234567 /* GeoRestrictionService.swift */,
@@ -6847,6 +6825,7 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				D6C0D000D6C0D000D6C0D000 /* GiftCardDetails */,
 				753F75332DD0D41900D40DFE /* DashSpendPayScreen.swift */,
 				75EE9F412DE2F74B000AD1AD /* DashSpendConfirmationDialog.swift */,
+				6C1F7A00000000000000A013 /* DashSpendPriceUpdatedDialog.swift */,
 				753F75362DD0D75F00D40DFE /* DashSpendPayViewModel.swift */,
 				75C3EDFD2DA7C63C00A4E9C0 /* DashSpendLoginInfoView.swift */,
 				75C3EDFE2DA7C63C00A4E9C0 /* DashSpendUserAuthScreen.swift */,
@@ -7111,8 +7090,7 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				47AE8BAF28BFF28400490F5E /* explore.db */,
 				47A5145E2848F75A005A8E3E /* dashwallet-Bridging-Header.h */,
 				75D5F3C9191EC270004AB296 /* Info.plist */,
-				757E09971ADB8EEB006FD352 /* Localizable.strings */,
-				2ADC722723B5547000D9DD37 /* Localizable.stringsdict */,
+				757E09971ADB8EEB006FD352 /* Localizable.xcstrings */,
 				75D5F3CD191EC270004AB296 /* main.m */,
 				75D5F3CF191EC270004AB296 /* DashWallet-Prefix.pch */,
 				758CE59B2BC566DE0062AF53 /* PrivacyInfo.xcprivacy */,
@@ -7137,6 +7115,9 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				A4C123B1612DD272D1371C17 /* VotingListSectionTests.swift */,
 				C0F7A1D2E3B4C5D6E7F80902 /* CountedPhrasePluralTests.swift */,
 				C0F7A1D2E3B4C5D6E7F80904 /* WalletSetupErrorTextTests.swift */,
+				5CA716000000000000000A02 /* PluralFidelityTests.swift */,
+				5CA716000000000000000A06 /* UngroupedCountTests.swift */,
+				5CA716000000000000000A04 /* BaselinePluralForms.json */,
 				23024DB0717753438C96FF01 /* XCTestCase+YieldUntil.swift */,
 				2ED90B9CB9B2FB3E1259FEA6 /* VotingFilterTests.swift */,
 				1B3E5A7C9D2F4A6B8C0D1E02 /* VoteLimitTests.swift */,
@@ -7154,6 +7135,8 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				BABA10000000000000000005 /* DashPayUserLinkTests.swift */,
 				BABA10000000000000000007 /* DiagnosticLogExporterTests.swift */,
 				BABA10000000000000000009 /* PaymentProtocolTests.swift */,
+				6C1F7A00000000000000A005 /* GiftCardPaymentGuardTests.swift */,
+				6C1F7A00000000000000B005 /* DashSpendPurchaseTests.swift */,
 				BABA1000000000000000000B /* PhraseRepairEngineTests.swift */,
 				BABA1000000000000000000D /* WalletLifecycleTransitionStateTests.swift */,
 				BABA1000000000000000000F /* WalletLocalStoreResetterTests.swift */,
@@ -7238,6 +7221,7 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				5A7E0C1D2E3F405162738498 /* VotingKeyImportTests.swift */,
 				AA00F1002FF0A10000A1B402 /* ExchangeAddressLookupContextTests.swift */,
 				AA00100D2CA0B10001A0B10D /* SwapKitQuoteDecodingTests.swift */,
+				C7C3D0DE1F0A4B2C8D9E7A01 /* CTXMerchantResponseDecodingTests.swift */,
 				C5A11E000000000000000004 /* SwapRouteAvailabilityTests.swift */,
 				5EAD222130A0000000A1B202 /* DashAmountFormatterTests.swift */,
 				DA57A1010000000000000001 /* PastedAmountNormalizationTests.swift */,
@@ -8662,7 +8646,6 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 			buildPhases = (
 				28DD713340F825108DBF3E6C /* [CP] Check Pods Manifest.lock */,
 				2A4431D722D6391F009BAF7F /* Run Script - clang-format */,
-				FB0ACB9A1F9A99E400F4AB52 /* Run Script - bartycrouch */,
 				75D5F3BA191EC270004AB296 /* Sources */,
 				75D5F3BB191EC270004AB296 /* Frameworks */,
 				75D5F3BC191EC270004AB296 /* Resources */,
@@ -8776,8 +8759,8 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 			buildPhases = (
 				1F064526D281DEF5E5CC2729 /* [CP] Check Pods Manifest.lock */,
 				C9D2C6912A320AA000D15901 /* Run Script - clang-format */,
-				C9D2C6922A320AA000D15901 /* Run Script - bartycrouch */,
 				C9D2C6932A320AA000D15901 /* Sources */,
+				5C0A1A7E2F00000000000001 /* Sync String Catalog */,
 				C9D2C8F52A320AA000D15901 /* Frameworks */,
 				C9D2C90A2A320AA000D15901 /* Resources */,
 				525BB766C4C0A1764D4BD70A /* [CP] Copy Pods Resources */,
@@ -8946,11 +8929,10 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				75EBAA222BBA9D3C004488E3 /* ZenLedger-Info.plist in Resources */,
 				C9FAABB52AB793CE00878224 /* BuySellPortal.storyboard in Resources */,
 				2A44314922CF82EF009BAF7F /* BiometricAuth.storyboard in Resources */,
-				757E09991ADB8EEB006FD352 /* Localizable.strings in Resources */,
+				757E09991ADB8EEB006FD352 /* Localizable.xcstrings in Resources */,
 				2A6300422328CCE900827825 /* LockScreen.storyboard in Resources */,
 				4709C30F287E787700B4BD48 /* Migrations.bundle in Resources */,
 				474C720F298A1A3E00475CA6 /* TxDetailTaxCategoryCell.xib in Resources */,
-				2ADC722923B5547000D9DD37 /* Localizable.stringsdict in Resources */,
 				5151C8CA2F913BF100F0A604 /* Coinbase-Info.plist in Resources */,
 				5151C8CB2F913BF100F0A604 /* ZenLedger-Info.plist in Resources */,
 				5151C8CC2F913BF100F0A604 /* GoogleService-Info.plist in Resources */,
@@ -8991,6 +8973,7 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 			files = (
 				47A184E5299CC19A0017E32C /* rates.json in Resources */,
 				AA00100F2CA0B10001A0B10F /* swapkit_quote_response.json in Resources */,
+				5CA716000000000000000A03 /* BaselinePluralForms.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -9017,7 +9000,7 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 			files = (
 				2A741DC223639A9700840ADF /* TodayExtension.storyboard in Resources */,
 				BA54D3CE1B2EA74000C9CB28 /* TodayExtensionAssets.xcassets in Resources */,
-				2A741DC323639C7E00840ADF /* Localizable.strings in Resources */,
+				2A741DC323639C7E00840ADF /* Localizable.xcstrings in Resources */,
 				758CE59E2BC566DE0062AF53 /* PrivacyInfo.xcprivacy in Resources */,
 				2ADF840023633121008459A7 /* SharedAssets.xcassets in Resources */,
 			);
@@ -9033,12 +9016,11 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				C9D2C9652A38733B00D15901 /* DPAssets.xcassets in Resources */,
 				C9D2C9132A320AA000D15901 /* BiometricAuth.storyboard in Resources */,
 				75EBAA232BBA9D3C004488E3 /* ZenLedger-Info.plist in Resources */,
-				C9D2C9172A320AA000D15901 /* Localizable.strings in Resources */,
+				C9D2C9172A320AA000D15901 /* Localizable.xcstrings in Resources */,
 				C9D2C9182A320AA000D15901 /* LockScreen.storyboard in Resources */,
 				C9D2C91A2A320AA000D15901 /* Migrations.bundle in Resources */,
 				51646C733006263C00BE3070 /* Uphold-Info.plist in Resources */,
 				C9D2C91B2A320AA000D15901 /* TxDetailTaxCategoryCell.xib in Resources */,
-				C9D2C91C2A320AA000D15901 /* Localizable.stringsdict in Resources */,
 				C9D2C9202A320AA000D15901 /* TxDetailInfoCell.xib in Resources */,
 				C9D2C9212A320AA000D15901 /* UpholdOTPStoryboard.storyboard in Resources */,
 				C9D2C9222A320AA000D15901 /* AppAssets.xcassets in Resources */,
@@ -9295,6 +9277,25 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-dashpay/Pods-dashpay-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
+		5C0A1A7E2F00000000000001 /* Sync String Catalog */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Sync String Catalog";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Keeps DashWallet/Localizable.xcstrings in step with the code the way the Xcode app does\n# (ADR-0070, ADR-0073). A no-op while the Catalog does not exist.\n/usr/bin/python3 \"$SRCROOT/scripts/localization/sync_catalog.py\"\n";
+		};
 		622C18F9EEFCADF772D1DBB5 /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -9389,34 +9390,6 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "#!/bin/bash\n\necho \"Reformatting code with clang-format\"\n\nfunction formatObjCFiles() {\n    find \"$1\" -name '*.h' -print0 | xargs -0 clang-format -i -style=file\n    find \"$1\" -name '*.m' -print0 | xargs -0 clang-format -i -style=file\n    find \"$1\" -name '*.mm' -print0 | xargs -0 clang-format -i -style=file\n}\n\nif which clang-format >/dev/null; then\n    for SUBDIR in DashWallet/Sources\n    do\n        formatObjCFiles $SUBDIR\n    done\n    \n    formatObjCFiles TodayExtension\n    formatObjCFiles Shared/Sources\nelse\n    echo \"warning: clang-format not installed, install it by running `brew install clang-format`\"\nfi\n";
-		};
-		C9D2C6922A320AA000D15901 /* Run Script - bartycrouch */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "Run Script - bartycrouch";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "if which bartycrouch > /dev/null; then\n    BTCRCH=`which bartycrouch`\n    env -i $BTCRCH update -x\n    env -i $BTCRCH lint -x\nelse\n    echo \"warning: BartyCrouch not installed, download it from https://github.com/Flinesoft/BartyCrouch\"\nfi\n";
-		};
-		FB0ACB9A1F9A99E400F4AB52 /* Run Script - bartycrouch */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "Run Script - bartycrouch";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "export PATH=\"$PATH:/opt/homebrew/bin\"\n\nif which bartycrouch > /dev/null; then\n    bartycrouch update -x\n    bartycrouch lint -x\nelse\n    echo \"warning: BartyCrouch not installed, download it from https://github.com/FlineDev/BartyCrouch\"\nfi\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -9587,6 +9560,7 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				47838B7528FFD1D10003E8AB /* AmountView.swift in Sources */,
 				4759D512292FD6F3002F20DC /* DWBasePayViewController.m in Sources */,
 				75EE9F432DE2F750000AD1AD /* DashSpendConfirmationDialog.swift in Sources */,
+				6C1F7A00000000000000A012 /* DashSpendPriceUpdatedDialog.swift in Sources */,
 				2A44312622CCC14F009BAF7F /* DWSetPinViewController.m in Sources */,
 				47F4B6C7294842DF00AED4C9 /* ConfirmOrderController.swift in Sources */,
 				2AD46232232A286000C71557 /* DWLockScreenModel.m in Sources */,
@@ -9799,6 +9773,8 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				AA00300F2FD000000000000F /* SwapOrderMetadataProvider.swift in Sources */,
 				AA0000042DUMMYID001234567 /* DashSpend/GiftCardProvider.swift in Sources */,
 				BB0000012DUMMYID001234567 /* DashSpend/DashSpendError.swift in Sources */,
+				6C1F7A00000000000000A001 /* DashSpend/GiftCardPaymentGuard.swift in Sources */,
+				6C1F7A00000000000000B001 /* DashSpend/GiftCardPurchaseSeams.swift in Sources */,
 				BB0000032DUMMYID001234567 /* DashSpend/DashSpendRepository.swift in Sources */,
 				BB0000052DUMMYID001234567 /* DashSpend/DashSpendRepositoryFactory.swift in Sources */,
 				GG0000012DUMMYID001234567 /* GeoRestrictionService.swift in Sources */,
@@ -10286,6 +10262,8 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				149D439536B3216FDAEEB975 /* VotingListSectionTests.swift in Sources */,
 				C0F7A1D2E3B4C5D6E7F80901 /* CountedPhrasePluralTests.swift in Sources */,
 				C0F7A1D2E3B4C5D6E7F80903 /* WalletSetupErrorTextTests.swift in Sources */,
+				5CA716000000000000000A01 /* PluralFidelityTests.swift in Sources */,
+				5CA716000000000000000A05 /* UngroupedCountTests.swift in Sources */,
 				C406D69E0253120CCB522801 /* XCTestCase+YieldUntil.swift in Sources */,
 				9D097D529CF2AF9A63A649DE /* VotingFilterTests.swift in Sources */,
 				F0250BFF15DAFCF2E68BDFC3 /* VoteAttemptCoordinatorTests.swift in Sources */,
@@ -10303,6 +10281,8 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				BABA10000000000000000006 /* DashPayUserLinkTests.swift in Sources */,
 				BABA10000000000000000008 /* DiagnosticLogExporterTests.swift in Sources */,
 				BABA1000000000000000000A /* PaymentProtocolTests.swift in Sources */,
+				6C1F7A00000000000000A004 /* GiftCardPaymentGuardTests.swift in Sources */,
+				6C1F7A00000000000000B004 /* DashSpendPurchaseTests.swift in Sources */,
 				BABA1000000000000000000C /* PhraseRepairEngineTests.swift in Sources */,
 				BABA1000000000000000000E /* WalletLifecycleTransitionStateTests.swift in Sources */,
 				BABA10000000000000000010 /* WalletLocalStoreResetterTests.swift in Sources */,
@@ -10387,6 +10367,7 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				5A7E0C1D2E3F405162738497 /* VotingKeyImportTests.swift in Sources */,
 				AA00F1012FF0A10000A1B402 /* ExchangeAddressLookupContextTests.swift in Sources */,
 				AA00100E2CA0B10001A0B10E /* SwapKitQuoteDecodingTests.swift in Sources */,
+				C7C3D0DE1F0A4B2C8D9E7A02 /* CTXMerchantResponseDecodingTests.swift in Sources */,
 				C5A11E000000000000000005 /* SwapRouteAvailabilityTests.swift in Sources */,
 				5EAD222230A0000000A1B202 /* DashAmountFormatterTests.swift in Sources */,
 				DA57A1010000000000000002 /* PastedAmountNormalizationTests.swift in Sources */,
@@ -10855,6 +10836,8 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				AA0030102FD0000000000010 /* SwapOrderMetadataProvider.swift in Sources */,
 				AA0000052DUMMYID001234567 /* DashSpend/GiftCardProvider.swift in Sources */,
 				BB0000022DUMMYID001234567 /* DashSpend/DashSpendError.swift in Sources */,
+				6C1F7A00000000000000A002 /* DashSpend/GiftCardPaymentGuard.swift in Sources */,
+				6C1F7A00000000000000B002 /* DashSpend/GiftCardPurchaseSeams.swift in Sources */,
 				BB0000042DUMMYID001234567 /* DashSpend/DashSpendRepository.swift in Sources */,
 				BB0000062DUMMYID001234567 /* DashSpend/DashSpendRepositoryFactory.swift in Sources */,
 				GG0000022DUMMYID001234567 /* GeoRestrictionService.swift in Sources */,
@@ -10917,6 +10900,7 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				75D9EBBC2DE5CD8B009416A2 /* GiftCard.swift in Sources */,
 				75D6D8E52D96A6DB00E40A6D /* StubTransactionSource.swift in Sources */,
 				75EE9F422DE2F750000AD1AD /* DashSpendConfirmationDialog.swift in Sources */,
+				6C1F7A00000000000000A011 /* DashSpendPriceUpdatedDialog.swift in Sources */,
 				C9D2C8142A320AA000D15901 /* DWCenteredScrollView.m in Sources */,
 				C9D2C8162A320AA000D15901 /* DWPhraseRepairViewController.m in Sources */,
 				75AA33CD2BF9C82700F12465 /* ModalDialog.swift in Sources */,
@@ -11437,64 +11421,6 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 			name = Coinbase.storyboard;
 			sourceTree = "<group>";
 		};
-		2ADC722723B5547000D9DD37 /* Localizable.stringsdict */ = {
-			isa = PBXVariantGroup;
-			children = (
-				2ADC722823B5547000D9DD37 /* en */,
-				2A8E79B9240676D400AA7C3D /* sk */,
-				2A8E79BD2406772900AA7C3D /* cs */,
-				477A963C292BA4B90013605B /* uk */,
-				51D1C700000D10CA1E000000 /* fr */,
-				51D1C700000D10CA1E000001 /* ja */,
-				51D1C700000D10CA1E000002 /* ko */,
-				51D1C700000D10CA1E000003 /* nl */,
-				51D1C700000D10CA1E000004 /* de */,
-				51D1C700000D10CA1E000005 /* zh-Hans */,
-				51D1C700000D10CA1E000006 /* es */,
-				51D1C700000D10CA1E000007 /* it */,
-				51D1C700000D10CA1E000008 /* tr */,
-				51D1C700000D10CA1E000009 /* pl */,
-				51D1C700000D10CA1E00000A /* ru */,
-				51D1C700000D10CA1E00000B /* el */,
-				51D1C700000D10CA1E00000C /* pt */,
-				51D1C700000D10CA1E00000D /* bg */,
-				51D1C700000D10CA1E00000E /* vi */,
-				51D1C700000D10CA1E00000F /* th */,
-				51D1C700000D10CA1E000010 /* zh-Hant-TW */,
-				51D1C700000D10CA1E000011 /* id */,
-			);
-			name = Localizable.stringsdict;
-			sourceTree = "<group>";
-		};
-		757E09971ADB8EEB006FD352 /* Localizable.strings */ = {
-			isa = PBXVariantGroup;
-			children = (
-				757E09981ADB8EEB006FD352 /* en */,
-				7511E8CB1AE5FF240025F1B3 /* fr */,
-				7511E8CF1AE5FF2D0025F1B3 /* ja */,
-				7511E8D31AE5FF390025F1B3 /* ko */,
-				7511E8E31AE5FFCC0025F1B3 /* nl */,
-				7511E8EB1AE600220025F1B3 /* de */,
-				7509C10E1AF3076100D03FD5 /* zh-Hans */,
-				7509C1121AF3720100D03FD5 /* es */,
-				75DE02411B0EB79A0027FF08 /* it */,
-				75DE02491B0EB7C80027FF08 /* tr */,
-				75DE024D1B0EB7FC0027FF08 /* pl */,
-				75DE02511B0EB8030027FF08 /* ru */,
-				750C6CC01B5C8EB60038AAE9 /* el */,
-				75CE194E1B9642EB000778E4 /* pt */,
-				FB0ACB9E1F9AB76800F4AB52 /* bg */,
-				FB0ACBA01F9ABB6200F4AB52 /* vi */,
-				FB4310F11FA027DB00784EBC /* th */,
-				FB43BC8D21217BB900BC9879 /* zh-Hant-TW */,
-				2A9FFF41223654D300956D5F /* id */,
-				2A8E79BC2406772900AA7C3D /* cs */,
-				477A963B292BA4B90013605B /* uk */,
-				47CDEED0294B8230008AE06D /* sk */,
-			);
-			name = Localizable.strings;
-			sourceTree = "<group>";
-		};
 		75889B812AD2D7F800C17F5D /* CoinJoin.storyboard */ = {
 			isa = PBXVariantGroup;
 			children = (
@@ -11685,6 +11611,32 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 		75D5F3F4191EC270004AB296 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				XCSTRINGS_LANGUAGES_TO_COMPILE = (
+					bg,
+					cs,
+					de,
+					el,
+					en,
+					es,
+					fr,
+					id,
+					it,
+					ja,
+					ko,
+					nl,
+					pl,
+					pt,
+					ru,
+					sk,
+					th,
+					tr,
+					uk,
+					vi,
+					"zh-Hans",
+					"zh-Hant-TW",
+				);
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
@@ -11753,6 +11705,32 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 		75D5F3F5191EC270004AB296 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				XCSTRINGS_LANGUAGES_TO_COMPILE = (
+					bg,
+					cs,
+					de,
+					el,
+					en,
+					es,
+					fr,
+					id,
+					it,
+					ja,
+					ko,
+					nl,
+					pl,
+					pt,
+					ru,
+					sk,
+					th,
+					tr,
+					uk,
+					vi,
+					"zh-Hans",
+					"zh-Hant-TW",
+				);
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
@@ -12765,6 +12743,32 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 		CEE253D21E26A9BC00A25B15 /* Testflight */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				XCSTRINGS_LANGUAGES_TO_COMPILE = (
+					bg,
+					cs,
+					de,
+					el,
+					en,
+					es,
+					fr,
+					id,
+					it,
+					ja,
+					ko,
+					nl,
+					pl,
+					pt,
+					ru,
+					sk,
+					th,
+					tr,
+					uk,
+					vi,
+					"zh-Hans",
+					"zh-Hant-TW",
+				);
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
@@ -13066,6 +13070,32 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 		FB9CC19A1F8511620079309F /* Testnet */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				XCSTRINGS_LANGUAGES_TO_COMPILE = (
+					bg,
+					cs,
+					de,
+					el,
+					en,
+					es,
+					fr,
+					id,
+					it,
+					ja,
+					ko,
+					nl,
+					pl,
+					pt,
+					ru,
+					sk,
+					th,
+					tr,
+					uk,
+					vi,
+					"zh-Hans",
+					"zh-Hant-TW",
+				);
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";

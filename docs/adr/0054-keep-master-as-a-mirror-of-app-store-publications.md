@@ -1,6 +1,6 @@
 # 0054 — Keep master as a mirror of App Store publications
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-20
 - **Deciders:** llbartekll (author), romchornyi
 

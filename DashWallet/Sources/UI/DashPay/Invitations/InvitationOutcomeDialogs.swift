@@ -24,12 +24,12 @@ enum InvitationOutcomeDialogs {
             return alreadyHasIdentity()
         case .alreadyHasOtherIdentity:
             return alert(
-                title: NSLocalizedString("Identity already found", comment: "DashPay Invitations"),
-                message: NSLocalizedString("You cannot claim this invite since this wallet already has a Dash identity", comment: "DashPay Invitations"))
+                title: String(localized: "Identity already found", comment: "DashPay Invitations"),
+                message: String(localized: "You cannot claim this invite since this wallet already has a Dash identity", comment: "DashPay Invitations"))
         case .alreadyRequestedUsername:
             return alert(
-                title: NSLocalizedString("Username already requested", comment: "DashPay Invitations"),
-                message: NSLocalizedString("You cannot claim this invite since you have already requested a Dash username", comment: "DashPay Invitations"))
+                title: String(localized: "Username already requested", comment: "DashPay Invitations"),
+                message: String(localized: "You cannot claim this invite since you have already requested a Dash username", comment: "DashPay Invitations"))
         case .alreadyClaimed(let inviter):
             return alreadyClaimed(inviter: inviter)
         case .valid, .undetermined, .awaitingChainLock:
@@ -40,41 +40,39 @@ enum InvitationOutcomeDialogs {
     @MainActor
     static func invalid(inviter: InvitationInviter) -> UIViewController {
         alert(
-            title: NSLocalizedString("Invalid Invitation", comment: "DashPay Invitations"),
-            message: String.localizedStringWithFormat(
-                NSLocalizedString("Your invitation from %@ is not valid", comment: ""),
-                senderName(inviter)))
+            title: String(localized: "Invalid Invitation", comment: "DashPay Invitations"),
+            message: String(localized: "Your invitation from \(senderName(inviter)) is not valid", comment: ""))
     }
 
     @MainActor
     static func alreadyHasIdentity() -> UIViewController {
         alert(
-            title: NSLocalizedString("Username already found", comment: ""),
-            message: NSLocalizedString("You cannot claim this invite since you already have a Dash username", comment: ""))
+            title: String(localized: "Username already found", comment: ""),
+            message: String(localized: "You cannot claim this invite since you already have a Dash username", comment: ""))
     }
 
     /// A second invitation arrived while one is pending; the new one is dropped.
     @MainActor
     static func busy() -> UIViewController {
         alert(
-            title: NSLocalizedString("Invitation Error", comment: "DashPay Invitations"),
-            message: NSLocalizedString("DashPay is currently processing an invite.", comment: "DashPay Invitations"))
+            title: String(localized: "Invitation Error", comment: "DashPay Invitations"),
+            message: String(localized: "DashPay is currently processing an invite.", comment: "DashPay Invitations"))
     }
 
     /// A valid invitation that could not be saved on this device.
     @MainActor
     static func storageFailed() -> UIViewController {
         alert(
-            title: NSLocalizedString("Invitation Error", comment: "DashPay Invitations"),
-            message: NSLocalizedString("The invitation couldn't be saved on this device. Open the link again to retry.", comment: "DashPay Invitations"))
+            title: String(localized: "Invitation Error", comment: "DashPay Invitations"),
+            message: String(localized: "The invitation couldn't be saved on this device. Open the link again to retry.", comment: "DashPay Invitations"))
     }
 
     /// The opened link or scanned code is not an invitation.
     @MainActor
     static func notAnInvitation() -> UIViewController {
         alert(
-            title: NSLocalizedString("Invalid Invitation", comment: "DashPay Invitations"),
-            message: NSLocalizedString("This is not a valid invitation link", comment: ""))
+            title: String(localized: "Invalid Invitation", comment: "DashPay Invitations"),
+            message: String(localized: "This is not a valid invitation link", comment: ""))
     }
 
     @MainActor
@@ -114,7 +112,7 @@ struct InvitationAlreadyClaimedDialog: View {
 
     private var message: AttributedString {
         let name = InvitationOutcomeDialogs.senderName(inviter)
-        let format = NSLocalizedString("Your invitation from %@ has been already claimed", comment: "")
+        let format = String(localized: "Your invitation from %@ has been already claimed", comment: "")
         let parts = format.components(separatedBy: "%@")
         guard parts.count == 2 else {
             return AttributedString(String(format: format, name))
@@ -152,7 +150,7 @@ struct InvitationAlreadyClaimedDialog: View {
                     .fixedSize(horizontal: false, vertical: true)
 
                 DashUIKit.DashButton(
-                    text: NSLocalizedString("OK", comment: ""),
+                    text: String(localized: "OK", comment: ""),
                     fillsWidth: true,
                     size: .medium,
                     style: .filledBlue,
@@ -163,7 +161,7 @@ struct InvitationAlreadyClaimedDialog: View {
             .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
             .padding(.horizontal, 40)
             .accessibilityElement(children: .contain)
-            .accessibilityLabel(NSLocalizedString("Invitation already claimed", comment: ""))
+            .accessibilityLabel(String(localized: "Invitation already claimed", comment: ""))
         }
     }
 }

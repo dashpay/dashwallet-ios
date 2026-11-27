@@ -90,7 +90,7 @@ struct TextIntro: View {
 #Preview {
     TextIntro(
         icon: .custom("zenledger_large"),
-        buttonLabel: NSLocalizedString("Export all transactions", comment: "ZenLedger"),
+        buttonLabel: String(localized: "Export all transactions", comment: "ZenLedger"),
         action: {
             print("hello")
         },

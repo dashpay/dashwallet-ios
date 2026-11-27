@@ -66,7 +66,7 @@ struct SelectCoinView: View {
             VStack(spacing: 0) {
                 DashUIKit.NavigationBar(
                     leading: { DashUIKit.NavigationBarElement.back.button { onBack?() } },
-                    central: { Text(NSLocalizedString("Select coin", comment: "Dash DEX")).dashFont(.subheadMedium) }
+                    central: { Text(String(localized: "Select coin", comment: "Dash DEX")).dashFont(.subheadMedium) }
                 )
                 mainContent
             }
@@ -75,7 +75,7 @@ struct SelectCoinView: View {
             if viewModel.showHaltedToast {
                 Toast(
                     style: .warning,
-                    message: NSLocalizedString("Some coins are not available because of the halted chain", comment: "Dash DEX"),
+                    message: String(localized: "Some coins are not available because of the halted chain", comment: "Dash DEX"),
                     onDismiss: { viewModel.showHaltedToast = false }
                 )
                     .transition(.move(edge: .bottom).combined(with: .opacity))
@@ -167,7 +167,7 @@ struct SelectCoinView: View {
     private var emptyStateView: some View {
         VStack {
             VStack(spacing: Layout.emptyStateSpacing) {
-                Text(NSLocalizedString("No coins found", comment: "Dash DEX"))
+                Text(String(localized: "No coins found", comment: "Dash DEX"))
                     .dashFont(.footnote)
                     .foregroundColor(Color.dash.gray500)
             }
@@ -205,7 +205,7 @@ struct SelectCoinView: View {
         Button(action: {
             Task { await viewModel.loadCoins(force: true) }
         }) {
-            Text(NSLocalizedString("Retry", comment: ""))
+            Text(String(localized: "Retry", comment: ""))
                 .font(.system(size: 14, weight: .semibold))
                 .foregroundColor(Color.dash.whiteText)
                 .padding(.horizontal, 24)

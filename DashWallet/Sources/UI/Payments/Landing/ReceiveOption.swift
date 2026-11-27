@@ -51,11 +51,11 @@ enum ReceiveOption: String, CaseIterable, Identifiable {
     }
 
     var title: String {
-        chainNetwork?.title ?? NSLocalizedString("Identity", comment: "")
+        chainNetwork?.title ?? String(localized: "Identity", comment: "")
     }
 
     /// The balance a Receipt on this option names.
     var balanceName: String {
-        chainNetwork?.balanceName ?? NSLocalizedString("Identity", comment: "")
+        chainNetwork?.balanceName ?? String(localized: "Identity", comment: "")
     }
 }

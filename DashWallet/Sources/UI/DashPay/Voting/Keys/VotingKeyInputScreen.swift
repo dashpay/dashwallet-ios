@@ -107,9 +107,9 @@ struct VotingKeyInputContent: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
                     DashUIKit.TopIntroView(
-                        title: NSLocalizedString("Enter voting key", comment: "Voting"),
-                        mainDescription: NSLocalizedString(
-                            "Masternodes and evonodes vote on usernames. Enter a node's voting private key to vote with it from this wallet. The key is kept in this device's keychain.",
+                        title: String(localized: "Enter voting key", comment: "Voting"),
+                        mainDescription: String(
+                            localized: "Masternodes and evonodes vote on usernames. Enter a node's voting private key to vote with it from this wallet. The key is kept in this device's keychain.",
                             comment: "Voting"),
                         descriptionColor: Color.dash.secondaryText)
 
@@ -117,8 +117,8 @@ struct VotingKeyInputContent: View {
                     VStack(alignment: .leading, spacing: 10) {
                         DashUIKit.AddressFieldView(
                             text: $keyText,
-                            label: NSLocalizedString("Masternode voting key", comment: "Voting"),
-                            placeholder: NSLocalizedString("Paste or scan the key", comment: "Voting"),
+                            label: String(localized: "Masternode voting key", comment: "Voting"),
+                            placeholder: String(localized: "Paste or scan the key", comment: "Voting"),
                             hasError: error != nil,
                             isDisabled: isVerifying,
                             onScanQR: onScanQR,
@@ -142,7 +142,7 @@ struct VotingKeyInputContent: View {
             .scrollBounceBehavior(.basedOnSize)
 
             DashUIKit.DashButton(
-                text: NSLocalizedString("Verify", comment: "Voting"),
+                text: String(localized: "Verify", comment: "Voting"),
                 isEnabled: canVerify,
                 isLoading: isVerifying,
                 fillsWidth: true,

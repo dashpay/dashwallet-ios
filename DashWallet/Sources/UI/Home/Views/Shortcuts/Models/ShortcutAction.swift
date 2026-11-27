@@ -213,63 +213,63 @@ extension ShortcutActionType {
     var title: String {
         switch self {
         case .secureWallet:
-            return NSLocalizedString("Backup",
+            return String(localized: "Backup",
                                      comment: "Translate it as short as possible! (24 symbols max)")
         case .scanToPay:
-            return NSLocalizedString("Scan QR",
+            return String(localized: "Scan QR",
                                      comment: "Translate it as short as possible! (24 symbols max)")
         case .payToAddress:
-            return NSLocalizedString("Send to Address",
+            return String(localized: "Send to Address",
                                      comment: "Translate it as short as possible! (24 symbols max)")
         case .buySellDash:
-            return NSLocalizedString("Buy & Sell",
+            return String(localized: "Buy & Sell",
                                      comment: "Translate it as short as possible! (24 symbols max)")
         case .payWithNFC:
-            return NSLocalizedString("Send with NFC",
+            return String(localized: "Send with NFC",
                                      comment: "Translate it as short as possible! (24 symbols max)")
         case .localCurrency:
-            return NSLocalizedString("Local Currency",
+            return String(localized: "Local Currency",
                                      comment: "Translate it as short as possible! (24 symbols max)")
         case .importPrivateKey:
-            return NSLocalizedString("Import Private Key",
+            return String(localized: "Import Private Key",
                                      comment: "Translate it as short as possible! (24 symbols max)")
         case .switchToTestnet:
-            return NSLocalizedString("Switch to Testnet",
+            return String(localized: "Switch to Testnet",
                                      comment: "Translate it as short as possible! (24 symbols max)")
         case .switchToMainnet:
-            return NSLocalizedString("Switch to Mainnet",
+            return String(localized: "Switch to Mainnet",
                                      comment: "Translate it as short as possible! (24 symbols max)")
         case .reportAnIssue:
-            return NSLocalizedString("Report an Issue",
+            return String(localized: "Report an Issue",
                                      comment: "Translate it as short as possible! (24 symbols max)")
         case .createUsername:
-            return NSLocalizedString("Join Evolution", comment: "Translate it as short as possible! (24 symbols max)")
+            return String(localized: "Join Evolution", comment: "Translate it as short as possible! (24 symbols max)")
         case .receive:
-            return NSLocalizedString("Receive", comment: "Translate it as short as possible! (24 symbols max)")
+            return String(localized: "Receive", comment: "Translate it as short as possible! (24 symbols max)")
         case .explore:
-            return NSLocalizedString("Explore", comment: "Translate it as short as possible! (24 symbols max)")
+            return String(localized: "Explore", comment: "Translate it as short as possible! (24 symbols max)")
         case .spend:
-            return NSLocalizedString("Spend", comment: "Translate it as short as possible! (24 symbols max)")
+            return String(localized: "Spend", comment: "Translate it as short as possible! (24 symbols max)")
         case .send:
-            return NSLocalizedString("Send", comment: "Translate it as short as possible! (24 symbols max)")
+            return String(localized: "Send", comment: "Translate it as short as possible! (24 symbols max)")
         case .atm:
-            return NSLocalizedString("ATM", comment: "Translate it as short as possible! (24 symbols max)")
+            return String(localized: "ATM", comment: "Translate it as short as possible! (24 symbols max)")
         case .sendToContact:
-            return NSLocalizedString("Send to Contact", comment: "Translate it as short as possible! (24 symbols max)")
+            return String(localized: "Send to Contact", comment: "Translate it as short as possible! (24 symbols max)")
         case .coinbase:
-            return NSLocalizedString("Coinbase", comment: "Translate it as short as possible! (24 symbols max)")
+            return String(localized: "Coinbase", comment: "Translate it as short as possible! (24 symbols max)")
         case .uphold:
-            return NSLocalizedString("Uphold", comment: "Translate it as short as possible! (24 symbols max)")
+            return String(localized: "Uphold", comment: "Translate it as short as possible! (24 symbols max)")
         case .topper:
-            return NSLocalizedString("Topper", comment: "Translate it as short as possible! (24 symbols max)")
+            return String(localized: "Topper", comment: "Translate it as short as possible! (24 symbols max)")
         case .getTestDash:
-            return NSLocalizedString("1 tDash", comment: "Translate it as short as possible! (24 symbols max)")
+            return String(localized: "1 tDash", comment: "Translate it as short as possible! (24 symbols max)")
         case .switchWallet:
-            return NSLocalizedString("Switch Wallet", comment: "Translate it as short as possible! (24 symbols max)")
+            return String(localized: "Switch Wallet", comment: "Translate it as short as possible! (24 symbols max)")
         case .dashDEX:
-            return NSLocalizedString("Dash DEX", comment: "Translate it as short as possible! (24 symbols max)")
+            return String(localized: "Dash DEX", comment: "Translate it as short as possible! (24 symbols max)")
         case .nodes:
-            return NSLocalizedString("Nodes", comment: "Shortcut")
+            return String(localized: "Nodes", comment: "Shortcut")
         }
     }
 
@@ -279,7 +279,7 @@ extension ShortcutActionType {
     var shortTitle: String {
         switch self {
         case .payToAddress:
-            return NSLocalizedString("Address", comment: "Translate it as short as possible! (24 symbols max)")
+            return String(localized: "Address", comment: "Translate it as short as possible! (24 symbols max)")
         default:
             return title
         }

@@ -42,10 +42,10 @@ struct OrderPreviewView: View {
             .dexOfflineToast(isOnline: viewModel.isOnline)
             .task { await viewModel.onAppearLoad() }
             .alert(
-                NSLocalizedString("Swap in progress", comment: "Dash DEX"),
+                String(localized: "Swap in progress", comment: "Dash DEX"),
                 isPresented: pendingSwapAlertIsPresented
             ) {
-                Button(NSLocalizedString("OK", comment: "Dash DEX")) {
+                Button(String(localized: "OK", comment: "Dash DEX")) {
                     viewModel.pendingSwapAlertMessage = nil
                 }
             } message: {
@@ -70,7 +70,7 @@ struct OrderPreviewView: View {
                 DashUIKit.NavigationBarElement.back.button { onCancel() }
             })
 
-            TopIntro(title: String(format: NSLocalizedString("Order preview", comment: "Dash DEX")))
+            TopIntro(title: String(localized: "Order preview", comment: "Dash DEX"))
                 .padding(.top, 10)
                 .padding(.horizontal, 20)
                 .padding(.bottom, 20)
@@ -87,10 +87,7 @@ struct OrderPreviewView: View {
             .modifier(MenuViewModifier(shadowRadius: 20))
             .padding(.horizontal, 20)
 
-            Text(String(format: NSLocalizedString(
-                "The final amount you receive may differ from this estimate by up to %d%% due to price slippage.",
-                comment: "Dash DEX"
-            ), SwapKitConstants.defaultSlippagePercent))
+            Text(String(localized: "The final amount you receive may differ from this estimate by up to \(SwapKitConstants.defaultSlippagePercent)% due to price slippage.", comment: "Dash DEX"))
                 .dashFont(.caption1)
                 .foregroundColor(Color.dash.tertiaryText)
                 .multilineTextAlignment(.center)
@@ -105,7 +102,7 @@ struct OrderPreviewView: View {
                     HStack(spacing: 8) {
                         DashIcon.SystemMessage.timerSmall.image
 
-                        Text(NSLocalizedString("Quote expires", comment: "Dash DEX"))
+                        Text(String(localized: "Quote expires", comment: "Dash DEX"))
                             .dashFont(.subheadMedium)
                             .foregroundColor(Color.dash.primaryText)
                     }
@@ -138,7 +135,7 @@ struct OrderPreviewView: View {
 
     private var fromRow: some View {
         HStack(spacing: Layout.labelSpacing) {
-            Text(NSLocalizedString("From", comment: "Dash DEX"))
+            Text(String(localized: "From", comment: "Dash DEX"))
                 .dashFont(.subheadMedium)
                 .foregroundColor(Color.dash.tertiaryText)
                 .fixedSize()
@@ -148,7 +145,7 @@ struct OrderPreviewView: View {
                     .frame(width: Layout.coinLogoSize, height: Layout.coinLogoSize)
                     .clipShape(.rect(cornerRadius: Layout.coinLogoCornerRadius))
 
-                Text(NSLocalizedString("Dash Wallet", comment: "Dash DEX"))
+                Text(String(localized: "Dash Wallet", comment: "Dash DEX"))
                     .dashFont(.subhead)
                     .foregroundColor(Color.dash.primaryText)
             }
@@ -161,7 +158,7 @@ struct OrderPreviewView: View {
 
     private var toRow: some View {
         HStack(spacing: Layout.labelSpacing) {
-            Text(NSLocalizedString("To", comment: "Dash DEX"))
+            Text(String(localized: "To", comment: "Dash DEX"))
                 .dashFont(.subheadMedium)
                 .foregroundColor(Color.dash.tertiaryText)
                 .fixedSize()
@@ -186,7 +183,7 @@ struct OrderPreviewView: View {
 
     private var addressRow: some View {
         OrderPreviewTableRow(
-            leading: String(format: NSLocalizedString("%@ address", comment: "Dash DEX"), viewModel.coin.name),
+            leading: String(localized: "\(viewModel.coin.name) address", comment: "Dash DEX"),
             trailing: viewModel.address,
             rowHPadding: Layout.rowHPadding,
             rowVPadding: Layout.rowVPadding,
@@ -197,7 +194,7 @@ struct OrderPreviewView: View {
 
     private var purchaseRow: some View {
         OrderPreviewTableRow(
-            leading: NSLocalizedString("Purchase", comment: "Dash DEX"),
+            leading: String(localized: "Purchase", comment: "Dash DEX"),
             trailing: viewModel.purchaseAmount,
             trailingSecondary: viewModel.purchaseFiatAmount,
             rowHPadding: Layout.rowHPadding,
@@ -223,7 +220,7 @@ struct OrderPreviewView: View {
 
     private var totalRow: some View {
         HStack(alignment: .lastTextBaseline, spacing: Layout.labelSpacing) {
-            Text(NSLocalizedString("Total", comment: "Dash DEX"))
+            Text(String(localized: "Total", comment: "Dash DEX"))
                 .dashFont(.subheadMedium)
                 .foregroundColor(Color.dash.tertiaryText)
 
@@ -239,7 +236,7 @@ struct OrderPreviewView: View {
     /// Execution network row — AC#5: shows which provider (Maya, NEAR, …) runs this swap.
     private var networkRow: some View {
         OrderPreviewTableRow(
-            leading: NSLocalizedString("Network", comment: "Dash DEX"),
+            leading: String(localized: "Network", comment: "Dash DEX"),
             trailing: viewModel.resolvedExecutionNetwork,
             rowHPadding: Layout.rowHPadding,
             rowVPadding: Layout.rowVPadding,

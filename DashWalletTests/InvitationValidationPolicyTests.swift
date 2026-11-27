@@ -179,6 +179,22 @@ final class InvitationValidationPolicyTests: XCTestCase {
                 "IdentityAssetLockTransactionOutPointAlreadyConsumedError: asset lock outpoint already consumed"))))
     }
 
+    /// A repeated claim is refused with one of two errors; both send the
+    /// coordinator to look for this wallet's identity, and only the wallet's
+    /// own record lets it retire the invitation.
+    func testARepeatedClaimIsRecognizedByItsTwoErrors() {
+        XCTAssertEqual(
+            InvitationClaimFailure.earlierClaim(PlatformWalletError.invitationClaimedByThisWallet(identityId: "id")),
+            .recordedByThisWallet)
+        XCTAssertEqual(
+            InvitationClaimFailure.earlierClaim(PlatformWalletError.assetLockAlreadyConsumed("voucher outpoint")),
+            .consumedByUnknownIdentity)
+        XCTAssertNil(InvitationClaimFailure.earlierClaim(PlatformWalletError.invalidNetwork("testnet")))
+        XCTAssertNil(InvitationClaimFailure.earlierClaim(PlatformWalletError.walletOperation("timeout")))
+        XCTAssertNil(InvitationClaimFailure.earlierClaim(PlatformWalletError.consensusRejection(
+            PlatformConsensusError(code: 10504, kind: .basic), "consumed")))
+    }
+
     func testAnUnconfirmedResultIsNotASpentReportWhateverItsText() {
         let unconfirmed: [Error] = [
             PlatformWalletError.transactionBroadcastUnconfirmed("asset lock already completely used"),

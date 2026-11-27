@@ -20,7 +20,7 @@ struct ConfirmSpendDialog: View {
                 Spacer()
             }
             
-            Text(NSLocalizedString("Confirm", comment: ""))
+            Text(String(localized: "Confirm", comment: ""))
                 .font(.subheadline)
                 .fontWeight(.semibold)
                 .padding(.top, 15)
@@ -30,16 +30,16 @@ struct ConfirmSpendDialog: View {
             FormattedFiatText(from: amount)
             
             VStack(spacing: 4) {
-                Text(String.localizedStringWithFormat(NSLocalizedString("You chose “%@” as your username.", comment: "Usernames"), username))
+                Text(String(localized: "You chose “\(username)” as your username.", comment: "Usernames"))
                     .font(.subhead)
-                Text(NSLocalizedString("Please note that the username can NOT be changed once it is registered.", comment: "Usernames"))
+                Text(String(localized: "Please note that the username can NOT be changed once it is registered.", comment: "Usernames"))
                     .font(.subhead)
                     .multilineTextAlignment(.center)
             }
             .padding(.top, 15)
             
             Toggle(isOn: $isAccepted) {
-                Text(NSLocalizedString("I accept", comment: ""))
+                Text(String(localized: "I accept", comment: ""))
                     .font(.system(size: 15))
                     .padding(.leading, 4)
             }
@@ -55,13 +55,13 @@ struct ConfirmSpendDialog: View {
                 orientation: .horizontal,
                 size: .large,
                 positiveActionEnabled: isAccepted,
-                positiveButtonText: NSLocalizedString("Confirm", comment: ""),
+                positiveButtonText: String(localized: "Confirm", comment: ""),
                 positiveButtonAction: {
                     if isAccepted {
                         onConfirm()
                     }
                 },
-                negativeButtonText: NSLocalizedString("Cancel", comment: ""),
+                negativeButtonText: String(localized: "Cancel", comment: ""),
                 negativeButtonAction: {
                     onCancel()
                 }
@@ -74,7 +74,7 @@ struct ConfirmSpendDialog: View {
     
     @ViewBuilder
     private func FormattedFiatText(from dashAmount: Int64) -> some View {
-        let text = (try? CurrencyExchanger.shared.convertDash(amount: abs(dashAmount.dashAmount), to: App.fiatCurrency).formattedFiatAmount) ?? NSLocalizedString("Not available", comment: "")
+        let text = (try? CurrencyExchanger.shared.convertDash(amount: abs(dashAmount.dashAmount), to: App.fiatCurrency).formattedFiatAmount) ?? String(localized: "Not available", comment: "")
         Text(text)
             .font(.subhead)
             .foregroundStyle(Color.dash.secondaryText)

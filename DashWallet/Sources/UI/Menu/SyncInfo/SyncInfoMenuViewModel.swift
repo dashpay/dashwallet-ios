@@ -40,14 +40,14 @@ class SyncInfoMenuViewModel: ObservableObject {
     private func setupMenuItems() {
         items = [
             MenuItemModel(
-                title: NSLocalizedString("Core Sync Status", comment: "Sync Info"),
+                title: String(localized: "Core Sync Status", comment: "Sync Info"),
                 icon: .system("arrow.triangle.2.circlepath"),
                 action: { [weak self] in
                     self?.navigationDestination = .swiftDashSDKSPVStatus
                 }
             ),
             MenuItemModel(
-                title: NSLocalizedString("Platform Sync Status", comment: "Sync Info"),
+                title: String(localized: "Platform Sync Status", comment: "Sync Info"),
                 icon: .system("globe"),
                 action: { [weak self] in
                     self?.navigationDestination = .platformSyncStatus
@@ -57,7 +57,7 @@ class SyncInfoMenuViewModel: ObservableObject {
 
         #if DASHPAY
         items.append(MenuItemModel(
-            title: NSLocalizedString("DashPay Sync Info", comment: "Sync Info"),
+            title: String(localized: "DashPay Sync Info", comment: "Sync Info"),
             icon: .system("person.2"),
             action: { [weak self] in
                 self?.navigationDestination = .dashPaySyncInfo
@@ -66,7 +66,7 @@ class SyncInfoMenuViewModel: ObservableObject {
         #endif
 
         items.append(MenuItemModel(
-            title: NSLocalizedString("Shielded Sync Info", comment: "Sync Info"),
+            title: String(localized: "Shielded Sync Info", comment: "Sync Info"),
             icon: .system("shield"),
             action: { [weak self] in
                 self?.navigationDestination = .shieldedSyncInfo

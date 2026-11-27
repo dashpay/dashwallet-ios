@@ -1,0 +1,15 @@
+{
+  "source": "__REPO__/DashWallet/Sources/Greeting.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "key": "Hello",
+        "location": {
+          "startingColumn": 40,
+          "startingLine": 3
+        }
+      }
+    ]
+  },
+  "version": 1
+}

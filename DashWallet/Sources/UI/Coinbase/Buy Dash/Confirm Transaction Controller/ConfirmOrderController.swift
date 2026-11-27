@@ -41,15 +41,15 @@ enum ConfirmOrderItem: PreviewOrderItem {
     var localizedTitle: String {
         switch self {
         case .paymentMethod:
-            return NSLocalizedString("Payment method", comment: "Coinbase/Buy Dash")
+            return String(localized: "Payment method", comment: "Coinbase/Buy Dash")
         case .purchaseAmount:
-            return NSLocalizedString("Purchase", comment: "Coinbase/Buy Dash")
+            return String(localized: "Purchase", comment: "Coinbase/Buy Dash")
         case .feeAmount:
-            return NSLocalizedString("Coinbase Fee", comment: "Coinbase/Buy Dash")
+            return String(localized: "Coinbase Fee", comment: "Coinbase/Buy Dash")
         case .totalAmount:
-            return NSLocalizedString("Total", comment: "Coinbase/Buy Dash")
+            return String(localized: "Total", comment: "Coinbase/Buy Dash")
         case .amountInDash:
-            return NSLocalizedString("Amount in Dash", comment: "Coinbase/Buy Dash")
+            return String(localized: "Amount in Dash", comment: "Coinbase/Buy Dash")
         }
     }
 
@@ -58,8 +58,8 @@ enum ConfirmOrderItem: PreviewOrderItem {
             return nil
         }
 
-        return NSLocalizedString("You will receive %@ Dash on your Dash Wallet on this device. Please note that it can take up to 2-3 minutes to complete a transfer.",
-                                 comment: "Coinbase/Buy Dash/Confirm Order")
+        return String(localized: "You will receive %@ Dash on your Dash Wallet on this device. Please note that it can take up to 2-3 minutes to complete a transfer.",
+                      comment: "Coinbase/Buy Dash/Confirm Order")
     }
 
     var cellIdentifier: String {

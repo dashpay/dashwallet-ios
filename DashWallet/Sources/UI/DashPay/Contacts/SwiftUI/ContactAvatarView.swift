@@ -93,7 +93,7 @@ struct AcceptPillButton: View {
 
     var body: some View {
         Button(action: action) {
-            Text(NSLocalizedString("Accept", comment: "DashPay Contacts"))
+            Text(String(localized: "Accept", comment: "DashPay Contacts"))
                 .font(.system(size: 13, weight: .semibold))
                 .foregroundColor(.dash.blue)
                 .frame(minWidth: 64)
@@ -120,7 +120,7 @@ struct IgnoreCircleButton: View {
                 .background(Circle().fill(Color.dash.gray300Alpha10))
         }
         .buttonStyle(.plain)
-        .accessibilityLabel(NSLocalizedString("Ignore", comment: "DashPay Contacts"))
+        .accessibilityLabel(String(localized: "Ignore", comment: "DashPay Contacts"))
     }
 }
 
@@ -229,7 +229,7 @@ struct ContactIdentityIdView: View {
 
     var body: some View {
         VStack(spacing: 2) {
-            Text(NSLocalizedString("Identity ID", comment: "DashPay Contacts"))
+            Text(String(localized: "Identity ID", comment: "DashPay Contacts"))
                 .font(.system(size: 12))
                 .foregroundColor(.dash.tertiaryText)
             HStack(alignment: .firstTextBaseline, spacing: 6) {

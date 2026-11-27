@@ -345,9 +345,9 @@ class PiggyCardsRepository: DashSpendRepository {
         // Payment info might come from either initial response or status response
         let payTo = orderResponse.payTo ?? orderStatus.data.payTo
         guard let paymentUri = payTo else {
-            throw DashSpendError.customError(NSLocalizedString("No payment information received", comment: "DashSpend"))
+            throw DashSpendError.customError(String(localized: "No payment information received", comment: "DashSpend"))
         }
-        let paymentInfo = try parsePaymentURI(paymentUri, orderId: orderResponse.id, message: orderResponse.payMessage)
+        let paymentInfo = try Self.parsePaymentURI(paymentUri, message: orderResponse.payMessage)
 
         return GiftCardInfo(
             orderId: orderResponse.id,
@@ -448,28 +448,40 @@ class PiggyCardsRepository: DashSpendRepository {
     }
 
     /// Parse payment URI into address and amount
-    private func parsePaymentURI(_ payTo: String, orderId: String, message: String?) throws -> (address: String, amount: Double) {
+    /// - Parameter isValidAddress: whether an address is valid on the wallet's network.
+    static func parsePaymentURI(
+        _ payTo: String,
+        message: String?,
+        isValidAddress: (String) -> Bool = { $0.isValidDashAddressForCurrentNetwork }
+    ) throws -> (address: String, amount: Decimal) {
         // Check for empty or invalid URI
         guard !payTo.isEmpty else {
-            let errorMessage = message ?? NSLocalizedString("Payment URI unavailable", comment: "DashSpend")
+            let errorMessage = message ?? String(localized: "Payment URI unavailable", comment: "DashSpend")
             throw DashSpendError.customError(errorMessage)
         }
 
         // Parse dash: URI format
         // Example: "dash:XsomeAddress?amount=1.234"
         guard payTo.hasPrefix("dash:") else {
-            throw DashSpendError.customError(NSLocalizedString("Invalid payment URI format", comment: "DashSpend"))
+            throw DashSpendError.customError(String(localized: "Invalid payment URI format", comment: "DashSpend"))
         }
 
         let uriWithoutScheme = String(payTo.dropFirst(5)) // Remove "dash:"
         let components = uriWithoutScheme.split(separator: "?", maxSplits: 1)
 
         guard components.count >= 1 else {
-            throw DashSpendError.customError(NSLocalizedString("Invalid payment URI: missing address", comment: "DashSpend"))
+            throw DashSpendError.customError(String(localized: "Invalid payment URI: missing address", comment: "DashSpend"))
         }
 
         let address = String(components[0])
-        var amount: Double = 0
+        guard isValidAddress(address) else {
+            DWLogger.log("PiggyCards payment refused: the payment address is not valid on this network")
+            throw GiftCardPaymentGuard.invalidPaymentAddressError
+        }
+
+        // Parsed as a decimal string, never through Double: the amount becomes duffs exactly.
+        // An amount that is not plain decimal digits stays 0 and is refused below.
+        var amount: Decimal = 0
 
         // Parse query parameters
         if components.count > 1 {
@@ -479,14 +491,14 @@ class PiggyCardsRepository: DashSpendRepository {
             for item in queryItems {
                 let keyValue = item.split(separator: "=", maxSplits: 1)
                 if keyValue.count == 2 && keyValue[0] == "amount" {
-                    amount = Double(keyValue[1]) ?? 0
+                    amount = GiftCardPaymentGuard.dashAmount(fromQuotedString: String(keyValue[1])) ?? 0
                     break
                 }
             }
         }
 
         guard amount > 0 else {
-            throw DashSpendError.customError(NSLocalizedString("Invalid payment amount", comment: "DashSpend"))
+            throw DashSpendError.customError(String(localized: "Invalid payment amount", comment: "DashSpend"))
         }
 
         return (address: address, amount: amount)

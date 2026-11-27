@@ -184,7 +184,7 @@ struct PaymentsLandingScreen: View {
         .transientToast(
             isPresented: $showsCopiedToast,
             style: .copied,
-            message: NSLocalizedString("Copied", comment: ""))
+            message: String(localized: "Copied", comment: ""))
     }
 
     // MARK: - Swipe between tabs

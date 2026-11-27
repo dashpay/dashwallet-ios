@@ -75,9 +75,9 @@ final class BalanceModel: ObservableObject {
         case .mainnet:
             return nil
         case .testnet:
-            return NSLocalizedString("TESTNET", comment: "Badge on the home balance while the wallet runs on testnet")
+            return String(localized: "TESTNET", comment: "Badge on the home balance while the wallet runs on testnet")
         case .devnet:
-            return NSLocalizedString("DEVNET", comment: "Badge on the home balance while the wallet runs on a devnet")
+            return String(localized: "DEVNET", comment: "Badge on the home balance while the wallet runs on a devnet")
         }
     }
 

@@ -56,7 +56,7 @@ struct AmountObject: Equatable {
         dashFormatter.locale = inputLocale
         mainFormatted = dashFormatter
             .inputString(from: dashNumber as NSNumber, and: dashAmountString, locale: inputLocale) ??
-            NSLocalizedString("Invalid Input", comment: "Invalid Amount Input")
+            String(localized: "Invalid Input", comment: "Invalid Amount Input")
 
         if plainAmount == 0 {
             supplementaryAmount = 0
@@ -67,7 +67,7 @@ struct AmountObject: Equatable {
             supplementaryFormatted = str
         } else {
             supplementaryAmount = 0
-            supplementaryFormatted = NSLocalizedString("Updating Price", comment: "Updating Price")
+            supplementaryFormatted = String(localized: "Updating Price", comment: "Updating Price")
         }
     }
 
@@ -107,7 +107,7 @@ struct AmountObject: Equatable {
             mainFormatted = str
         } else {
             plainAmount = 0
-            mainFormatted = NSLocalizedString("Updating Price", comment: "Updating Price")
+            mainFormatted = String(localized: "Updating Price", comment: "Updating Price")
         }
     }
 

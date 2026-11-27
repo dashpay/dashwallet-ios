@@ -85,17 +85,17 @@ final class SwiftDashSDKContactsService: ObservableObject {
         var errorDescription: String? {
             switch self {
             case .noWallet:
-                return NSLocalizedString("Wallet is not ready", comment: "DashPay")
+                return String(localized: "Wallet is not ready", comment: "DashPay")
             case .noModelContainer:
-                return NSLocalizedString("Storage is not configured", comment: "DashPay")
+                return String(localized: "Storage is not configured", comment: "DashPay")
             case .noIdentity:
-                return NSLocalizedString("No DashPay identity is registered", comment: "DashPay")
+                return String(localized: "No DashPay identity is registered", comment: "DashPay")
             case .authCancelled:
-                return NSLocalizedString("Authentication cancelled", comment: "DashPay")
+                return String(localized: "Authentication cancelled", comment: "DashPay")
             case .authFailed:
-                return NSLocalizedString("Authentication failed", comment: "DashPay")
+                return String(localized: "Authentication failed", comment: "DashPay")
             case .requestNotFound:
-                return NSLocalizedString("Contact request not found", comment: "DashPay")
+                return String(localized: "Contact request not found", comment: "DashPay")
             case .sdk(let underlying):
                 return underlying.localizedDescription
             }

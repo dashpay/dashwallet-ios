@@ -21,7 +21,7 @@ struct CoreShieldedDrainConfirmation: Equatable {
     @MainActor var feeBreakdownText: String {
         let coreFee = estimatedL1FeeDuffs.map { $0.dashAmount.formattedDashAmount } ?? "—"
         let poolFee = InternalTransferSummaryFigures.networkFeeFiat(credits: poolFeeCredits) ?? "—"
-        return String(format: NSLocalizedString("Estimated Core fee: %@\nShielded pool fee: %@", comment: "Drain fee breakdown"), coreFee, poolFee)
+        return String(localized: "Estimated Core fee: \(coreFee)\nShielded pool fee: \(poolFee)", comment: "Drain fee breakdown")
     }
 }
 
@@ -31,7 +31,7 @@ struct CoreShieldedDrainConfirmation: Equatable {
 enum CoreShieldedDrainDisplay {
     static func dashAmount(estimatedRecipientCredits: UInt64?) -> String {
         guard let credits = estimatedRecipientCredits else {
-            return NSLocalizedString("Max", comment: "Whole wallet intent")
+            return String(localized: "Max", comment: "Whole wallet intent")
         }
         return credits < 1000 ? "<0.00000001" : "≈ " + (credits / 1000).dashAmount.formattedDashAmountWithoutCurrencySymbol
     }
@@ -336,9 +336,9 @@ struct CoreShieldedDrainService {
         case unavailable, contextChanged, requiresSync
         var errorDescription: String? {
             switch self {
-            case .unavailable: return NSLocalizedString("Wallet unavailable. Try again.", comment: "Core drain")
-            case .contextChanged: return NSLocalizedString("The wallet or network changed. Select Max again.", comment: "Core drain")
-            case .requiresSync: return NSLocalizedString("Wait until the chain is fully synced to make transfers", comment: "Core drain")
+            case .unavailable: return String(localized: "Wallet unavailable. Try again.", comment: "Core drain")
+            case .contextChanged: return String(localized: "The wallet or network changed. Select Max again.", comment: "Core drain")
+            case .requiresSync: return String(localized: "Wait until the chain is fully synced to make transfers", comment: "Core drain")
             }
         }
     }

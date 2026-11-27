@@ -163,7 +163,7 @@ struct POIDetailsView: View {
     private var locationCardView: some View {
         HStack(spacing: 20) {
             VStack(alignment: .leading, spacing: 2) {
-                Text(NSLocalizedString("Address", comment: "Explore Dash"))
+                Text(String(localized: "Address", comment: "Explore Dash"))
                     .font(.caption)
                     .foregroundColor(.dash.secondaryText)
 
@@ -222,7 +222,7 @@ struct POIDetailsView: View {
         Button(action: callAction) {
             HStack {
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(NSLocalizedString("Phone", comment: ""))
+                    Text(String(localized: "Phone", comment: ""))
                         .font(.caption)
                         .foregroundColor(.dash.secondaryText)
                     
@@ -243,7 +243,7 @@ struct POIDetailsView: View {
         Button(action: websiteAction) {
             HStack {
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(NSLocalizedString("Website", comment: ""))
+                    Text(String(localized: "Website", comment: ""))
                         .font(.caption)
                         .foregroundColor(.dash.secondaryText)
                             
@@ -267,7 +267,7 @@ struct POIDetailsView: View {
             showAllLocationsActionBlock?()
         }) {
             HStack {
-                Text(viewModel.locationCount > 0 ? "\(NSLocalizedString("Show all locations", comment: "Explore Dash")) (\(viewModel.locationCount))" : NSLocalizedString("Show all locations", comment: "Explore Dash"))
+                Text(viewModel.locationCount > 0 ? "\(String(localized: "Show all locations", comment: "Explore Dash")) (\(viewModel.locationCount))" : String(localized: "Show all locations", comment: "Explore Dash"))
                     .font(.system(size: 13, weight: .medium))
                     .foregroundColor(.dash.primaryText)
 
@@ -292,7 +292,7 @@ struct POIDetailsView: View {
     
     private var providerSectionView: some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text(NSLocalizedString("Select gift card provider", comment: "DashSpend"))
+            Text(String(localized: "Select gift card provider", comment: "DashSpend"))
                 .font(.caption)
                 .foregroundColor(.dash.secondaryText)
                 .padding(.horizontal, 16)
@@ -368,11 +368,11 @@ struct POIDetailsView: View {
         // Check provider-specific availability
         // For CTX provider, check if merchant is enabled
         if provider == .ctx && !viewModel.merchantEnabled {
-            return NSLocalizedString("Temporarily unavailable", comment: "DashSpend")
+            return String(localized: "Temporarily unavailable", comment: "DashSpend")
         }
 
         // For other providers or when merchant is enabled, show denomination type
-        return isFixed ? NSLocalizedString("Fixed amounts", comment: "DashSpend") : NSLocalizedString("Flexible amounts", comment: "DashSpend")
+        return isFixed ? String(localized: "Fixed amounts", comment: "DashSpend") : String(localized: "Flexible amounts", comment: "DashSpend")
     }
 
     // MARK: - Country Restriction View
@@ -380,7 +380,7 @@ struct POIDetailsView: View {
     @ViewBuilder
     private var countryRestrictionView: some View {
         if case .merchant(let m) = merchant.category, m.paymentMethod == .giftCard {
-            Text(NSLocalizedString("This card works only in the United States.", comment: "DashSpend"))
+            Text(String(localized: "This card works only in the United States.", comment: "DashSpend"))
                 .font(.system(size: 13))
                 .foregroundColor(.dash.secondaryText)
                 .multilineTextAlignment(.center)
@@ -421,7 +421,7 @@ struct POIDetailsView: View {
                         viewModel.logout(provider: selectedProvider)
                     }
                 }) {
-                    Text(NSLocalizedString("Log Out", comment: "Log out button"))
+                    Text(String(localized: "Log Out", comment: "Log out button"))
                         .font(.system(size: 13))
                         .foregroundColor(.dash.secondaryText)
                         .underline()
@@ -449,9 +449,9 @@ struct POIDetailsView: View {
     
     private var buttonTitle: String {
         if case .merchant(let m) = merchant.category, m.paymentMethod == .giftCard {
-            return NSLocalizedString("Buy a Gift Card", comment: "")
+            return String(localized: "Buy a Gift Card", comment: "")
         } else {
-            return NSLocalizedString("Pay with Dash", comment: "")
+            return String(localized: "Pay with Dash", comment: "")
         }
     }
     
@@ -485,9 +485,9 @@ struct POIDetailsView: View {
         let providerName = viewModel.selectedProvider?.displayName ?? ""
         if let email = viewModel.userEmail, !email.isEmpty {
             let maskedEmail = maskEmail(email)
-            return "\(providerName): " + String.localizedStringWithFormat(NSLocalizedString("Logged in as %@", comment: ""), maskedEmail)
+            return "\(providerName): " + String(localized: "Logged in as \(maskedEmail)", comment: "")
         } else {
-            return "\(providerName): " + NSLocalizedString("Logged in", comment: "")
+            return "\(providerName): " + String(localized: "Logged in", comment: "")
         }
     }
     
@@ -551,7 +551,7 @@ struct POIDetailsView: View {
     private var atmButtonsView: some View {
         HStack(spacing: 5) {
             DashButton(
-                text: NSLocalizedString("Buy Dash", comment: ""),
+                text: String(localized: "Buy Dash", comment: ""),
                 style: .filled,
                 size: .large,
                 action: payAction
@@ -561,7 +561,7 @@ struct POIDetailsView: View {
             if case .atm(let atm) = merchant.category, 
                atm.type == .buySell || atm.type == .sell {
                 DashButton(
-                    text: NSLocalizedString("Sell Dash", comment: ""),
+                    text: String(localized: "Sell Dash", comment: ""),
                     style: .filled,
                     size: .large,
                     action: { sellDashHandler?() }

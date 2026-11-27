@@ -66,8 +66,8 @@ class ExploreContentsView: UIView {
         if isTestnet {
             let getTestDashItem = createItem(
                 image: UIImage(named: "dashCurrency"),
-                title: NSLocalizedString("Get Test Dash", comment: ""),
-                subtitle: NSLocalizedString("Test Dash is free and can be obtained from what is called a faucet.", comment: "")
+                title: String(localized: "Get Test Dash", comment: ""),
+                subtitle: String(localized: "Test Dash is free and can be obtained from what is called a faucet.", comment: "")
             ) { [weak self] in
                 self?.getTestDashHandler?()
             }
@@ -76,8 +76,8 @@ class ExploreContentsView: UIView {
         
         let merchantsItem = createItem(
             image: UIImage(named: "image.explore.dash.wheretospend"),
-            title: NSLocalizedString("Where to Spend?", comment: ""),
-            subtitle: NSLocalizedString("Find merchants that accept Dash payments.", comment: "")
+            title: String(localized: "Where to Spend?", comment: ""),
+            subtitle: String(localized: "Find merchants that accept Dash payments.", comment: "")
         ) { [weak self] in
             self?.whereToSpendHandler?()
         }
@@ -85,8 +85,8 @@ class ExploreContentsView: UIView {
         
         let atmItem = createItem(
             image: UIImage(named: "image.explore.dash.atm"),
-            title: NSLocalizedString("ATMs", comment: ""),
-            subtitle: NSLocalizedString("Find ATMs where you can buy or sell Dash.", comment: "")
+            title: String(localized: "ATMs", comment: ""),
+            subtitle: String(localized: "Find ATMs where you can buy or sell Dash.", comment: "")
         ) { [weak self] in
             self?.atmHandler?()
         }

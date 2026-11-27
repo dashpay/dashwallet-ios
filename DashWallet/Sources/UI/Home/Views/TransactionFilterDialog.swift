@@ -22,19 +22,19 @@ struct TransactionFilterDialog: View {
 
     private var filterOptions: [FilterOption] {
         var options = [
-            FilterOption(category: .sent, title: NSLocalizedString("Sent", comment: ""), icon: .custom("tx.item.sent.icon")),
-            FilterOption(category: .received, title: NSLocalizedString("Received", comment: ""), icon: .custom("tx.item.received.icon"))
+            FilterOption(category: .sent, title: String(localized: "Sent", comment: ""), icon: .custom("tx.item.sent.icon")),
+            FilterOption(category: .received, title: String(localized: "Received", comment: ""), icon: .custom("tx.item.received.icon"))
         ]
         if showRewards {
-            options.append(FilterOption(category: .rewards, title: NSLocalizedString("Rewards", comment: "Transaction filter"), icon: .system("trophy")))
+            options.append(FilterOption(category: .rewards, title: String(localized: "Rewards", comment: "Transaction filter"), icon: .system("trophy")))
         }
         if showMasternode {
-            options.append(FilterOption(category: .masternode, title: NSLocalizedString("Masternode", comment: "Transaction filter"), icon: .system("server.rack")))
+            options.append(FilterOption(category: .masternode, title: String(localized: "Masternode", comment: "Transaction filter"), icon: .system("server.rack")))
         }
         options.append(contentsOf: [
-            FilterOption(category: .giftCard, title: NSLocalizedString("Gift card", comment: ""), icon: .custom("image.dashspend.giftcard")),
-            FilterOption(category: .shieldedSent, title: NSLocalizedString("Shielded sent", comment: "Transaction filter"), icon: .system("shield.fill")),
-            FilterOption(category: .shieldedReceived, title: NSLocalizedString("Shielded received", comment: "Transaction filter"), icon: .system("shield"))
+            FilterOption(category: .giftCard, title: String(localized: "Gift card", comment: ""), icon: .custom("image.dashspend.giftcard")),
+            FilterOption(category: .shieldedSent, title: String(localized: "Shielded sent", comment: "Transaction filter"), icon: .system("shield.fill")),
+            FilterOption(category: .shieldedReceived, title: String(localized: "Shielded received", comment: "Transaction filter"), icon: .system("shield"))
         ])
         return options
     }
@@ -49,12 +49,12 @@ struct TransactionFilterDialog: View {
 
     var body: some View {
         DashUIKit.BottomSheet(
-            title: NSLocalizedString("Filter transactions", comment: ""),
+            title: String(localized: "Filter transactions", comment: ""),
             showBackButton: .constant(false)
         ) {
             VStack(spacing: 4) {
                 FilterCheckboxRow(
-                    title: NSLocalizedString("All", comment: ""),
+                    title: String(localized: "All", comment: ""),
                     icon: .custom("image.filter.options"),
                     isChecked: allChecked,
                     onToggle: {
@@ -122,7 +122,7 @@ private struct FilterCheckboxRow: View {
 
                 if let onOnly = onOnly {
                     Button(action: onOnly) {
-                        Text(NSLocalizedString("Only", comment: "Transaction filter"))
+                        Text(String(localized: "Only", comment: "Transaction filter"))
                             .font(.subhead)
                             .fontWeight(.medium)
                             .foregroundColor(.dash.blue)
