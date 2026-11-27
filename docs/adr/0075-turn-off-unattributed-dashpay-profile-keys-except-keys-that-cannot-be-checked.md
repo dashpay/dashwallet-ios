@@ -2,7 +2,7 @@
 
 - **Status:** Proposed
 - **Date:** 2026-11-23
-- **Deciders:** romchornyi (ADR author); the product owner's decision from ADR-0031 (no profile key left on that no connection accounts for) is carried over unchanged
+- **Deciders:** romchornyi (ADR author); the product owner's decision from ADR-0031 (no profile key left on that no connection accounts for) is carried over. The exceptions below record what the code does; they are not part of that decision
 
 ## Context
 
@@ -49,8 +49,13 @@ accounts for is access nobody can see or end otherwise.
 - A disconnect of an app on the active identity also disables the live DashPay profile keys of
   that identity that no recorded intent names, in the shape App Connect registers
   (`AppConnect.isAppConnectAuthKey`: HASH160 authentication at HIGH or CRITICAL, with an expiry).
-  A profile-bound key of another shape is not one App Connect gave: it is left on and not
-  reported.
+  A profile-bound key of another shape is not one this wallet's App Connect gives
+  ([ADR-0009](0009-answer-app-connect-request-v2-with-wallet-derived-keys-under-wallet-limits.md)):
+  it is left on and not reported.
+- The disconnect plans its writes from the read after the PIN. A profile key that lands after
+  that read (another device approving during the disconnect) is not in the plan and stays on.
+  When the read after the writes sees it, the result counts it as still live and the alert says
+  not every key was turned off. The next disconnect on the identity plans it.
 - An open intent of the app on another identity of the wallet does not hold the profile keys
   back. After the writes, the result counts the keys still live and the fences missing, from the
   read after the writes or, when that read fails, from what the submission reported. With neither
@@ -75,8 +80,10 @@ accounts for is access nobody can see or end otherwise.
 
 **Positive**
 - Once any app on the active identity is disconnected, no profile key in App Connect's shape is
-  left on that no connection accounts for, except a key whose bound the wallet cannot read yet:
-  that one is left on and counted as not checked. When the disconnect returns its result, the
+  left on that no connection accounts for, with two exceptions. A key whose bound the wallet
+  cannot read yet is left on and counted as not checked. A key that landed after the disconnect's
+  read is left on until the next disconnect on the identity, and is counted as still live when the
+  read after the writes sees it. When the disconnect returns its result, the
   alert says some keys were left on; when it ends with `grantOnAnotherIdentity`, the user sees
   that error instead and not the count.
 - No second question: the disconnect the user confirmed is the whole decision.
@@ -85,6 +92,8 @@ accounts for is access nobody can see or end otherwise.
 - A profile key another app, or another device of the same wallet, still uses is turned off too;
   that app has to ask again.
 - It differs from the Android wallet, which only reports such keys.
+- A profile key another wallet gave in another shape (for example without an expiry) is not
+  covered: it is left on and not reported.
 - Only the active identity is covered; profile keys on another identity of the wallet stay on
   until a disconnect runs while that identity is active.
 

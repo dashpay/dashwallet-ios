@@ -40,7 +40,7 @@ from is wrong. The review of #1447 found it.
 **Chosen:** option 1. A failed lookup writes nothing, so it has no write point to ask; the note
 it gives is decided by the same pure predicate with the same block time the write point uses.
 
-- `markResponseRemoved` remains the only code that sets `responseRemoved`, and it refuses while
+- `markResponseRemoved` remains the only code that sets `responseRemoved` to `true`, and it refuses while
   the publish is unresolved.
 - After a lookup that found no response, and after a failed delete whose lookup shows none,
   callers report the write point's `.kept`.

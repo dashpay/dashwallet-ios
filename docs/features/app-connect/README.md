@@ -37,9 +37,12 @@ one-scan login possible, and with it DashConnect on mainnet once mainnet runs pr
   turned off with it, without a question
   ([ADR-0016](../../adr/0016-turn-off-unrecorded-keys-on-disconnect-without-asking.md), which
   supersedes the confirmation in
-  [ADR-0031](../../adr/0031-turn-off-unattributed-dashpay-profile-keys-with-any-disconnect.md)),
+  [ADR-0033](../../adr/0033-turn-off-only-the-unrecorded-keys-the-question-listed.md); for the
+  profile keys
+  [ADR-0075](../../adr/0075-turn-off-unattributed-dashpay-profile-keys-except-keys-that-cannot-be-checked.md)),
   and the result says how many there were. Keys it could not check, keys another app of the same
-  owner may hold, and keys still live after a failed write are left on and named in the result; a
+  owner may hold, keys still live after a failed write, and keys that landed after the
+  disconnect's read and that the read after the writes sees are left on and named in the result; a
   failure keeps the row and Disconnect can run again.
 - **DashConnect on mainnet.** The Connections page uses the real data source on every network. A
   request on a network below protocol 14 is refused; on mainnet a `dash-key:` v2 code is refused and
