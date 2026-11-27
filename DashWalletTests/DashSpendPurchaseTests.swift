@@ -143,6 +143,13 @@ private final class StubPurchaseRecorder: GiftCardPurchaseRecording {
     }
 }
 
+/// The pay view model with the network taken as reachable, so the message it shows does not
+/// depend on the reachability of the machine the tests run on.
+@MainActor
+private final class OnlineDashSpendPayViewModel: DashSpendPayViewModel {
+    override var isNetworkAvailable: Bool { true }
+}
+
 /// The stores the production purchase recorder writes to, kept in memory.
 private final class StubTransactionMetadataDAO: TransactionMetadataDAO {
     func create(dto: TransactionMetadata) {}
@@ -253,7 +260,7 @@ final class DashSpendPurchaseTests: XCTestCase {
         let retrievedAt = Int(Date().timeIntervalSince1970)
         let dependencies = DashSpendPayViewModel.Dependencies(
             ctx: ctx, piggyCards: piggyCards, payments: payments, purchases: recorder)
-        let viewModel = DashSpendPayViewModel(
+        let viewModel = OnlineDashSpendPayViewModel(
             merchant: merchant, provider: .ctx,
             exchangeRate: { currency in
                 onRate(currency)
@@ -510,9 +517,10 @@ final class DashSpendPurchaseTests: XCTestCase {
         XCTAssertEqual(payments.urlPayments.count, 1)
     }
 
-    /// "10.50" typed while the first load still showed dollars is not an amount of yen, and
-    /// yen has no decimal key to edit it with.
-    func testAnotherCurrencyResetsTheTextTypedSoFar() async {
+    /// Clearing the selection sets `selectedDenomination`, whose observer puts the typed text
+    /// back to "0". A currency change relies on that: "10.50" typed while the first load
+    /// still showed dollars is not an amount of yen, and yen has no decimal key to edit it.
+    func testClearingTheSelectionForAnotherCurrencyResetsTheTypedText() async {
         let viewModel = ctxViewModel()
         let separator = Locale.current.decimalSeparator ?? "."
         viewModel.input = "10\(separator)50"
@@ -533,9 +541,9 @@ final class DashSpendPurchaseTests: XCTestCase {
     /// shows no currency, and typing during it does not clear the message.
     func testARetryShowsNoCurrencyAndKeepsItsMessage() async {
         let viewModel = ctxViewModel()
-        XCTAssertEqual(viewModel.currencySymbol, "$")
+        XCTAssertEqual(viewModel.currencySymbol, GiftCardCurrency.symbol(for: "USD"))
         await viewModel.updateMerchantInfo()
-        XCTAssertNotNil(viewModel.error)
+        XCTAssertEqual(viewModel.error as? GiftCardPurchaseBlock, .currencyUnconfirmed)
 
         ctx.holdsMerchantCalls = true
         let retry = Task { await viewModel.updateMerchantInfo() }
@@ -545,13 +553,13 @@ final class DashSpendPurchaseTests: XCTestCase {
         XCTAssertNil(viewModel.cardCurrency)
         XCTAssertEqual(viewModel.currencySymbol, "")
         viewModel.input = "7"
-        XCTAssertNotNil(viewModel.error)
+        XCTAssertEqual(viewModel.error as? GiftCardPurchaseBlock, .currencyUnconfirmed)
         XCTAssertThrowsError(try viewModel.beginPurchase(price: 7))
 
         ctx.answerMerchantCall(0, with: StubCTXRepository.merchantJSON(currency: "USD"))
         await retry.value
         XCTAssertEqual(viewModel.cardCurrency, "USD")
-        XCTAssertEqual(viewModel.currencySymbol, "$")
+        XCTAssertEqual(viewModel.currencySymbol, GiftCardCurrency.symbol(for: "USD"))
     }
 
     /// Confirm orders what the sheet shows. A selection that changes behind an open

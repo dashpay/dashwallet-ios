@@ -1168,8 +1168,6 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
     /// they were chosen in another currency or for another kind of merchant.
     private func clearSelection() {
         selectedDenomination = nil
-        // The text typed so far may not be an amount of the new currency: "10.50" for yen.
-        input = "0"
         basketSavingsFraction = nil
         selectionResets += 1
         if case .confirm = purchaseSheet {
