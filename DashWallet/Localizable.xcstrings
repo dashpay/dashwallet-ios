@@ -526,15 +526,6 @@
         }
       }
     },
-    "People who pay to it can be linked to each other." : {
-      "comment" : "External send"
-    },
-    "Preparing a new address…" : {
-      "comment" : "External send"
-    },
-    "This is your permanent shielded address." : {
-      "comment" : "External send"
-    },
     "—" : {
 
     },
@@ -381356,6 +381347,9 @@
         }
       }
     },
+    "People who pay to it can be linked to each other." : {
+      "comment" : "Receive: shielded fallback warning subtitle"
+    },
     "Per-Phase Progress" : {
       "comment" : "SPV diagnostics",
       "localizations" : {
@@ -398440,6 +398434,9 @@
           }
         }
       }
+    },
+    "Preparing a new address…" : {
+      "comment" : "Receive: shielded address being derived"
     },
     "Preparing logs…" : {
       "comment" : "Log export progress",
@@ -575786,6 +575783,9 @@
           }
         }
       }
+    },
+    "This is your permanent shielded address." : {
+      "comment" : "Receive: shielded fallback warning title"
     },
     "This isn't a DashPay user QR code." : {
       "comment" : "DashPay Contacts: scanned QR is a payment/invitation/foreign code",
