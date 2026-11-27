@@ -34,7 +34,6 @@ with tempfile.TemporaryDirectory(prefix="identity-top-up-compatibility-") as dir
         "    func canTopUp(",
         "    func topUp(",
         "    enum TopUpError: LocalizedError {",
-        "    private func topUpFromShielded(",
     ))
     scaffold = (repository / "scripts/fixtures/IdentityTopUpCompatibilityHarness.swift").read_text()
     scaffold = scaffold.replace("    // PRODUCTION_FUNDING_SOURCE", declaration("    enum FundingSource:"))
@@ -49,7 +48,8 @@ with tempfile.TemporaryDirectory(prefix="identity-top-up-compatibility-") as dir
             "    static func estimatedFee(", "    static func balancedChunks<T>(")))
     sentinel = "    // PRODUCTION_TOP_UP"
     assert scaffold.count(sentinel) == 1
-    (source / "IdentityTopUpHarness.swift").write_text(scaffold.replace(sentinel, methods))
+    (source / "IdentityTopUpHarness.swift").write_text(
+        scaffold.replace(sentinel, methods) + "\n@MainActor\n" + declaration("struct IdentityCreditsTopUp {") + "\n")
     (tests / "IdentityTopUpCompatibilityTests.swift").symlink_to(
         repository / "scripts/fixtures/IdentityTopUpCompatibilityTests.swift")
     (package / "Package.swift").write_text("""// swift-tools-version: 5.9

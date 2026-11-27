@@ -694,6 +694,8 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
               let network = runningNetwork
         else { throw SendError.coordinatorNotReady }
 
+        // Another network's address is refused before anything is built.
+        try Self.requireExternalDestination(destination, on: network)
         guard let recipient = Self.parsePlatformRecipient(bech32m: destination)
         else { throw SendError.invalidDestination }
         // FFI's `PlatformAddressFFI → PlatformAddress` conversion in
@@ -728,6 +730,30 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         applyUpdatedBalances(updated, context: context)
 
         Task { await self.syncNow() }
+    }
+
+    /// The credits `transfer` can draw on: every funded row of the account
+    /// it selects (`highestBalanceAccountIndex`), not the wallet's aggregate.
+    public func transferAccountCredits() throws -> UInt64 {
+        guard isRunning, let container = modelContainer, let walletId = wallet?.walletId
+        else { throw SendError.coordinatorNotReady }
+        let context = container.mainContext
+        let accountIndex = try highestBalanceAccountIndex(context: context, walletId: walletId)
+        let rows = try context.fetch(FetchDescriptor<PersistentPlatformAddress>(
+            predicate: #Predicate<PersistentPlatformAddress> { $0.walletId == walletId }))
+        return rows.reduce(UInt64(0)) { total, row in
+            guard row.accountIndex == accountIndex else { return total }
+            let (sum, overflow) = total.addingReportingOverflow(row.balance)
+            return overflow ? .max : sum
+        }
+    }
+
+    /// The credits of the one row a partial `withdrawToCore` spends (the
+    /// highest-balance funded address), before the fee it holds back.
+    public func withdrawalRowCredits() throws -> UInt64 {
+        guard isRunning, let container = modelContainer, let walletId = wallet?.walletId
+        else { throw SendError.coordinatorNotReady }
+        return try highestBalanceRow(context: container.mainContext, walletId: walletId).balance
     }
 
     /// Account index holding the highest-balance Platform address — the
@@ -1939,6 +1965,14 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
             return nil
         }
         return PlatformRecipient(ffiAddressType: isScript ? 1 : 0, hash: hash)
+    }
+
+    /// Throws `invalidDestination` unless the bech32m HRP of `destination` names `network` (`dash` on mainnet,
+    /// `tdash` on any other network), so `transfer` never pays another network's address.
+    static func requireExternalDestination(_ destination: String, on network: Network) throws {
+        guard DashAddressClassifier.decodeBech32m(destination)?.isMainnet == (network == .mainnet) else {
+            throw SendError.invalidDestination
+        }
     }
 
     static func resolveCoreToPlatformAddressPair(

@@ -536888,6 +536888,9 @@
         }
       }
     },
+    "The merchant received your payment, so it may still complete. Check your transactions before you pay again." : {
+      "comment" : "BIP70 payment error: the merchant acknowledged the payment, the wallet did not finish it"
+    },
     "The minimum amount you can send is %@" : {
       "comment" : "Coinbase",
       "localizations" : {
@@ -543229,6 +543232,9 @@
       }
     },
     "The payment request has expired. Your funds were not sent." : {
+      "comment" : "External send"
+    },
+    "The payment request has no address" : {
       "comment" : "External send"
     },
     "The payment request is missing a payment URL." : {
@@ -699711,6 +699717,9 @@
           }
         }
       }
+    },
+    "Your balance changed. Check the amount and try again. Your funds were not sent." : {
+      "comment" : "External send"
     },
     "Your coins are combined, but the network fee leaves too little for this amount. Try a smaller amount." : {
       "comment" : "Asset-lock input limit",
