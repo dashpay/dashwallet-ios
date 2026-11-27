@@ -329,7 +329,7 @@ struct DiagnosticLogExporter {
                 "  \(record.outPointHex)\(outPointNote)  "
                     + "type=\(record.fundingTypeRaw) (\(fundingTypeName(record.fundingTypeRaw)))  "
                     + "status=\(record.statusRaw) (\(assetLockStatusName(record.statusRaw)))  "
-                    + "amount=\(record.amountDuffs) duffs")
+                    + "amount=\(AppLogMessage.redacted)")
             lines.append(
                 "      created=\(iso.string(from: record.createdAt)) "
                     + "updated=\(iso.string(from: record.updatedAt))")

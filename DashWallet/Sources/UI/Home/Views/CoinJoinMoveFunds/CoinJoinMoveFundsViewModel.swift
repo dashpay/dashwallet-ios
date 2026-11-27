@@ -380,7 +380,7 @@ final class CoinJoinMoveFundsViewModel: ObservableObject {
         }
 
         var description: String {
-            "CoinJoin UTXOs n=\(state?.count ?? -1) final=\(state?.finalCount ?? -1) total=\(state?.totalDuffs ?? 0) duffs, "
+            "CoinJoin UTXOs n=\(state?.count ?? -1) final=\(state?.finalCount ?? -1), "
                 + "plan=\(step.map { String(describing: $0) } ?? "unknown")"
         }
     }
@@ -714,7 +714,7 @@ final class CoinJoinMoveFundsViewModel: ObservableObject {
         String(localized: "Couldn't move your CoinJoin funds. Please try again.", comment: "CoinJoin")
     }
 
-    /// Exported-log line (DWLogger reaches "Share logs"; os.Logger does not).
+    /// Exported-log line.
     private static func log(_ message: String) {
         DWLogger.log("🛡️ COINJOIN-SHIELD :: \(message)", className: "CoinJoinMoveFundsViewModel")
     }

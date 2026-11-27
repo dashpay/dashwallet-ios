@@ -423,9 +423,9 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
 
     /// The buyer's answer on the "Price updated" sheet.
     func resolvePriceChange(pay: Bool) {
-        guard case .priceUpdated(let change) = purchaseSheet else { return }
+        guard case .priceUpdated = purchaseSheet else { return }
         if pay {
-            DWLogger.log("Gift card price change accepted: paying \(change.requestedAmount) duffs, confirmed \(change.confirmedAmount)")
+            DWLogger.log("Gift card price change accepted")
         }
         purchaseSheet = nil
         priceDecision?.resume(returning: pay)
@@ -467,7 +467,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
             guard purchaseSheet != nil else { return }
             purchaseSheet = nil
         case .higher(let change):
-            DWLogger.log("Gift card price changed: requested \(requested) duffs, confirmed \(approval.amount)")
+            DWLogger.log("Gift card price changed: the provider asks more than the confirmed amount")
             purchaseSheet = .priceUpdated(change)
             let shownAt = now()
             let pay = await withCheckedContinuation { priceDecision = $0 }
@@ -996,7 +996,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
         let roundedAmount = NSDecimalNumber(decimal: cardValue)
         let fiatAmountString = formatter.string(from: roundedAmount) ?? "0.00"
 
-        DWLogger.log("Attempting to purchase gift card for merchant \(merchantId) with amount \(cardValue)")
+        DWLogger.log("Attempting to purchase gift card for merchant \(merchantId)")
 
         do {
             let response = try await dependencies.ctx.purchaseGiftCard(

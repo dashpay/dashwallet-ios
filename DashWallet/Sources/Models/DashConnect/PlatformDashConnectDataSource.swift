@@ -19,7 +19,7 @@
 
 import Combine
 import Foundation
-import OSLog
+import os
 import Security
 import SwiftData
 import SwiftDashSDK
@@ -38,7 +38,6 @@ enum DashConnectPlatformError: LocalizedError, Equatable {
     case authorizationCancelled
     case authorizationFailed
     case randomGenerationFailed(OSStatus)
-    case noAuthenticationKey
     case existingDocumentLookupFailed
     case tokenPurchaseWrongIdentity
     case tokenPurchaseTokenIdMismatch
@@ -108,8 +107,6 @@ enum DashConnectPlatformError: LocalizedError, Equatable {
                     localized: "Failed to generate secure random bytes for DashConnect (%d).",
                     comment: "DashConnect: the placeholder is a system status code"),
                 status)
-        case .noAuthenticationKey:
-            return String(localized: "No enabled AUTHENTICATION ECDSA key is available for this identity.", comment: "DashConnect")
         case .existingDocumentLookupFailed:
             return String(localized: "The loginKeyResponse document on Platform could not be read.", comment: "DashConnect")
         case .ephemeralKeyGenerationFailed:
@@ -311,14 +308,6 @@ protocol DashConnectPlatformPort: Sendable {
 }
 
 final class PlatformDashConnectDataSource: DashConnectDataSource {
-    struct DocumentSigningKeyCandidate: Equatable {
-        let keyId: UInt32
-        let purpose: KeyPurpose
-        let securityLevel: SecurityLevel
-        let keyType: KeyType
-        let disabledAt: Int64?
-    }
-
     private struct Context {
         let wallet: ManagedPlatformWallet
         let sdk: SDK
@@ -382,9 +371,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         }
     }
 
-    private static let logger = Logger(
-        subsystem: "org.dashfoundation.dash",
-        category: "dashconnect.platform-data-source")
+    private static let logger = AppLogger(category: "dashconnect.platform-data-source")
 
     static let loginKeyExchangeDocumentType = "loginKeyResponse"
 
@@ -2711,7 +2698,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             let contract = try await sdk.dataContractGetOffMain(id: id)
             guard let tokens = contract["tokens"] as? [String: Any],
                   let tokenDict = tokens[String(position)] as? [String: Any] else {
-                logger.info("🔗 DASHCONNECT :: token purchase: contract \(id, privacy: .public) has no token at position \(position, privacy: .public); quantity shown as base units")
+                logger.info("🔗 DASHCONNECT :: token purchase: the contract has no token at the requested position; quantity shown as base units")
                 return nil
             }
             // `conventions.decimals` wins where both are present — the same
@@ -2719,7 +2706,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             // when it writes the persisted row.
             let conventions = tokenDict["conventions"] as? [String: Any]
             guard let decimals = (conventions?["decimals"] as? Int) ?? (tokenDict["decimals"] as? Int) else {
-                logger.info("🔗 DASHCONNECT :: token purchase: contract \(id, privacy: .public) declares no decimals; quantity shown as base units")
+                logger.info("🔗 DASHCONNECT :: token purchase: the token declares no decimals; quantity shown as base units")
                 return nil
             }
             let name = (tokenDict["name"] as? String)
@@ -2728,7 +2715,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             return (decimals, name)
         } catch {
             let reason = AppConnectWriteExecutor.logDescription(of: error)
-            logger.error("🔗 DASHCONNECT :: token purchase: contract fetch failed for \(id, privacy: .public): \(reason, privacy: .public); quantity shown as base units")
+            logger.error("🔗 DASHCONNECT :: token purchase: contract fetch failed: \(reason, privacy: .public); quantity shown as base units")
             return nil
         }
     }
@@ -3820,7 +3807,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                 return label
             }
         } catch {
-            Self.logger.error("🔗 DASHCONNECT :: app metadata resolution failed for \(contractId, privacy: .public): \(AppConnectWriteExecutor.logDescription(of: error), privacy: .public)")
+            Self.logger.error("🔗 DASHCONNECT :: app metadata resolution failed: \(AppConnectWriteExecutor.logDescription(of: error), privacy: .public)")
         }
 
         return nil
@@ -3843,62 +3830,6 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         }
 
         return (context.storedUsername, false)
-    }
-
-    private func selectDocumentSigningKeyId(
-        wallet: ManagedPlatformWallet,
-        identityId: Data
-    ) throws -> UInt32 {
-        let keys = try wallet.managedIdentity(identityId: identityId)
-            .getPublicKeys()
-            .map {
-                DocumentSigningKeyCandidate(
-                    keyId: UInt32(bitPattern: $0.keyId),
-                    purpose: $0.purpose,
-                    securityLevel: $0.securityLevel,
-                    keyType: $0.keyType,
-                    disabledAt: $0.disabledAt
-                )
-            }
-
-        return try Self.selectDocumentSigningKeyId(from: keys)
-    }
-
-    static func selectDocumentSigningKeyId(
-        from keys: [DocumentSigningKeyCandidate]
-    ) throws -> UInt32 {
-        let eligible = keys
-            .filter {
-                $0.disabledAt == nil
-                    && $0.purpose == .authentication
-                    && $0.keyType == .ecdsaSecp256k1
-                    && ($0.securityLevel == .high || $0.securityLevel == .critical)
-            }
-            .sorted {
-                let lhsPriority = signingPriority(for: $0.securityLevel)
-                let rhsPriority = signingPriority(for: $1.securityLevel)
-                if lhsPriority != rhsPriority {
-                    return lhsPriority < rhsPriority
-                }
-                return $0.keyId < $1.keyId
-            }
-
-        guard let key = eligible.first else {
-            throw DashConnectPlatformError.noAuthenticationKey
-        }
-
-        return key.keyId
-    }
-
-    private static func signingPriority(for securityLevel: SecurityLevel) -> Int {
-        switch securityLevel {
-        case .high:
-            return 0
-        case .critical:
-            return 1
-        case .master, .medium:
-            return 2
-        }
     }
 
     /// A random 32-byte value is a valid secp256k1 scalar with overwhelming
