@@ -51,6 +51,9 @@ where they disagree, ADR-0001 wins.
 | [0043](0043-bind-the-fee-where-the-sdk-can-and-mark-the-rest-as-an-estimate.md) | Bind the fee where the SDK can and mark the rest as an estimate | payments | Proposed | |
 | [0044](0044-top-up-an-identity-from-shielded-in-one-step.md) | Top up an identity from Shielded in one step | payments | Proposed | |
 | [0045](0045-add-an-external-identity-top-up-and-a-non-blocking-identity-read-to-the-sdk.md) | Add an external-identity top-up and a non-blocking identity read to the SDK | platform | Proposed | |
+| [0046](0046-build-fresh-shielded-addresses-across-the-app-and-swiftdashsdk.md) | Build fresh shielded addresses across the app and SwiftDashSDK | platform | Proposed | |
+| [0047](0047-draw-the-random-diversifier-index-inside-the-sdk.md) | Draw the random diversifier index inside the SDK | keys | Proposed | |
+| [0048](0048-recognise-own-shielded-recipients-through-an-sdk-predicate.md) | Recognise own shielded recipients through an SDK predicate | payments | Proposed | |
 | [0049](0049-record-the-publish-start-on-the-connection-intent.md) | Record the publish start on the connection intent | platform | Accepted | |
 | [0050](0050-bound-an-unresolved-publish-by-48-hours-of-proved-platform-block-time.md) | Bound an unresolved publish by 48 hours of proved Platform block time | platform | Accepted | |
 | [0052](0052-refuse-response-removed-at-its-one-write-point-while-the-publish-is-unresolved.md) | Refuse "response removed" at its one write point while the publish is unresolved | platform | Accepted | |

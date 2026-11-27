@@ -526,6 +526,15 @@
         }
       }
     },
+    "People who pay to it can be linked to each other." : {
+      "comment" : "External send"
+    },
+    "Preparing a new address…" : {
+      "comment" : "External send"
+    },
+    "This is your permanent shielded address." : {
+      "comment" : "External send"
+    },
     "—" : {
 
     },
