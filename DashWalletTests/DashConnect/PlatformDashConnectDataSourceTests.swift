@@ -1200,6 +1200,32 @@ final class ConnectionsViewModelPurchaseTests: XCTestCase {
         XCTAssertEqual(viewModel.approveError, DashConnectPlatformError.loginUnresolved.localizedDescription)
     }
 
+    /// A link that comes while a failed approval rebuilds the sheet is
+    /// refused onto it; the rebuilt sheet then shows, not that refusal.
+    func testARebuiltSheetSupersedesARefusalThatCameDuringTheRebuild() async {
+        let shown = Self.consent(identityId: "identity-a")
+        var unresolved = shown
+        unresolved.login = .unresolved
+        unresolved.unresolvedLoginReason = "no nodes"
+        let spy = LoginApprovalSpy(shown: [shown, unresolved])
+        spy.approveFailures = [DashConnectPlatformError.loginUnresolved]
+        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
+        viewModel.onQRScanned("login")
+        await waitUntil { viewModel.pendingRequest != nil }
+        spy.holdsRebuild = true
+
+        viewModel.approvePendingRequest()
+        await waitUntil { spy.isRebuildSuspended }
+        viewModel.onURIReceived("second")
+        XCTAssertEqual(viewModel.anotherRequestNote, ConnectionsViewModel.anotherRequestArrivedText)
+
+        spy.releaseRebuild()
+        await waitUntil { !viewModel.isApproving }
+        XCTAssertEqual(viewModel.pendingRequest, unresolved)
+        XCTAssertNil(viewModel.approveError, "the sheet states the unresolved login itself")
+        XCTAssertNil(viewModel.anotherRequestNote)
+    }
+
     private static func consent(identityId: String) -> ConnectionRequest {
         ConnectionRequest(
             loginRequest: MockDashConnectDataSource.sampleLoginRequest,
@@ -7270,6 +7296,35 @@ final class ConnectionsViewModelTermsTests: XCTestCase {
         await waitUntil { !viewModel.isApproving }
         XCTAssertNil(viewModel.anotherRequestNote)
         XCTAssertNotNil(viewModel.pendingRequest)
+    }
+
+    /// Picking a funding limit is acting on the request on screen: the
+    /// refusal of another request goes, and the sheet's own state shows.
+    func testAFundingLimitSetSupersedesTheRefusalOfAnotherRequest() async throws {
+        let spy = LoginApprovalSpy(shown: [Self.request(platformTimeMs: Self.platformNow, expiresAt: Self.platformNow + 3_600_000)])
+        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false, now: { Self.phone })
+        viewModel.onQRScanned("login")
+        await waitUntil { viewModel.pendingRequest != nil }
+        viewModel.onURIReceived("second")
+        XCTAssertNotNil(viewModel.anotherRequestNote)
+
+        let preset = try XCTUnwrap(viewModel.fundingPresets.last?.credits)
+        XCTAssertTrue(viewModel.setFundingLimit(preset))
+        XCTAssertNil(viewModel.anotherRequestNote)
+    }
+
+    /// The same for an expiry: after Platform refused the old one, the
+    /// refusal of another request does not stay over the new choice.
+    func testAnExpirySetSupersedesTheRefusalOfAnotherRequest() async {
+        let spy = LoginApprovalSpy(shown: [Self.request(platformTimeMs: Self.platformNow, expiresAt: Self.platformNow + 3_600_000)])
+        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false, now: { Self.phone })
+        viewModel.onQRScanned("login")
+        await waitUntil { viewModel.pendingRequest != nil }
+        viewModel.onURIReceived("second")
+        XCTAssertNotNil(viewModel.anotherRequestNote)
+
+        XCTAssertTrue(viewModel.setExpiry(days: 30))
+        XCTAssertNil(viewModel.anotherRequestNote)
     }
 
     /// The approval and its terms sheets hide their header close while the

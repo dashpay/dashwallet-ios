@@ -1184,8 +1184,10 @@ final class ConnectionsViewModel: ObservableObject {
               let plan = pendingRequest?.login.grantPlan,
               AppConnect.keyBudgets(for: plan, limit: credits) != nil else { return false }
         approvalTerms?.fundingLimit = credits
-        // A note on the terms before is out of date.
+        // A note on the terms before is out of date, and so is the refusal
+        // of another request: the user acts on the request on screen.
         if approveErrorSubject == .terms { approveError = nil }
+        anotherRequestNote = nil
         return true
     }
 
@@ -1285,8 +1287,10 @@ final class ConnectionsViewModel: ObservableObject {
             return false
         }
         approvalTerms?.expiresAt = expiresAt
-        // A note on the terms before is out of date.
+        // A note on the terms before is out of date, and so is the refusal
+        // of another request: the user acts on the request on screen.
         if approveErrorSubject == .terms { approveError = nil }
+        anotherRequestNote = nil
         return true
     }
 
