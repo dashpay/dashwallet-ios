@@ -365,7 +365,16 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
     }
 
     /// Close the request sheet, if one is up, then pop back to the landing.
+    ///
+    /// A push or presentation still running is waited out first: UIKit drops a
+    /// pop or dismissal sent during one, and nothing would send it again.
     private func leaveReceiveStep() {
+        if let transition = requestAmountController?.transitionCoordinator ?? navigationController?.transitionCoordinator {
+            transition.animate(alongsideTransition: nil) { [weak self] _ in
+                self?.leaveReceiveStep()
+            }
+            return
+        }
         guard let sheet = requestAmountController else {
             returnToLandingFromReceiveStep()
             return
@@ -374,9 +383,16 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
         // the same turn runs the two animations over each other.
         requestAmountObservers.removeAll()
         requestAmountController = nil
-        sheet.dismiss(animated: true) { [weak self] in
+        dismissRequestSheet(sheet) { [weak self] in
             self?.returnToLandingFromReceiveStep()
         }
+    }
+
+    /// Dismissed from its presenter, not from the sheet itself: when the sheet
+    /// has presented Share, `sheet.dismiss` closes only Share and leaves the
+    /// request's QR on screen.
+    private func dismissRequestSheet(_ sheet: RequestAmountHostingController, completion: @escaping () -> Void) {
+        (sheet.presentingViewController ?? sheet).dismiss(animated: true, completion: completion)
     }
 
     /// The base class routes a scanned payment straight into the payment
@@ -758,7 +774,7 @@ extension PaymentsLandingHostingController: RequestAmountHostingControllerDelega
         _ controller: RequestAmountHostingController,
         didReceiveAmountWithInfo info: String
     ) {
-        controller.dismiss(animated: true) {
+        dismissRequestSheet(controller) {
             // No un-obscuring: this sheet never suspended the session. What
             // does end here is the sheet's own mirroring of it.
             self.requestAmountObservers.removeAll()

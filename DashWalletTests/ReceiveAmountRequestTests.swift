@@ -337,6 +337,55 @@ final class ReceiveAmountRequestTests: XCTestCase {
         onSheet.3.isHidden = true
     }
 
+    /// Share presented over the request closes with it: a receipt or a changed
+    /// destination leaves no request QR on screen.
+    func testAModalOverTheRequestClosesWithIt() async throws {
+        for trigger in ["receipt", "destination"] {
+            let (landing, navigation, model, window) = try landing(on: .shielded)
+            try await openRequest(landing, navigation)
+            let sheet = try XCTUnwrap(navigation.presentedViewController as? RequestAmountHostingController)
+            let share = UIViewController()
+            sheet.present(share, animated: true)
+            try await waitUntil("share over the request, \(trigger)") {
+                sheet.presentedViewController === share && !share.isBeingPresented && sheet.transitionCoordinator == nil
+            }
+
+            if trigger == "receipt" {
+                model.acceptReceipt(receipt(on: .shielded))
+            } else {
+                model.network = .platform
+            }
+            try await waitUntilBackOnLanding(landing, navigation, "share open, \(trigger)")
+            window.isHidden = true
+        }
+    }
+
+    /// A destination that changes while the amount step is still being pushed,
+    /// or its request sheet still presented, closes them once they are up.
+    func testADestinationChangedDuringTheOpeningAnimationStillReturnsToTheLanding() async throws {
+        let duringPush = try landing(on: .shielded)
+        // A push sent before the landing has appeared is not animated.
+        try await waitUntil("landing on screen") { duringPush.0.view.window != nil }
+        try await Task.sleep(nanoseconds: 200_000_000)
+        duringPush.0.pushSpecifyAmount()
+        XCTAssertNotNil(duringPush.1.transitionCoordinator, "the change has to land mid-push")
+        duringPush.2.network = .platform
+        try await waitUntilBackOnLanding(duringPush.0, duringPush.1, "changed during the push")
+        XCTAssertTrue(duringPush.2.showsDestinationChangedToast)
+        duringPush.3.isHidden = true
+
+        let duringPresent = try landing(on: .shielded)
+        try await pushAmountStep(duringPresent.0, duringPresent.1)
+        let step = try XCTUnwrap(duringPresent.1.topViewController as? SpecifyAmountViewController)
+        duringPresent.0.specifyAmountViewController(step, didInput: 100_000_000)
+        let sheet = try XCTUnwrap(duringPresent.1.presentedViewController as? RequestAmountHostingController)
+        XCTAssertTrue(sheet.isBeingPresented)
+        duringPresent.2.network = .platform
+        try await waitUntilBackOnLanding(duringPresent.0, duringPresent.1, "changed during the presentation")
+        XCTAssertTrue(duringPresent.2.showsDestinationChangedToast)
+        duringPresent.3.isHidden = true
+    }
+
     func testAReceiptOnTheAmountStepReturnsToTheLandingOnEveryNewOption() async throws {
         for option in [ReceiveOption.shielded, .platform, .identity] {
             let (landing, navigation, model, window) = try landing(on: option)
