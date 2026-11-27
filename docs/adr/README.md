@@ -51,6 +51,9 @@ where they disagree, ADR-0001 wins.
 | [0056](0056-know-no-app-and-ask-before-returning-to-one.md) | Know no app: show every app as unknown and ask before returning to it | ui | Accepted | |
 | [0057](0057-tell-a-connection-sheet-from-one-basis-and-placed-keys-only.md) | Tell a connection sheet from one basis, and claim access only from placed keys | ui | Accepted | |
 | [0058](0058-answer-a-login-without-a-username-with-the-pages-own-state.md) | Answer a login without a username with the page's own state, and open nothing | ui | Accepted | |
+| [0059](0059-route-every-app-log-line-through-dwlogger-with-an-os-logger-shaped-applogger.md) | Route every app log line through DWLogger with an os.Logger-shaped AppLogger | logging | Proposed | |
+| [0060](0060-redact-log-values-at-interpolation-with-os-logger-privacy-defaults.md) | Redact log values at interpolation with os.Logger's privacy defaults | logging | Proposed | |
+| [0061](0061-write-every-logged-error-as-a-type-case-and-code-summary.md) | Write every logged error as a type, case and code summary | logging | Proposed | |
 | [0065](0065-recognize-platform-refusals-by-consensus-code-in-one-table.md) | Recognize Platform refusals by consensus code in one table | platform | Proposed | |
 | [0066](0066-declare-the-app-and-the-zero-loss-check-as-the-feature-surfaces.md) | Declare the app and the zero-loss check as the feature's surfaces | l10n | Accepted | |
 | [0067](0067-generate-the-catalog-from-the-baseline-lists-with-a-repository-script.md) | Generate the Catalog from the Baseline lists with a repository script | l10n | Accepted | |
@@ -61,7 +64,7 @@ where they disagree, ADR-0001 wins.
 | [0072](0072-check-releases-through-the-key-map.md) | Check releases through the key map instead of pairing code places | l10n | Accepted | |
 | [0073](0073-make-the-sync-phase-write-the-same-catalog-as-the-xcode-app.md) | Make the sync phase write the same Catalog as the Xcode app, and compile only the shipped locales | l10n | Accepted | |
 
-Areas: `spv`, `platform`, `keys`, `storage`, `coinjoin`, `payments`, `swap`, `ui`, `l10n`, `build`, `process`. Each ADR takes one; a new
+Areas: `spv`, `platform`, `keys`, `storage`, `coinjoin`, `payments`, `swap`, `ui`, `l10n`, `build`, `process`, `logging`. Each ADR takes one; a new
 Area is added to this list in the PR that first needs it.
 
 ## Adding an ADR

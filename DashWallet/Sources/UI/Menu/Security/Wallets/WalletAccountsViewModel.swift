@@ -26,7 +26,6 @@
 
 import Combine
 import Foundation
-import OSLog
 import SwiftData
 import SwiftDashSDK
 
@@ -69,9 +68,7 @@ struct WalletAccountRow: Identifiable, Equatable {
 
 @MainActor
 final class WalletAccountsViewModel: ObservableObject {
-    private static let logger = Logger(
-        subsystem: "org.dashfoundation.dash",
-        category: "wallet-accounts-screen")
+    private static let logger = AppLogger(category: "wallet-accounts-screen")
 
     @Published private(set) var rows: [WalletAccountRow] = []
 
@@ -102,7 +99,7 @@ final class WalletAccountsViewModel: ObservableObject {
         do {
             accounts = try context.fetch(descriptor)
         } catch {
-            Self.logger.error("account fetch failed: \(String(describing: error), privacy: .public)")
+            Self.logger.error("account fetch failed: \(error)")
             rows = []
             return
         }

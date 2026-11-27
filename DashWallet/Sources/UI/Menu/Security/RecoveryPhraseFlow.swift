@@ -20,7 +20,6 @@
 import Combine
 import DashUIKit
 import Foundation
-import OSLog
 import SwiftDashSDK
 import SwiftUI
 import UIKit
@@ -111,6 +110,8 @@ enum RecoveryPhraseInventory {
     struct ReadableEntries {
         let entries: [RecoveryPhraseInventoryEntry]
         let skippedWalletIds: [Data]
+        /// Why each skipped entry was unreadable, in the same order.
+        let skippedErrors: [Error]
     }
 
     struct MnemonicMaterial {
@@ -119,9 +120,7 @@ enum RecoveryPhraseInventory {
         let network: RecoveryPhraseWalletNetwork
     }
 
-    private static let logger = Logger(
-        subsystem: "org.dashfoundation.dash",
-        category: "recovery-phrase-inventory")
+    private static let logger = AppLogger(category: "recovery-phrase-inventory")
 
     @MainActor
     static func load() throws -> [RecoveryPhraseWalletDescriptor] {
@@ -130,14 +129,6 @@ enum RecoveryPhraseInventory {
             let mnemonic = try SwiftDashSDKHost.strictlyPersistedMnemonic(for: walletId)
             return try classify((walletId: walletId, mnemonic: mnemonic))
         }
-        if !result.skippedWalletIds.isEmpty {
-            let labels = result.skippedWalletIds.map {
-                $0.prefix(4).map { String(format: "%02x", $0) }.joined()
-            }.joined(separator: ",")
-            logger.error(
-                "Skipping \(result.skippedWalletIds.count, privacy: .public) unreadable recovery-phrase entry/entries ids=\(labels, privacy: .public)")
-        }
-
         let entries = selectableEntries(result.entries)
         let displayNames = Dictionary(uniqueKeysWithValues: entries.map {
             ($0.walletId, WalletsViewModel.displayName(for: $0.walletId))
@@ -163,12 +154,28 @@ enum RecoveryPhraseInventory {
     ) throws -> ReadableEntries {
         var entries: [RecoveryPhraseInventoryEntry] = []
         var skippedWalletIds: [Data] = []
+        var skippedErrors: [Error] = []
         for walletId in walletIds {
             do {
                 entries.append(try loadEntry(walletId))
             } catch {
                 skippedWalletIds.append(walletId)
+                skippedErrors.append(error)
             }
+        }
+
+        // Written before the guard: when none is readable, the generic error
+        // the screen ends with carries none of these.
+        if !skippedWalletIds.isEmpty {
+            let labels = skippedWalletIds.map {
+                $0.prefix(4).map { String(format: "%02x", $0) }.joined()
+            }.joined(separator: ",")
+            let reasons = skippedErrors.map(AppLogMessage.errorSummary).joined(separator: "; ")
+            logger.error(
+                """
+                Skipping \(skippedWalletIds.count, privacy: .public) unreadable recovery-phrase \
+                entry/entries ids=\(labels, privacy: .public) errors=\(reasons, privacy: .public)
+                """)
         }
 
         guard walletIds.isEmpty || !entries.isEmpty else {
@@ -176,7 +183,8 @@ enum RecoveryPhraseInventory {
         }
         return ReadableEntries(
             entries: entries,
-            skippedWalletIds: skippedWalletIds)
+            skippedWalletIds: skippedWalletIds,
+            skippedErrors: skippedErrors)
     }
 
     /// The entries this build can actually act on.
@@ -327,9 +335,7 @@ final class RecoveryPhraseFlowViewModel: ObservableObject {
         #endif
     }
 
-    private static let logger = Logger(
-        subsystem: "org.dashfoundation.dash",
-        category: "recovery-phrase-flow")
+    private static let logger = AppLogger(category: "recovery-phrase-flow")
 
     @Published private(set) var navigationEvent: NavigationEvent?
     @Published private(set) var alertState: AlertState?
@@ -396,7 +402,7 @@ final class RecoveryPhraseFlowViewModel: ObservableObject {
                 mnemonic: material.mnemonic,
                 contextLabel: descriptor.contextLabel)))
         } catch {
-            Self.logger.error("Selected recovery phrase read failed: \(String(describing: error), privacy: .public)")
+            Self.logger.error("Selected recovery phrase read failed: \(error)")
             pickerRetryDescriptor = descriptor
             pickerAlertState = Self.readErrorAlert(for: error)
         }
@@ -528,7 +534,7 @@ final class RecoveryPhraseFlowViewModel: ObservableObject {
     }
 
     private func showReadError(_ error: Error, retry: RetryRequest) {
-        Self.logger.error("Recovery phrase read failed: \(String(describing: error), privacy: .public)")
+        Self.logger.error("Recovery phrase read failed: \(error)")
         retryRequest = retry
         alertState = Self.readErrorAlert(for: error)
     }

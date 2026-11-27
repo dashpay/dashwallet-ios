@@ -531,7 +531,7 @@ final class OrderPreviewViewModel: ObservableObject {
         let txidHex = Transaction.displayHex(txidWire)
         // The success side needs a trace too: without it a log export can't distinguish
         // "the deposit never went out" from "it went out and the swap failed later".
-        DWLogger.log("Swap: deposit broadcast for \(coin.code) — txid=\(txidHex) deposit=\(depositAddress)")
+        DWLogger.log("Swap: deposit broadcast for \(coin.code) — txid=\(txidHex)")
         submittedTxidWire = txidWire
         submittedTxId = txidHex
         lastDepositAddress = depositAddress

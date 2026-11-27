@@ -77,6 +77,25 @@ jobs:
           fetch-depth: 1
           persist-credentials: false
 
+      # Only no_os_logger: an os.Logger, os_log or NSLog line never reaches the
+      # "Share application logs" export. Other rules' existing findings do not
+      # fail this step. SwiftLint is pinned by version and checksum: a release
+      # that changes custom-rule matching must not let this step pass silently.
+      - name: Every app log line reaches the log export (SwiftLint no_os_logger)
+        env:
+          SWIFTLINT_VERSION: 0.63.2
+          SWIFTLINT_SHA256: c59a405c85f95b92ced677a500804e081596a4cae4a6a485af76065557d6ed29
+        run: |
+          set -euo pipefail
+          archive="$RUNNER_TEMP/portable_swiftlint.zip"
+          curl -fsSL -o "$archive" \
+            "https://github.com/realm/SwiftLint/releases/download/${SWIFTLINT_VERSION}/portable_swiftlint.zip"
+          echo "${SWIFTLINT_SHA256}  ${archive}" | shasum -a 256 -c -
+          unzip -q -o "$archive" -d "$RUNNER_TEMP/swiftlint"
+          swiftlint="$RUNNER_TEMP/swiftlint/swiftlint"
+          test "$("$swiftlint" version)" = "$SWIFTLINT_VERSION"
+          "$swiftlint" lint --quiet --only-rule no_os_logger
+
       - name: Read the platform pin
         run: |
           set -euo pipefail
