@@ -80,6 +80,8 @@ NSTimeInterval const DW_INFO_HUD_DISPLAY_TIME = 3.5;
     NSArray<MBProgressHUD *> *huds = [[self dw_infoHUDQueue] copy];
     [[self dw_infoHUDQueue] removeAllObjects];
     for (MBProgressHUD *hud in huds) {
+        // A fade-out already under way would call it a second time and take a newer notice off the queue.
+        hud.completionBlock = nil;
         [hud hideAnimated:NO];
     }
 }
