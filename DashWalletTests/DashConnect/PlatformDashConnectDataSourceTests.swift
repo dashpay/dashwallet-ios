@@ -7095,6 +7095,15 @@ final class ConnectionsViewModelTermsTests: XCTestCase {
 
     /// Closing the refusal of another request shows the approval's own note
     /// again: here, the balance refusal that tells the user to top up.
+    func testASheetWithoutACloseShowsBothNotes() {
+        let other = ConnectionsViewModel.anotherRequestArrivedText
+        let own = ConnectionsViewModel.topUpThenAskAgainText
+        XCTAssertEqual(ConnectionsViewModel.sheetNote(anotherRequest: other, own: own), other + "\n" + own)
+        XCTAssertEqual(ConnectionsViewModel.sheetNote(anotherRequest: nil, own: own), own)
+        XCTAssertEqual(ConnectionsViewModel.sheetNote(anotherRequest: other, own: nil), other)
+        XCTAssertNil(ConnectionsViewModel.sheetNote(anotherRequest: nil, own: nil))
+    }
+
     func testClosingTheRefusalOfAnotherRequestShowsTheApprovalsOwnNoteAgain() async {
         let spy = LoginApprovalSpy(shown: [Self.request(platformTimeMs: Self.platformNow, expiresAt: Self.platformNow + 3_600_000)])
         let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false, now: { Self.phone })
@@ -7154,9 +7163,13 @@ final class ConnectionsViewModelTermsTests: XCTestCase {
         viewModel.onQRScanned("login")
         await waitUntil { viewModel.pendingRequest != nil }
         XCTAssertNotNil(viewModel.termsAppliedPlan)
+        // A second link left its refusal open on the sheet.
+        viewModel.onURIReceived("second")
+        XCTAssertNotNil(viewModel.anotherRequestNote)
 
         viewModel.approvePendingRequest()
         await waitUntil { spy.approvedConsents.count == 1 && !viewModel.isApproving }
+        XCTAssertNil(viewModel.anotherRequestNote, "what Approve did shows, not the other request's refusal")
 
         // The phone's clock has not moved, but Platform's time is past the
         // expiry: the same terms are not offered again.

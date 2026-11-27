@@ -807,6 +807,14 @@ final class ConnectionsViewModel: ObservableObject {
         anotherRequestNote = nil
     }
 
+    /// For a sheet with one note line and no way to close it: the refusal
+    /// of another request and the approval's own note both show, so neither
+    /// hides the other.
+    static func sheetNote(anotherRequest: String?, own: String?) -> String? {
+        let notes = [anotherRequest, own].compactMap { $0 }
+        return notes.isEmpty ? nil : notes.joined(separator: "\n")
+    }
+
     static var usernameNeededText: String {
         String(
             localized: "Create a username to connect apps, then ask the app for a new code.",
@@ -840,6 +848,9 @@ final class ConnectionsViewModel: ObservableObject {
         // `retryPendingRequest` for it instead.
         guard var consent = pendingRequest, consent.login.isApprovable,
               let pendingLoginRequest, !isApproving, !isResolvingRequest, !approveNeedsTopUp else { return }
+        // The user acts on the request on screen: what Approve does next
+        // shows, not the refusal of another one.
+        anotherRequestNote = nil
         // Read again: the active identity may have lost its username, or
         // another one become active, since the request came.
         refreshUsername()
@@ -982,6 +993,7 @@ final class ConnectionsViewModel: ObservableObject {
     func retryPendingRequest() {
         guard pendingRequest != nil, let pendingLoginRequest, !isApproving, !isResolvingRequest else { return }
 
+        anotherRequestNote = nil
         isApproving = true
         approveError = nil
 
@@ -1328,6 +1340,7 @@ final class ConnectionsViewModel: ObservableObject {
     func approvePendingTokenPurchase() {
         guard let purchase = pendingTokenPurchase, !isApprovingPurchase else { return }
 
+        anotherRequestNote = nil
         isApprovingPurchase = true
         purchaseApproveError = nil
 
