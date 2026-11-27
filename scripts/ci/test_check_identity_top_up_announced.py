@@ -55,28 +55,61 @@ class IdentityTopUpAnnouncedGuardTest(unittest.TestCase):
                    "    suppliedCredits: c, { try await wallet.resumeTopUpWithAssetLock(identityId: id) })\n")
         self.assertEqual(self.run_guard().returncode, 0)
 
-    def test_a_named_closure_passed_to_announcing_passes(self):
+    def test_a_closure_bound_by_name_is_not_exempt_even_when_passed_to_announcing(self):
+        # Two bindings share the name; only one is passed, and the other runs directly.
         self.write("DashWallet/Sources/F.swift",
-                   "let resume = {\n"
-                   "    try await wallet.resumeTopUpWithAssetLock(identityId: id)\n"
-                   "}\n"
-                   "if known {\n"
+                   "func announced() async throws {\n"
+                   "    let resume = {\n"
+                   "        try await wallet.resumeTopUpWithAssetLock(identityId: id)\n"
+                   "    }\n"
                    "    _ = try await IdentityTopUpDidComplete.announcing(walletId: w, network: n, identityId: id,\n"
                    "        suppliedCredits: c, resume)\n"
-                   "} else {\n"
+                   "}\n"
+                   "func direct() async throws {\n"
+                   "    let resume = {\n"
+                   "        try await wallet.resumeTopUpWithAssetLock(identityId: id)\n"
+                   "    }\n"
                    "    _ = try await resume()\n"
                    "}\n")
-        self.assertEqual(self.run_guard().returncode, 0)
-
-    def test_a_named_closure_never_passed_to_announcing_fails(self):
-        self.write("DashWallet/Sources/G.swift",
-                   "let resume = {\n"
-                   "    try await wallet.resumeTopUpWithAssetLock(identityId: id)\n"
-                   "}\n"
-                   "_ = try await resume()\n")
         res = self.run_guard()
         self.assertEqual(res.returncode, 1)
-        self.assertIn("G.swift:2: resumeTopUpWithAssetLock outside", res.stdout)
+        self.assertIn("F.swift:3: resumeTopUpWithAssetLock outside", res.stdout)
+        self.assertIn("F.swift:10: resumeTopUpWithAssetLock outside", res.stdout)
+
+    def test_a_reasoned_marker_exempts_only_the_call_below_it(self):
+        self.write("DashWallet/Sources/G.swift",
+                   "if known {\n"
+                   "    _ = try await IdentityTopUpDidComplete.announcing(walletId: w, network: n, identityId: id,\n"
+                   "        suppliedCredits: c) { try await wallet.resumeTopUpWithAssetLock(identityId: id) }\n"
+                   "} else {\n"
+                   "    // top-up not announced: nothing bounds its credits.\n"
+                   "    _ = try await wallet.resumeTopUpWithAssetLock(identityId: id)\n"
+                   "    _ = try await wallet.resumeTopUpWithAssetLock(identityId: id)\n"
+                   "}\n")
+        res = self.run_guard()
+        self.assertEqual(res.returncode, 1)
+        self.assertIn("G.swift:7: resumeTopUpWithAssetLock outside", res.stdout)
+        self.assertNotIn("G.swift:6:", res.stdout)
+        self.assertNotIn("G.swift:3:", res.stdout)
+
+    def test_a_marker_without_a_reason_does_not_exempt(self):
+        self.write("DashWallet/Sources/H.swift",
+                   "// top-up not announced:\n"
+                   "_ = try await wallet.resumeTopUpWithAssetLock(identityId: id)\n")
+        res = self.run_guard()
+        self.assertEqual(res.returncode, 1)
+        self.assertIn("H.swift:2: resumeTopUpWithAssetLock outside", res.stdout)
+
+    def test_deprecated_and_shielded_top_ups_are_checked(self):
+        self.write("DashWallet/Sources/I.swift",
+                   "_ = try await wallet.topUpFromAddresses(identityId: id)\n"
+                   "_ = try await wallet.topUpExternalIdentityFromAddresses(identityId: id)\n"
+                   "try await manager.shieldedIdentityTopUpFromPool(walletId: w, identityId: id)\n")
+        res = self.run_guard()
+        self.assertEqual(res.returncode, 1)
+        self.assertIn("I.swift:1: topUpFromAddresses outside", res.stdout)
+        self.assertIn("I.swift:2: topUpExternalIdentityFromAddresses outside", res.stdout)
+        self.assertIn("I.swift:3: shieldedIdentityTopUpFromPool outside", res.stdout)
 
     def test_a_call_after_the_announcing_closure_fails(self):
         self.write("DashWallet/Sources/D.swift",
