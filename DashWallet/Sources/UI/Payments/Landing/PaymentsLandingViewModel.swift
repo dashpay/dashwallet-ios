@@ -389,10 +389,10 @@ final class PaymentsLandingViewModel: ObservableObject {
         self.visibleTabs = visibleTabs
         self.allowsTransactionDetails = allowsTransactionDetails
         self.isQuickReceive = isQuickReceive
-        identityWatcher.onStateChange = { [weak self] in self?.identityWatcherDidChange($0) }
         self.shieldedAddressSource = shieldedAddressSource
         self.activeWalletId = activeWalletId
         self.receiptSources = receiptSources
+        identityWatcher.onStateChange = { [weak self] in self?.identityWatcherDidChange($0) }
 
         reloadCoreAddress()
 

@@ -146,7 +146,7 @@ final class PreparedStandardSend: NSObject {
             WalletSendService.shared.recentSends.record(
                 txidWire: Data(txHash.reversed()), address: address, amount: amount, fee: fee)
 
-        case .rejected(_, let reason):
+        case .rejected(_, let reason, _):
             // Nothing reached the network, so the money is provably still
             // here — say that, because "wasn't sent" alone reads as a loss.
             let error = WalletSendService.makeError(
@@ -159,7 +159,7 @@ final class PreparedStandardSend: NSObject {
             claimLock.unlock()
             throw error
 
-        case .unknown(_, let reason):
+        case .unknown(_, let reason, _):
             // The old copy told the user to "wait for wallet synchronization"
             // without saying that the wallet is the thing doing the waiting —
             // and it appended the SDK's internal reason, so the dialog ended
