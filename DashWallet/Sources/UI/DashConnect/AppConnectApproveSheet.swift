@@ -99,13 +99,13 @@ struct AppConnectApproveSheet: View {
                 }
                 // Room under the content for the toast, so nothing stays under it.
                 .contentMargins(
-                    .bottom, (viewModel.approveError ?? viewModel.approveDisabledReason) == nil ? 0 : 72,
+                    .bottom, approvalNote == nil ? 0 : 72,
                     for: .scrollContent)
                 // Over the end of the scrolling content, above the buttons.
                 // The refusal of another request can be closed; a note on
                 // why Approve did not go stays until the user acts on it.
                 .dashConnectErrorToast(
-                    viewModel.approveError ?? viewModel.approveDisabledReason,
+                    approvalNote,
                     onDismiss: viewModel.anotherRequestNote == nil ? nil : { viewModel.dismissAnotherRequestNote() })
 
                 footer
@@ -281,6 +281,12 @@ struct AppConnectApproveSheet: View {
             .frame(width: 20, height: 20)
             .accessibilityLabel(Text(String(localized: "What is spendable Dash?", comment: "DashConnect approve sheet")))
         }
+    }
+
+    /// The refusal of another request first; the approval's own note is
+    /// under it and shows again once it is closed.
+    private var approvalNote: String? {
+        viewModel.anotherRequestNote ?? viewModel.approveError ?? viewModel.approveDisabledReason
     }
 
     private var footer: some View {

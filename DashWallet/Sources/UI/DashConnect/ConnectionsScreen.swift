@@ -299,7 +299,7 @@ struct ConnectionsScreen: View {
         ApproveConnectionSheet(
             request: request,
             isLoading: viewModel.isApproving,
-            errorText: viewModel.approveError,
+            errorText: viewModel.anotherRequestNote ?? viewModel.approveError,
             onApprove: { viewModel.approvePendingRequest() },
             onRetry: { viewModel.retryPendingRequest() },
             onDeny: { viewModel.denyPendingRequest(asksToReturn: true) }
@@ -313,7 +313,7 @@ struct ConnectionsScreen: View {
         ApproveTokenPurchaseSheet(
             request: purchase,
             isLoading: viewModel.isApprovingPurchase,
-            errorText: viewModel.purchaseApproveError,
+            errorText: viewModel.anotherRequestNote ?? viewModel.purchaseApproveError,
             onApprove: { viewModel.approvePendingTokenPurchase() },
             onDeny: { viewModel.denyPendingTokenPurchase() }
         )

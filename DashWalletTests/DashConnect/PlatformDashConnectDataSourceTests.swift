@@ -7046,7 +7046,7 @@ final class ConnectionsViewModelTermsTests: XCTestCase {
             viewModel.onURIReceived("second")
 
             XCTAssertEqual(viewModel.pendingRequest, shown, "\(lost)")
-            XCTAssertEqual(viewModel.approveError?.contains("Another DashConnect request arrived"), true, "\(lost)")
+            XCTAssertEqual(viewModel.anotherRequestNote?.contains("Another DashConnect request arrived"), true, "\(lost)")
             XCTAssertNil(viewModel.message, "\(lost): nothing goes to the page under the sheet")
             // A terms sheet over the approval says it too.
             XCTAssertEqual(viewModel.anotherRequestNote, ConnectionsViewModel.anotherRequestArrivedText, "\(lost)")
@@ -7091,6 +7091,29 @@ final class ConnectionsViewModelTermsTests: XCTestCase {
         viewModel.approvePendingRequest()
         viewModel.dismissAnotherRequestNote()
         XCTAssertEqual(viewModel.approveError, ConnectionsViewModel.usernameUnreadText)
+    }
+
+    /// Closing the refusal of another request shows the approval's own note
+    /// again: here, the balance refusal that tells the user to top up.
+    func testClosingTheRefusalOfAnotherRequestShowsTheApprovalsOwnNoteAgain() async {
+        let spy = LoginApprovalSpy(shown: [Self.request(platformTimeMs: Self.platformNow, expiresAt: Self.platformNow + 3_600_000)])
+        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false, now: { Self.phone })
+        viewModel.onQRScanned("login")
+        await waitUntil { viewModel.pendingRequest != nil }
+        viewModel.approveError = ConnectionsViewModel.topUpThenAskAgainText
+
+        viewModel.onURIReceived("second")
+        XCTAssertEqual(viewModel.anotherRequestNote, ConnectionsViewModel.anotherRequestArrivedText)
+        XCTAssertEqual(viewModel.approveError, ConnectionsViewModel.topUpThenAskAgainText, "not replaced")
+
+        viewModel.dismissAnotherRequestNote()
+        XCTAssertNil(viewModel.anotherRequestNote)
+        XCTAssertEqual(viewModel.approveError, ConnectionsViewModel.topUpThenAskAgainText, "shown again")
+
+        // Gone with the approval.
+        viewModel.onURIReceived("third")
+        viewModel.pendingRequest = nil
+        XCTAssertNil(viewModel.anotherRequestNote)
     }
 
     func testTheUsernameIsReadAgainOnceTheNamesLoad() async {
@@ -7296,7 +7319,7 @@ extension ConnectionsViewModelTermsTests {
 
         XCTAssertTrue(tabBar.presentedViewController === sheet, "the link closed the approval sheet")
         XCTAssertEqual(viewModel.pendingRequest, shown)
-        XCTAssertEqual(viewModel.approveError?.contains("Another DashConnect request arrived"), true)
+        XCTAssertEqual(viewModel.anotherRequestNote?.contains("Another DashConnect request arrived"), true)
         XCTAssertEqual(spy.parseCount, 1)
         XCTAssertFalse(viewModel.mayScan(), "the request on screen is still the one being answered")
 

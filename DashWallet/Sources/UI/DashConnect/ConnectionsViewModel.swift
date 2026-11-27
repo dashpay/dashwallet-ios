@@ -178,6 +178,7 @@ final class ConnectionsViewModel: ObservableObject {
                 approvalTerms = nil
             }
             approveNeedsTopUp = false
+            if pendingRequest == nil, pendingTokenPurchase == nil { anotherRequestNote = nil }
             smallestFundingLimit = pendingRequest?.login.grantPlan.flatMap(AppConnect.smallestFundingLimit)
         }
     }
@@ -220,7 +221,9 @@ final class ConnectionsViewModel: ObservableObject {
     /// cannot pay to register the keys or to publish the response; the
     /// sheet offers a top-up.
     @Published private(set) var approveNeedsTopUp = false
-    @Published var pendingTokenPurchase: DashConnectTokenPurchaseRequest?
+    @Published var pendingTokenPurchase: DashConnectTokenPurchaseRequest? {
+        didSet { if pendingTokenPurchase == nil, pendingRequest == nil { anotherRequestNote = nil } }
+    }
     @Published var isApproving = false
     @Published var isApprovingPurchase = false
     @Published var isProcessingStateTransition = false
@@ -235,7 +238,11 @@ final class ConnectionsViewModel: ObservableObject {
     /// A screen-level `.alert` cannot appear over a presented sheet, so routing this
     /// through `message` would leave the user with no feedback at all.
     @Published var approveError: String? {
-        didSet { approveErrorSubject = .request }
+        didSet {
+            approveErrorSubject = .request
+            // A newer note on the approval is what the user needs now.
+            if approveError != nil { anotherRequestNote = nil }
+        }
     }
 
     /// What `approveError` is about: a change of the terms clears a note
@@ -248,7 +255,9 @@ final class ConnectionsViewModel: ObservableObject {
     private var approveErrorSubject = ApproveErrorSubject.request
     /// Failure of the last token-purchase approve attempt, rendered inside
     /// the purchase sheet for the same reason as `approveError`.
-    @Published var purchaseApproveError: String?
+    @Published var purchaseApproveError: String? {
+        didSet { if purchaseApproveError != nil { anotherRequestNote = nil } }
+    }
 
     private let dataSource: any DashConnectDataSource
     private let usernameState: @MainActor () -> UsernameState
@@ -636,16 +645,11 @@ final class ConnectionsViewModel: ObservableObject {
         // newcomer refused on that sheet.
         guard pendingRequest == nil, pendingTokenPurchase == nil else {
             DWLogger.log("🔗 DASHCONNECT :: request not taken: another one is on screen")
-            let refusal = Self.anotherRequestArrivedText
-            // Onto the sheet that is actually up: the purchase sheet reads
-            // `purchaseApproveError` alone, so a refusal parked in
-            // `approveError` while a purchase is on screen is invisible — the
-            // request would look silently dropped.
-            if pendingTokenPurchase != nil {
-                purchaseApproveError = refusal
-            } else {
-                approveError = refusal
-            }
+            // Its own note, shown first by whichever sheet is up (approval,
+            // purchase, or a terms sheet over the approval): it does not
+            // replace the sheet's own note, which shows again once it is
+            // closed.
+            anotherRequestNote = Self.anotherRequestArrivedText
             return
         }
 
@@ -794,16 +798,13 @@ final class ConnectionsViewModel: ObservableObject {
     /// The refusal of a request that came while the approval was up, for a
     /// sheet over the approval (its funding limit, expiry or an info sheet)
     /// to say too: the approval's own note is under that sheet.
-    var anotherRequestNote: String? {
-        approveError == Self.anotherRequestArrivedText ? approveError : nil
-    }
+    @Published private(set) var anotherRequestNote: String?
 
     /// The user closed the refusal of another request. It only tells them
-    /// why a link did nothing, so it may go; any other note on the approval
-    /// explains why Approve did not go through and stays.
+    /// why a link did nothing, so it may go; the approval's own note (why
+    /// Approve did not go through) is under it and shows again.
     func dismissAnotherRequestNote() {
-        guard anotherRequestNote != nil else { return }
-        approveError = nil
+        anotherRequestNote = nil
     }
 
     static var usernameNeededText: String {
