@@ -16,8 +16,10 @@ where a Payer is pointed to, and gave no feedback when credits landed.
   else. Receive options are a Receive-only enum; Send and Internal transfer keep their own type.
   [ADR-0064](../../adr/0064-model-receive-options-as-a-receive-only-enum.md).
 - **The Identity card:** a QR of the bare Base58 Identity ID, the ID as text, the username, Copy,
-  Share ID, Specify amount unavailable, and a warning that identity funds pay for Dash apps and
-  usernames and that most exchanges and many wallets send only to Core.
+  Share ID, Specify amount, and a warning that identity funds pay for Dash apps and usernames and
+  that most exchanges and many wallets send only to Core.
+- **Specify amount on Identity:** the request is `dash:<Identity ID>?amount=<DASH>`, the same
+  shape as Shielded and Platform, with no fiat or username parameters.
 - **A Receipt when credits arrive:** while the card is on screen and the app is in the foreground,
   the wallet reads the identity's credits every 5 s, starting from a fresh read made on opening.
   A rise shows a Receipt (amount in Dash and local currency, «Identity», «Received»).
@@ -28,9 +30,10 @@ where a Payer is pointed to, and gave no feedback when credits landed.
 ## Acceptance criteria
 
 - **AC-01** The card shows a QR of the Identity ID, the ID as text (cut in the middle when it does
-  not fit) and the username; Copy and Share are available, Specify amount is not.
+  not fit) and the username; Copy, Share and Specify amount are available.
 - **AC-02** Copy copies exactly the ID or the username, with the usual copy confirmation.
-- **AC-03** The QR and the shared text are exactly the Base58 Identity ID, nothing added.
+- **AC-03** The card's QR and shared text are exactly the Base58 Identity ID, nothing added. An
+  amount request is `dash:<Identity ID>?amount=<DASH>`, nothing else added.
 - **AC-04** The card warns what identity funds are for and that many senders pay only to Core.
 - **AC-05** A check that finds the credits higher than at opening shows a Receipt for the
   increase; payments between two checks give one Receipt for their sum.
@@ -71,5 +74,4 @@ increase:
 
 ## Not in scope
 
-- Specify amount on Identity.
 - Paying to a scanned Identity ID from Send.

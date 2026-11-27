@@ -545321,6 +545321,9 @@
         }
       }
     },
+    "The receive address changed. Enter the amount again." : {
+      "comment" : "Receive — toast after an amount request was dropped because the address changed while the amount was typed"
+    },
     "The recipient identity couldn't be resolved." : {
       "comment" : "Username marketplace",
       "localizations" : {

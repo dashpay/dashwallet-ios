@@ -73,6 +73,8 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
     private var isSurfaceOnScreen = false
     /// The specify-amount sheet while it is up, so a receipt can dismiss it.
     private weak var requestAmountController: RequestAmountHostingController?
+    /// The destination the Specify-amount step was opened for.
+    private var specifyAmountDestination: AmountRequestDestination?
     /// Kept apart from `cancellables`: these live exactly as long as that sheet
     /// does, and are dropped with it rather than for the screen's lifetime.
     private var requestAmountObservers = Set<AnyCancellable>()
@@ -113,6 +115,9 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
     /// pins it as the From card (destination picked on the To rows). Without
     /// it, the Send tab still embeds the form, just un-pinned (full From
     /// picker).
+    ///
+    /// `viewModel` replaces the one built from the other arguments; the
+    /// controller tests pass a preview model.
     init(activeTab: PaymentsLandingTab,
          receiveNetwork: ChainNetwork = .core,
          visibleTabs: [PaymentsLandingTab] = PaymentsLandingTab.allCases,
@@ -120,8 +125,9 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
          sendNetwork: ChainNetwork? = nil,
          showsHeader: Bool = true,
          allowsTransactionDetails: Bool = true,
-         isQuickReceive: Bool = false) {
-        self.viewModel = PaymentsLandingViewModel(
+         isQuickReceive: Bool = false,
+         viewModel: PaymentsLandingViewModel? = nil) {
+        self.viewModel = viewModel ?? PaymentsLandingViewModel(
             activeTab: activeTab,
             network: ReceiveOption(receiveNetwork),
             visibleTabs: visibleTabs,
@@ -312,7 +318,8 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
             })
     }
 
-    private func pushSpecifyAmount() {
+    func pushSpecifyAmount() {
+        specifyAmountDestination = viewModel.amountRequestDestination
         let specify = SpecifyAmountViewController.controller()
         specify.delegate = self
         isPushingReceiveStep = true
@@ -336,21 +343,56 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
             .sink { [weak self] _ in
                 guard let self else { return }
                 self.receiveStepObservers.removeAll()
-
-                guard let sheet = self.requestAmountController else {
-                    self.returnToLandingFromReceiveStep()
-                    return
-                }
-                // The sheet first, then the step under it — dismissing and
-                // popping in the same turn runs the two animations over each
-                // other.
-                self.requestAmountObservers.removeAll()
-                self.requestAmountController = nil
-                sheet.dismiss(animated: true) { [weak self] in
-                    self?.returnToLandingFromReceiveStep()
-                }
+                self.leaveReceiveStep()
             }
             .store(in: &receiveStepObservers)
+
+        // The step and its request sheet are for the destination captured on
+        // the push. When the option or its address changes under them (a
+        // wallet, network or identity change, or a Platform address rotation
+        // without a session), they leave too: the sheet's QR would still show
+        // the old address while the watch follows the new one, so a payment to
+        // it could raise no Receipt. The toast says why the amount is gone.
+        viewModel.objectWillChange
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in
+                guard let self, self.specifyAmountDestination != self.viewModel.amountRequestDestination else { return }
+                self.receiveStepObservers.removeAll()
+                self.leaveReceiveStep()
+                self.viewModel.showsDestinationChangedToast = true
+            }
+            .store(in: &receiveStepObservers)
+    }
+
+    /// Close the request sheet, if one is up, then pop back to the landing.
+    ///
+    /// A push or presentation still running is waited out first: UIKit drops a
+    /// pop or dismissal sent during one, and nothing would send it again.
+    private func leaveReceiveStep() {
+        if let transition = requestAmountController?.transitionCoordinator ?? navigationController?.transitionCoordinator {
+            transition.animate(alongsideTransition: nil) { [weak self] _ in
+                self?.leaveReceiveStep()
+            }
+            return
+        }
+        guard let sheet = requestAmountController else {
+            returnToLandingFromReceiveStep()
+            return
+        }
+        // The sheet first, then the step under it — dismissing and popping in
+        // the same turn runs the two animations over each other.
+        requestAmountObservers.removeAll()
+        requestAmountController = nil
+        dismissRequestSheet(sheet) { [weak self] in
+            self?.returnToLandingFromReceiveStep()
+        }
+    }
+
+    /// Dismissed from its presenter, not from the sheet itself: when the sheet
+    /// has presented Share, `sheet.dismiss` closes only Share and leaves the
+    /// request's QR on screen.
+    private func dismissRequestSheet(_ sheet: RequestAmountHostingController, completion: @escaping () -> Void) {
+        (sheet.presentingViewController ?? sheet).dismiss(animated: true, completion: completion)
     }
 
     /// The base class routes a scanned payment straight into the payment
@@ -678,9 +720,36 @@ extension PaymentsLandingHostingController: SpecifyAmountViewControllerDelegate 
         // for. Nothing is lost either way — the session's baseline survives a
         // suspend — but the sheet could not say it was watching, and could not
         // get out of the way when the payment landed.
+        //
+        // Core's request follows the next unused address and carries fiat and
+        // username; the other options put the amount on the address or ID the
+        // card shows.
+        //
+        // The request goes only to the destination the amount was typed for.
+        // If the option or its address changed while the step was open, the
+        // user is taken back to the card, which shows the current one, and a
+        // toast says why the typed amount is gone.
+        guard let destination = specifyAmountDestination,
+              destination == viewModel.amountRequestDestination else {
+            returnToLandingFromReceiveStep()
+            viewModel.showsDestinationChangedToast = true
+            return
+        }
+        let model: DWReceiveModelProtocol
+        let addressCaption: String?
+        switch destination {
+        case .core:
+            model = DWReceiveModel(amount: amount)
+            addressCaption = nil
+        case let .option(option, address):
+            let optionRequest = OptionAmountRequestModel(address: address, amount: amount, option: option)
+            model = optionRequest
+            addressCaption = optionRequest.addressCaption
+        }
         let requestController = RequestAmountHostingController.present(
             from: self,
-            model: DWReceiveModel(amount: amount),
+            model: model,
+            addressCaption: addressCaption,
             delegate: self)
         requestAmountController = requestController
         requestController.setWatchingForReceipt(viewModel.isWatchingForReceipt)
@@ -705,7 +774,7 @@ extension PaymentsLandingHostingController: RequestAmountHostingControllerDelega
         _ controller: RequestAmountHostingController,
         didReceiveAmountWithInfo info: String
     ) {
-        controller.dismiss(animated: true) {
+        dismissRequestSheet(controller) {
             // No un-obscuring: this sheet never suspended the session. What
             // does end here is the sheet's own mirroring of it.
             self.requestAmountObservers.removeAll()

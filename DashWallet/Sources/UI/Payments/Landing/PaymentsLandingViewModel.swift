@@ -119,6 +119,14 @@ struct ReceiveIdentity: Equatable {
     }
 }
 
+/// Where a Specify-amount request goes. Core keeps `DWReceiveModel`, which
+/// follows the next unused address; every other option carries the address or
+/// ID its card shows.
+enum AmountRequestDestination: Equatable {
+    case core
+    case option(ReceiveOption, address: String)
+}
+
 enum ReceiveOptionPolicy {
     /// Which options the Receive tab offers.
     ///
@@ -190,6 +198,10 @@ final class PaymentsLandingViewModel: ObservableObject {
     @Published private(set) var displayedAddress: String? = nil
     @Published private(set) var receipt: ReceiveReceipt? = nil
     @Published private(set) var isWatchingForReceipt = false
+    /// Raised when an amount request is dropped because its option or address
+    /// changed while the amount was typed; the landing shows a toast and the
+    /// toast lowers it.
+    @Published var showsDestinationChangedToast = false
 
     let allowsTransactionDetails: Bool
 
@@ -463,6 +475,19 @@ final class PaymentsLandingViewModel: ObservableObject {
             return displayedAddress
         }
         return candidateAddress(for: network)
+    }
+
+    /// Specify amount is offered on every option that has an address or ID to
+    /// put the amount on.
+    var canSpecifyAmount: Bool {
+        amountRequestDestination != nil
+    }
+
+    /// Where a Specify-amount request for the selected option goes, or nil when
+    /// the option has no address or ID.
+    var amountRequestDestination: AmountRequestDestination? {
+        guard let address = currentAddress else { return nil }
+        return network == .core ? .core : .option(network, address: address)
     }
 
     var canViewTransaction: Bool {
@@ -1041,7 +1066,7 @@ final class PaymentsLandingViewModel: ObservableObject {
         }
     }
 
-    private func acceptReceipt(_ newReceipt: ReceiveReceipt) {
+    func acceptReceipt(_ newReceipt: ReceiveReceipt) {
         guard receipt == nil else { return }
         receipt = newReceipt
         isWatchingForReceipt = false
