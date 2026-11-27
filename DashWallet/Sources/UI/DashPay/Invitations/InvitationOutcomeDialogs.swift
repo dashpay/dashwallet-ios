@@ -152,7 +152,9 @@ struct InvitationAlreadyClaimedDialog: View {
                 // Platform cannot tell whose claim it was: one this wallet
                 // made and lost (the app stopped before it saved it) looks
                 // the same as anyone else's.
-                Text(String(localized: "If this wallet claimed it before, turn on Advanced mode in Settings, then open More › Identities and tap Find identities to restore your identity.", comment: "DashPay Invitations"))
+                Text(String(localized: """
+                    If this wallet claimed it before, turn on Advanced mode in Settings, then open More › Identities and tap Find identities to restore your identity.
+                    """, comment: "DashPay Invitations"))
                     .dashFont(.footnote)
                     .foregroundColor(Color.dash.secondaryText)
                     .multilineTextAlignment(.center)

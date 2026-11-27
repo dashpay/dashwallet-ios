@@ -94,7 +94,9 @@ struct AcceptInvitationCard: View {
                     action: String(localized: "Finish registration", comment: "DashPay registration recovery"),
                     perform: onFinishRegistration)
             case .ownClaimNotLoaded:
-                hintWithRetry(String(localized: "This wallet already claimed this invitation, but its identity isn't loaded. Turn on Advanced mode in Settings, open More › Identities and tap Find identities, then try again.", comment: "DashPay Invitations"))
+                hintWithRetry(String(localized: """
+                    This wallet already claimed this invitation, but its identity isn't loaded. Turn on Advanced mode in Settings, open More › Identities and tap Find identities, then try again.
+                    """, comment: "DashPay Invitations"))
             case .syncing, .valid:
                 EmptyView()
             }

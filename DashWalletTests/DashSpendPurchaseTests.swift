@@ -115,6 +115,45 @@ private final class StubPurchaseRecorder: GiftCardPurchaseRecording {
     }
 }
 
+/// The stores the production purchase recorder writes to, kept in memory.
+private final class StubTransactionMetadataDAO: TransactionMetadataDAO {
+    func create(dto: TransactionMetadata) {}
+    func get(by hash: Data, ignoreCache: Bool) -> TransactionMetadata? { nil }
+    func update(dto: TransactionMetadata) {}
+    func delete(dto: TransactionMetadata) {}
+    func deleteAll() {}
+}
+
+private final class StubIconUpdater: GiftCardIconUpdating {
+    func updateIcon(txId: Data, iconUrl: String) {}
+}
+
+/// `create` runs off the main actor, so the rows it keeps are read under a lock.
+private final class StubGiftCardsDAO: GiftCardsDAO, @unchecked Sendable {
+    private let lock = NSLock()
+    private var rows: [GiftCard] = []
+    var created: [GiftCard] {
+        lock.lock()
+        defer { lock.unlock() }
+        return rows
+    }
+
+    var giftCardTxIdPublisher: AnyPublisher<Data?, Never> { Empty().eraseToAnyPublisher() }
+    func create(dto: GiftCard) async {
+        lock.lock()
+        rows.append(dto)
+        lock.unlock()
+    }
+    func get(byTxId txId: Data) async -> GiftCard? { nil }
+    func observeAll() -> AnyPublisher<[GiftCard], Never> { Empty().eraseToAnyPublisher() }
+    func update(dto: GiftCard) async {}
+    func updateCardDetails(txId: Data, number: String, pin: String?) async {}
+    func updateBarcode(txId: Data, value: String, format: String) async {}
+    func updateRedeemUrl(txId: Data, url: String, challenge: String?) async {}
+    func delete(byTxId txId: Data) async {}
+    func all() async -> [GiftCard] { [] }
+}
+
 // MARK: - Tests
 
 @MainActor
@@ -302,6 +341,111 @@ final class DashSpendPurchaseTests: XCTestCase {
 
         XCTAssertEqual(payments.urlPayments.map(\.amount), [Self.higherDuffs])
         XCTAssertEqual(recorder.records.map(\.price), [25])
+    }
+
+    // MARK: The log of a higher price
+
+    /// Runs a purchase whose provider asks more than the buyer confirmed, answers the
+    /// "Price updated" sheet with `pay`, and returns every log message written meanwhile,
+    /// through any logger that reaches the exported file.
+    private func logOfHigherPrice(provider: GiftCardProvider, pay: Bool,
+                                  file: StaticString = #filePath, line: UInt = #line) async throws -> [String] {
+        let capture = CapturingLogger()
+        DDLog.add(capture, with: .all)
+        defer { DDLog.remove(capture) }
+
+        let (viewModel, snapshot) = try viewModelWithConfirmSheet(provider: provider)
+        payments.requestedByURL = Self.higherDuffs
+        piggyCards.quotedDash = try XCTUnwrap(Decimal(string: "0.6875"))
+        let purchase = startPurchase(snapshot, on: viewModel)
+        if await priceChange(on: viewModel, file: file, line: line) != nil {
+            viewModel.resolvePriceChange(pay: pay)
+        }
+        _ = try? await finish(purchase, on: viewModel, file: file, line: line)
+        DDLog.flushLog()
+        return capture.texts
+    }
+
+    /// The price change is logged on both answers, its acceptance only when the buyer pays,
+    /// and neither the confirmed nor the asked amount, nor the order note, is in any line.
+    private func assertHigherPriceLog(provider: GiftCardProvider, pay: Bool,
+                                      file: StaticString = #filePath, line: UInt = #line) async throws {
+        let log = try await logOfHigherPrice(provider: provider, pay: pay, file: file, line: line)
+        XCTAssertTrue(log.contains { $0.contains("Gift card price changed") }, "\(log)", file: file, line: line)
+        XCTAssertEqual(log.contains { $0.contains("Gift card price change accepted") }, pay, "\(log)",
+                       file: file, line: line)
+        assertNoAmount(in: log, file: file, line: line)
+    }
+
+    /// No message holds the confirmed or the asked amount, in duffs or Dash, the card's $25 as
+    /// the order sends it, or the order note's card amounts. An order id alone is an
+    /// identifier the log may carry, like a txid. A bare "25" is not checked: the capture also
+    /// holds the app's other lines, with durations and counts.
+    private func assertNoAmount(in log: [String], file: StaticString = #filePath, line: UInt = #line) {
+        let amounts = ["62500000", "62,500,000", "0.625", "68750000", "68,750,000", "0.6875",
+                       "25.00", "$25", "cardAmounts"]
+        for message in log where amounts.contains(where: { message.contains($0) }) {
+            XCTFail("an amount in the log: \(message)", file: file, line: line)
+        }
+    }
+
+    func testPurchaseAtTheConfirmedPriceIsLoggedWithoutAmounts() async throws {
+        for provider in [GiftCardProvider.ctx, .piggyCards] {
+            let capture = CapturingLogger()
+            DDLog.add(capture, with: .all)
+            defer { DDLog.remove(capture) }
+            let (viewModel, snapshot) = try viewModelWithConfirmSheet(provider: provider)
+            payments.requestedByURL = Self.confirmedDuffs
+            piggyCards.quotedDash = try XCTUnwrap(Decimal(string: "0.625"))
+            _ = try await finish(startPurchase(snapshot, on: viewModel), on: viewModel)
+            DDLog.flushLog()
+            assertNoAmount(in: capture.texts)
+        }
+    }
+
+    /// The production recorder, on in-memory stores: the save is logged, its price and its
+    /// note are not, for either provider's note.
+    func testRecordedPurchaseIsLoggedWithoutItsPriceOrNote() async throws {
+        let price = try XCTUnwrap(Decimal(string: "37.13"))
+        let piggyNote = #"{"orderId":"piggy-order-7","cardAmounts":["37.13"]}"#
+        for (provider, note) in [(GiftCardProvider.ctx, "ctx-order-7"), (.piggyCards, piggyNote)] {
+            let giftCards = StubGiftCardsDAO()
+            let store = GiftCardPurchaseStore(
+                txMetadata: { StubTransactionMetadataDAO() }, icons: { StubIconUpdater() }, giftCards: { giftCards })
+            let capture = CapturingLogger()
+            DDLog.add(capture, with: .all)
+            defer { DDLog.remove(capture) }
+
+            store.record(GiftCardPurchaseRecord(
+                txidWire: StubPayments.txidWire, provider: provider, merchantName: "Test Merchant", merchantUrl: nil,
+                merchantIconUrl: "", price: price, note: note))
+            let deadline = Date().addingTimeInterval(Self.patience)
+            while giftCards.created.isEmpty, Date() < deadline { await Task.yield() }
+            DDLog.flushLog()
+
+            XCTAssertEqual(giftCards.created.map(\.note), [note], "\(provider)")
+            XCTAssertTrue(capture.texts.contains { $0.contains("Gift card saved") }, "\(provider): \(capture.texts)")
+            for message in capture.texts
+            where ["37.13", "ctx-order-7", "piggy-order-7", "cardAmounts"].contains(where: { message.contains($0) }) {
+                XCTFail("\(provider): the price or the note in the log: \(message)")
+            }
+        }
+    }
+
+    func testCTXDeclinedHigherPriceIsLoggedWithoutAmounts() async throws {
+        try await assertHigherPriceLog(provider: .ctx, pay: false)
+    }
+
+    func testCTXAcceptedHigherPriceIsLoggedWithoutAmounts() async throws {
+        try await assertHigherPriceLog(provider: .ctx, pay: true)
+    }
+
+    func testPiggyCardsDeclinedHigherPriceIsLoggedWithoutAmounts() async throws {
+        try await assertHigherPriceLog(provider: .piggyCards, pay: false)
+    }
+
+    func testPiggyCardsAcceptedHigherPriceIsLoggedWithoutAmounts() async throws {
+        try await assertHigherPriceLog(provider: .piggyCards, pay: true)
     }
 
     // MARK: CTX, outcome unknown

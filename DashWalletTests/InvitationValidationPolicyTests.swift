@@ -180,6 +180,23 @@ final class InvitationValidationPolicyTests: XCTestCase {
         }
     }
 
+    /// Finish registration only for a voucher that could be claimed now: one
+    /// below the minimum or not yet locked says so first.
+    func testAPendingRegistrationDoesNotHideAnUnusableVoucher() {
+        for recovers in [true, false] {
+            XCTAssertEqual(
+                InvitationValidationPolicy.verdict(
+                    status: status(amount: minimum - 1), inviter: inviter, minimumDuffs: minimum,
+                    claim: .registrationPending, paidRegistrationRecovers: recovers),
+                .invalid(.belowMinimum, inviter: inviter))
+            XCTAssertEqual(
+                InvitationValidationPolicy.verdict(
+                    status: status(amount: 3_000_000, isInstant: false, isChainLocked: false), inviter: inviter,
+                    minimumDuffs: minimum, claim: .registrationPending, paidRegistrationRecovers: recovers),
+                .awaitingChainLock)
+        }
+    }
+
     // MARK: - Whose claim it was
 
     func testClaimedByThisWalletButNotLoadedPointsAtFindIdentities() {

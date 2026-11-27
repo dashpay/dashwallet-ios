@@ -227,7 +227,7 @@ class ExchangeAddressProvider {
             // The card's address dictionary can also contain internal Uphold identifiers
             // (e.g., "UH1D8C10A5") under non-network keys — skip those.
             if let networkAddress = matchingCard.address?[network], !networkAddress.isEmpty {
-                DWLogger.log("Maya Uphold: Found network address for \(context.currencyCode) on network '\(network)': \(networkAddress)")
+                DWLogger.log("Maya Uphold: Found network address for \(context.currencyCode) on network '\(network)'")
                 Self.upholdAddressCache[context.cacheKey] = networkAddress
                 return networkAddress
             }
@@ -417,7 +417,7 @@ class ExchangeAddressProvider {
 
             if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
                let address = json["id"] as? String {
-                DWLogger.log("Maya Uphold: Created address on card \(cardId) (HTTP \(statusCode)): \(address)")
+                DWLogger.log("Maya Uphold: Created address on card \(cardId) (HTTP \(statusCode))")
                 return address
             }
 
@@ -570,7 +570,7 @@ class ExchangeAddressProvider {
             guard let address = validatedCoinbaseAddress(addressInfo: addressInfo, context: context, source: "direct lookup") else {
                 return nil
             }
-            DWLogger.log("Maya Coinbase: Created address for \(context.currencyCode) via direct lookup: \(address)")
+            DWLogger.log("Maya Coinbase: Created address for \(context.currencyCode) via direct lookup")
             return address
         } catch {
             DWLogger.log("Maya Coinbase: Direct lookup failed for \(context.currencyCode): \(error)")
@@ -599,7 +599,7 @@ class ExchangeAddressProvider {
             guard let address = validatedCoinbaseAddress(addressInfo: addressInfo, context: context, source: "account list") else {
                 return nil
             }
-            DWLogger.log("Maya Coinbase: Created address for \(context.currencyCode) via account list: \(address)")
+            DWLogger.log("Maya Coinbase: Created address for \(context.currencyCode) via account list")
             return address
         } catch {
             DWLogger.log("Maya Coinbase: Account list fallback failed for \(context.currencyCode): \(error)")

@@ -13,7 +13,6 @@
 //
 
 import Foundation
-import OSLog
 import SwiftDashSDK
 
 enum InvitationTier: Equatable {
@@ -238,29 +237,26 @@ enum InvitationValidationPolicy {
             return .alreadyHasOtherIdentity
         case .undetermined:
             return .undetermined
-        case .registrationPending:
-            // A spent voucher stays spent whatever the wallet is paying for:
-            // Finish registration only for one that can still be claimed,
-            // and only where it would work.
-            if status.alreadyClaimed { return claimedVerdict(status: status, inviter: inviter) }
-            return paidRegistrationRecovers ? .pendingPaidRegistration : .undetermined
-        case .claim:
+        case .registrationPending, .claim:
             break
         }
-        if status.alreadyClaimed { return claimedVerdict(status: status, inviter: inviter) }
+        // The voucher's own state comes first, in this order: spent, below
+        // the minimum, not yet locked. A paid registration waiting on the
+        // wallet matters only for a voucher that could be claimed now.
+        if status.alreadyClaimed {
+            // `true`: the wallet records the identity, yet the store has
+            // none, so its save failed. `nil` (or a contradictory `false`):
+            // spent, whoever spent it — the dialog says how to restore it if
+            // it was this wallet.
+            return status.claimedByThisWallet == true ? .ownClaimNotLoaded : .alreadyClaimed(inviter: inviter)
+        }
         if status.amountDuffs < minimumDuffs { return .invalid(.belowMinimum, inviter: inviter) }
         if !status.isInstant && !status.isChainLocked { return .awaitingChainLock }
+        if claim == .registrationPending {
+            // Finish registration is offered only where it would work.
+            return paidRegistrationRecovers ? .pendingPaidRegistration : .undetermined
+        }
         return .valid(amountDuffs: status.amountDuffs, inviter: inviter)
-    }
-
-    /// A spent voucher, on a wallet with no identity. `true`: the wallet
-    /// records the identity, yet the store has none, so its save failed.
-    /// `nil` (or a contradictory `false`): spent, whoever spent it — the
-    /// dialog says how to restore it if it was this wallet.
-    private static func claimedVerdict(
-        status: ManagedPlatformWallet.InvitationClaimStatus, inviter: InvitationInviter
-    ) -> InvitationValidation {
-        status.claimedByThisWallet == true ? .ownClaimNotLoaded : .alreadyClaimed(inviter: inviter)
     }
 
     /// Which usernames `amountDuffs` pays for when a contested name costs
@@ -417,9 +413,7 @@ enum InvitationNotReadyPolicy {
 @MainActor
 enum InvitationValidator {
 
-    private static let logger = Logger(
-        subsystem: "org.dashfoundation.dash",
-        category: "swift-sdk-migration.invitations")
+    private static let logger = AppLogger(category: "swift-sdk-migration.invitations")
 
     /// nil when the wallet is not ready to be asked (not hydrated yet), or
     /// when the active wallet or network is no longer the invitation's — the
@@ -452,10 +446,10 @@ enum InvitationValidator {
             queryStatus: { uri in
                 do {
                     let status = try await wallet.invitationClaimStatusForThisWallet(uri: uri)
-                    DWLogger.log("🎟️ INVITE :: status check completed")
+                    logger.info("🎟️ INVITE :: status check completed")
                     return status
                 } catch {
-                    logger.info("🎟️ INVITE :: status failed: \(String(describing: error), privacy: .public)")
+                    logger.info("🎟️ INVITE :: status failed: \(error)")
                     throw error
                 }
             })

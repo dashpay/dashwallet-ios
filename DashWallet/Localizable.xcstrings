@@ -329434,6 +329434,7 @@
     },
     "No enabled AUTHENTICATION ECDSA key is available for this identity." : {
       "comment" : "DashConnect",
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -518975,6 +518976,9 @@
           }
         }
       }
+    },
+    "The active wallet changed. Start the top-up again." : {
+      "comment" : "Identity top-up refused: the identity does not belong to the active wallet"
     },
     "The active wallet or identity changed. Please try again." : {
       "comment" : "DashPay registration recovery",

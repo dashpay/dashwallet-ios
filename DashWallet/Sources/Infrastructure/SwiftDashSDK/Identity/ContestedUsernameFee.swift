@@ -17,7 +17,6 @@
 
 import Combine
 import Foundation
-import OSLog
 import SwiftDashSDK
 
 /// What a contested username costs on the network the app is connected to.
@@ -86,9 +85,7 @@ final class ContestedUsernameFee: ObservableObject {
 
     static let shared = ContestedUsernameFee()
 
-    private static let logger = Logger(
-        subsystem: "org.dashfoundation.dash",
-        category: "swift-sdk-migration.contested-username-fee")
+    private static let logger = AppLogger(category: "swift-sdk-migration.contested-username-fee")
 
     /// The pair for the running network. Observed by every screen that
     /// states or checks the cost, so a version that arrives after a screen
@@ -227,8 +224,6 @@ final class ContestedUsernameFee: ObservableObject {
     private func record(_ version: UInt32, scope: String) {
         guard version > (knownProtocolVersion(scope: scope) ?? 0) else { return }
         defaults.set(Int(version), forKey: key(scope: scope))
-        Self.logger.info("SDK reports protocol \(version, privacy: .public) for \(scope, privacy: .public)")
-        // DWLogger as well: os_log does not reach the exported diagnostics.
         DWLogger.log("CONTESTED-FEE protocol \(version) recorded for \(scope)")
     }
 

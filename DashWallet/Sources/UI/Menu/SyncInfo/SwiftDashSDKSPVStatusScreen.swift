@@ -18,7 +18,6 @@
 //
 
 import Combine
-import OSLog
 import SwiftData
 import SwiftUI
 import DashUIKit
@@ -772,9 +771,7 @@ struct SwiftDashSDKSPVStatusScreen: View {
 @MainActor
 extension SwiftDashSDKSPVStatusScreen {
 
-    private static let logger = Logger(
-        subsystem: "org.dashfoundation.dash",
-        category: "swift-sdk-migration.spv-status")
+    private static let logger = AppLogger(category: "swift-sdk-migration.spv-status")
 
     /// True when SPV is running AND a wallet is bound — the two
     /// conditions `spvRescanFilters` needs for an immediate rescan.
@@ -903,7 +900,7 @@ extension SwiftDashSDKSPVStatusScreen {
         } catch {
             rescanResultIsError = true
             rescanResultMessage = error.localizedDescription
-            Self.logger.error("🛰️ SPV-STATUS :: rescan filters failed: \(String(describing: error), privacy: .public)")
+            Self.logger.error("🛰️ SPV-STATUS :: rescan filters failed: \(error)")
         }
     }
 
@@ -950,7 +947,7 @@ extension SwiftDashSDKSPVStatusScreen {
             } catch {
                 dropResultIsError = true
                 dropResultMessage = error.localizedDescription
-                Self.logger.error("🛰️ SPV-STATUS :: bulk unconfirmed drop failed: \(String(describing: error), privacy: .public)")
+                Self.logger.error("🛰️ SPV-STATUS :: bulk unconfirmed drop failed: \(error)")
             }
             isDroppingUnconfirmed = false
             // The drop deletes the locks of the dropped transactions; the
@@ -1039,7 +1036,7 @@ extension SwiftDashSDKSPVStatusScreen {
             row.birthHeight = previous
             rescanResultIsError = true
             rescanResultMessage = error.localizedDescription
-            Self.logger.error("🛰️ SPV-STATUS :: birth-height save failed: \(String(describing: error), privacy: .public)")
+            Self.logger.error("🛰️ SPV-STATUS :: birth-height save failed: \(error)")
             return
         }
         Self.logger.info("🛰️ SPV-STATUS :: birth height \(previous, privacy: .public) → \(height, privacy: .public)")
@@ -1070,7 +1067,7 @@ extension SwiftDashSDKSPVStatusScreen {
             row.syncedHeight = previousSynced
             rescanResultIsError = true
             rescanResultMessage = error.localizedDescription
-            Self.logger.error("🛰️ SPV-STATUS :: birth-height resync save failed: \(String(describing: error), privacy: .public)")
+            Self.logger.error("🛰️ SPV-STATUS :: birth-height resync save failed: \(error)")
             return
         }
         SPVChainResyncMarker.arm(walletId: walletId, fromHeight: height, network: network)

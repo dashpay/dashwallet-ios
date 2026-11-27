@@ -25,16 +25,13 @@
 //
 
 import Foundation
-import OSLog
 import SwiftData
 import SwiftDashSDK
 
 @objc(DWSwiftDashSDKReceiveAddressReader)
 final class SwiftDashSDKReceiveAddressReader: NSObject {
 
-    private static let logger = Logger(
-        subsystem: "org.dashfoundation.dash",
-        category: "swift-sdk-migration.receive-address-reader")
+    private static let logger = AppLogger(category: "swift-sdk-migration.receive-address-reader")
 
     /// Main-thread trampoline: `SwiftDashSDKHost.shared` and `mainContext`
     /// are main-bound; Obj-C callers reach here from background queues.
@@ -138,7 +135,7 @@ final class SwiftDashSDKReceiveAddressReader: NSObject {
             return (address, wallet.walletId)
         } catch {
             Self.logger.warning(
-                "📬 RECVADDR :: nextReceiveAddress failed: \(String(describing: error), privacy: .public)")
+                "📬 RECVADDR :: nextReceiveAddress failed: \(error)")
             return nil
         }
     }
