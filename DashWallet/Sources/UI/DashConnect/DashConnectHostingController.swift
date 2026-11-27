@@ -44,7 +44,11 @@ final class DashConnectHostingController: UIHostingController<ConnectionsScreen>
         let viewModel = ConnectionsViewModel(
             usernameState: { dashPayModel == nil ? .present : Self.activeIdentityUsernameState() },
             rereadUsername: { if dashPayModel != nil { Self.rereadActiveIdentityNames() } },
-            walletScope: { "\(String(describing: WalletEnvironment.network)):\(WalletEnvironment.activeWalletIdHex ?? "")" })
+            walletScope: {
+                ConnectionsViewModel.WalletScope(
+                    network: String(describing: WalletEnvironment.network),
+                    walletId: WalletEnvironment.activeWalletIdHex as String?)
+            })
         self.viewModel = viewModel
         pendingURI = uri
         pendingURIWasScanned = scanned
@@ -79,9 +83,17 @@ final class DashConnectHostingController: UIHostingController<ConnectionsScreen>
     }
 
     @MainActor
+    /// A held login's retry. Without an identity row the identity itself is
+    /// not known yet: identity recovery runs again if its last run on this
+    /// runtime ended without an answer. With one, the names are read again.
     private static func rereadActiveIdentityNames() {
         #if DASHPAY
-        DWCurrentUserIdentityInfo.shared.syncFromNetwork()
+        let identityInfo = DWCurrentUserIdentityInfo.shared
+        if identityInfo.refreshedSnapshot().identityId == nil {
+            PlatformAddressSyncCoordinator.shared.retryIdentityRecovery()
+        } else {
+            identityInfo.syncFromNetwork()
+        }
         #endif
     }
 

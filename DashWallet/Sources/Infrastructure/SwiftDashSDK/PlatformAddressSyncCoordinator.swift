@@ -566,6 +566,35 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         }
     }
 
+#if DASHPAY
+    /// Run the same-seed identity recovery again for the bound wallet when
+    /// its last run on this runtime ended without settling (Platform was
+    /// down at startup), for a reader still waiting for the identity: a held
+    /// DashConnect login the user asked for again, at most
+    /// `IdentityRecoveryLedger.maxAskedRetries` times. Core and the Platform
+    /// loop are left as they are. The run joins `identityRecoveryTask`, so a
+    /// stop cancels and waits for it as for the start's own.
+    func retryIdentityRecovery() {
+        guard let manager = walletManager, SwiftDashSDKHost.shared.manager === manager,
+              let wallet, let network = runningNetwork,
+              let container = SwiftDashSDKHost.shared.modelContainer,
+              isSelectedWalletScope(walletId: wallet.walletId, network: network),
+              DWSameSeedIdentityRecoveryCoordinator.shared.claimRetry(walletId: wallet.walletId, network: network)
+        else { return }
+        DWLogger.log("🪪 IDENT-RECOVERY [\(wallet.walletId.hexEncodedString().prefix(8))] retry asked by a waiting login")
+        let previous = identityRecoveryTask
+        identityRecoveryTask = Task {
+            await withTaskCancellationHandler {
+                await previous?.value
+            } onCancel: {
+                previous?.cancel()
+            }
+            await DWSameSeedIdentityRecoveryCoordinator.shared.recoverIfNeeded(
+                wallet: wallet, modelContainer: container, network: network)
+        }
+    }
+#endif
+
     /// Wait until every shielded-sync stop `performStop` started has
     /// returned. The SDK's async stop cancels the loop at once, then waits up
     /// to 10 s off the main thread for a pass in flight; one that times out

@@ -1197,6 +1197,63 @@ enum StartupIdentityRecoveryPolicy {
 /// removed and re-imported in the same session gets its attempt back.
 /// Failures remain retryable on the next runtime start. A readiness verdict
 /// with a known identity always adopts, settled or not.
+/// What the identity recovery knows per wallet-and-network context, apart
+/// from the runs in flight.
+struct IdentityRecoveryLedger {
+    /// No more runs this process (the settled memo).
+    private var settled: Set<String> = []
+    /// Settled by the retry cap with an identity found but its row never
+    /// confirmed: no more runs, yet the identity is not known absent.
+    private var settledUnanswered: Set<String> = []
+    /// The last run ended without settling: it threw, or left the context
+    /// open.
+    private var open: Set<String> = []
+    /// Runs a waiting reader asked for. Each one may scan the seed without
+    /// a budget, so they are capped (`maxAskedRetries`).
+    private var askedRetries: [String: Int] = [:]
+    static let maxAskedRetries = 2
+
+    func isSettled(_ context: String) -> Bool { settled.contains(context) }
+
+    /// Found an identity whose row is confirmed, or proved there is none.
+    func hasAnswer(_ context: String) -> Bool {
+        settled.contains(context) && !settledUnanswered.contains(context)
+    }
+
+    /// Ran, did not settle, and the asked runs are not used up: an explicit
+    /// retry may run it again.
+    func mayRetry(_ context: String) -> Bool {
+        open.contains(context) && !settled.contains(context)
+            && askedRetries[context, default: 0] < Self.maxAskedRetries
+    }
+
+    /// Counts the run when one may go; false otherwise.
+    mutating func claimRetry(_ context: String) -> Bool {
+        guard mayRetry(context) else { return false }
+        askedRetries[context, default: 0] += 1
+        return true
+    }
+
+    /// Open until the run settles it.
+    mutating func runStarted(_ context: String) { open.insert(context) }
+
+    /// `answered` is false only for the retry cap's settle without a
+    /// confirmed identity row.
+    mutating func settle(_ context: String, answered: Bool) {
+        settled.insert(context)
+        open.remove(context)
+        askedRetries[context] = nil
+        if answered { settledUnanswered.remove(context) } else { settledUnanswered.insert(context) }
+    }
+
+    mutating func forget(where matches: (String) -> Bool) {
+        settled = settled.filter { !matches($0) }
+        settledUnanswered = settledUnanswered.filter { !matches($0) }
+        open = open.filter { !matches($0) }
+        askedRetries = askedRetries.filter { !matches($0.key) }
+    }
+}
+
 @MainActor
 final class DWSameSeedIdentityRecoveryCoordinator {
     static let shared = DWSameSeedIdentityRecoveryCoordinator()
@@ -1209,7 +1266,7 @@ final class DWSameSeedIdentityRecoveryCoordinator {
 
     private static let logger = AppLogger(category: "swift-sdk-migration.identity-recovery")
 
-    private var completedContexts: Set<String> = []
+    private var ledger = IdentityRecoveryLedger()
     private var activeContexts: Set<String> = []
     /// Readiness verdicts recorded by `DashPayContactAddressReadiness` for
     /// the current runtime start. `recoverIfNeeded` removes the verdict for
@@ -1243,21 +1300,30 @@ final class DWSameSeedIdentityRecoveryCoordinator {
         startupVerdicts.removeAll()
     }
 
+    /// Whether this process has an answer for `walletId`'s identity on
+    /// `network`: found one, or proved there is none. Until then a wallet
+    /// without an identity row may still own one (a restore, a reinstall):
+    /// a failed run leaves it unanswered, and so does one settled by the
+    /// retry cap with an identity whose row the store never confirmed.
+    func isSettled(walletId: Data, network: Network) -> Bool {
+        ledger.hasAnswer(Self.contextKey(walletId: walletId, network: network))
+    }
+
+    /// A reader still waiting for the identity asks for another run: true,
+    /// and counted, when the last run for `walletId` on `network` ended
+    /// without settling, none is running, and the asked runs are not used up.
+    func claimRetry(walletId: Data, network: Network) -> Bool {
+        let contextKey = Self.contextKey(walletId: walletId, network: network)
+        return !activeContexts.contains(contextKey) && ledger.claimRetry(contextKey)
+    }
+
     /// Drop everything remembered about `walletId` on every network. Called
     /// on wallet deletion: walletIds are deterministic per mnemonic+network,
     /// so a phrase removed and re-imported must not inherit a settled
     /// context.
-    /// Whether this process has settled `walletId`'s identity on `network`:
-    /// found one, or proved there is none. Until then a wallet without an
-    /// identity row may still own one (a restore, a reinstall), and a failed
-    /// run leaves it unsettled.
-    func isSettled(walletId: Data, network: Network) -> Bool {
-        completedContexts.contains(Self.contextKey(walletId: walletId, network: network))
-    }
-
     func forgetWallet(walletId: Data) {
         let suffix = ":" + walletId.hexEncodedString()
-        completedContexts = completedContexts.filter { !$0.hasSuffix(suffix) }
+        ledger.forget { $0.hasSuffix(suffix) }
         startupVerdicts = startupVerdicts.filter { !$0.key.hasSuffix(suffix) }
         unpersistedAttempts = unpersistedAttempts.filter { !$0.key.hasSuffix(suffix) }
     }
@@ -1314,7 +1380,7 @@ final class DWSameSeedIdentityRecoveryCoordinator {
             readinessDiscoveredThisStart: verdict?.discovered ?? false,
             hasLocalIdentity: Self.hasLocalIdentity(walletId: walletId, modelContainer: modelContainer)) {
         case .skipSettled:
-            completedContexts.insert(contextKey)
+            ledger.settle(contextKey, answered: true)
             NotificationCenter.default.post(name: Self.didSettleNotification, object: nil)
             Self.logger.info(
                 "🪪 IDENT-RECOVERY :: skipped — startup readiness proved this seed owns no identity")
@@ -1326,7 +1392,7 @@ final class DWSameSeedIdentityRecoveryCoordinator {
             allowDiscovery = true
         case .runPipeline:
             allowDiscovery = true
-            guard !completedContexts.contains(contextKey) else {
+            guard !ledger.isSettled(contextKey) else {
                 restoreVerdict()
                 return
             }
@@ -1335,13 +1401,14 @@ final class DWSameSeedIdentityRecoveryCoordinator {
             // it: adopt and refresh whatever identity rows exist locally,
             // never scan.
             allowDiscovery = false
-            guard !completedContexts.contains(contextKey) else {
+            guard !ledger.isSettled(contextKey) else {
                 restoreVerdict()
                 return
             }
         }
 
         activeContexts.insert(contextKey)
+        ledger.runStarted(contextKey)
         defer {
             activeContexts.remove(contextKey)
             NotificationCenter.default.post(name: Self.didSettleNotification, object: nil)
@@ -1393,7 +1460,7 @@ final class DWSameSeedIdentityRecoveryCoordinator {
                 Self.logger.warning(
                     "🪪 IDENT-RECOVERY :: no local identity to adopt and scanning was not allowed; leaving the context open")
             } else if outcome.identityCount == 0 || outcome.identitiesPersisted {
-                completedContexts.insert(contextKey)
+                ledger.settle(contextKey, answered: true)
                 unpersistedAttempts[contextKey] = nil
             } else {
                 // Acted on ids the store has not confirmed: leave the context
@@ -1405,7 +1472,7 @@ final class DWSameSeedIdentityRecoveryCoordinator {
                 let attempts = (unpersistedAttempts[contextKey] ?? 0) + 1
                 unpersistedAttempts[contextKey] = attempts
                 if attempts >= StartupIdentityRecoveryPolicy.maxUnpersistedAttempts {
-                    completedContexts.insert(contextKey)
+                    ledger.settle(contextKey, answered: false)
                     Self.logger.error(
                         "🪪 IDENT-RECOVERY :: identity still not persisted after \(attempts, privacy: .public) attempt(s); settling for this process")
                 } else {

@@ -7053,22 +7053,74 @@ final class ConnectionsViewModelTermsTests: XCTestCase {
     }
 
     func testAHeldLinkIsNotTakenUnderAnotherWallet() async {
+        for (from, to) in [(Self.scope("testnet", "a"), Self.scope("testnet", "b")),
+                           (Self.scope("testnet", "a"), Self.scope("mainnet", "a")),
+                           (Self.scope("testnet", nil), Self.scope("mainnet", "a"))] {
+            var username = ConnectionsViewModel.UsernameState.unknown
+            var wallet = from
+            let center = NotificationCenter()
+            let spy = LoginApprovalSpy(shown: [Self.request(platformTimeMs: Self.platformNow, expiresAt: Self.platformNow + 3_600_000)])
+            let viewModel = ConnectionsViewModel(
+                dataSource: spy, featureUnavailable: false, usernameState: { username }, walletScope: { wallet },
+                now: { Self.phone }, notificationCenter: center)
+            viewModel.onURIReceived("login")
+
+            wallet = to
+            username = .present
+            center.post(name: SwiftDashSDKHost.runtimeDidStartNotification, object: nil)
+            await waitUntil { !viewModel.isWaitingForUsername }
+
+            XCTAssertEqual(spy.parseCount, 0, "a request is answered only under the wallet it came to: \(from) → \(to)")
+            XCTAssertNil(viewModel.pendingRequest)
+        }
+    }
+
+    func testALinkHeldBeforeTheWalletOpensGoesOnUnderTheWalletThatOpens() async {
         var username = ConnectionsViewModel.UsernameState.unknown
-        var wallet = "testnet:a"
+        var wallet = Self.scope("testnet", nil)
         let center = NotificationCenter()
         let spy = LoginApprovalSpy(shown: [Self.request(platformTimeMs: Self.platformNow, expiresAt: Self.platformNow + 3_600_000)])
         let viewModel = ConnectionsViewModel(
             dataSource: spy, featureUnavailable: false, usernameState: { username }, walletScope: { wallet },
             now: { Self.phone }, notificationCenter: center)
         viewModel.onURIReceived("login")
+        XCTAssertTrue(viewModel.isWaitingForUsername)
 
-        wallet = "testnet:b"
+        wallet = Self.scope("testnet", "a")
+        username = .present
+        center.post(name: SwiftDashSDKHost.runtimeDidStartNotification, object: nil)
+        await waitUntil { viewModel.pendingRequest != nil }
+
+        XCTAssertEqual(spy.parseCount, 1, "the kept wallet opening after a first-launch link is the wallet it came to")
+    }
+
+    func testALinkHeldBeforeTheWalletOpensIsDroppedWhenThatWalletIsSwitchedAway() async {
+        var username = ConnectionsViewModel.UsernameState.unknown
+        var wallet = Self.scope("testnet", nil)
+        let center = NotificationCenter()
+        let spy = LoginApprovalSpy(shown: [Self.request(platformTimeMs: Self.platformNow, expiresAt: Self.platformNow + 3_600_000)])
+        var reads = 0
+        let viewModel = ConnectionsViewModel(
+            dataSource: spy, featureUnavailable: false, usernameState: { reads += 1; return username },
+            walletScope: { wallet }, now: { Self.phone }, notificationCenter: center)
+        viewModel.onURIReceived("login")
+
+        wallet = Self.scope("testnet", "a")
+        let readsBeforeTheWalletOpened = reads
+        center.post(name: SwiftDashSDKHost.runtimeDidStartNotification, object: nil)
+        await waitUntil { reads > readsBeforeTheWalletOpened }
+        XCTAssertTrue(viewModel.isWaitingForUsername)
+        wallet = Self.scope("testnet", "b")
         username = .present
         center.post(name: SwiftDashSDKHost.runtimeDidStartNotification, object: nil)
         await waitUntil { !viewModel.isWaitingForUsername }
 
-        XCTAssertEqual(spy.parseCount, 0, "a request is answered only under the wallet it came to")
+        XCTAssertEqual(spy.parseCount, 0, "once a wallet opened, a switch to another drops the held request")
         XCTAssertNil(viewModel.pendingRequest)
+    }
+
+    private static func scope(_ network: String, _ walletId: String?) -> ConnectionsViewModel.WalletScope {
+        ConnectionsViewModel.WalletScope(network: network, walletId: walletId)
     }
 
     func testALoginIsNotApprovedWhileTheUsernameIsUnread() async {
@@ -7248,6 +7300,15 @@ final class ConnectionsViewModelTermsTests: XCTestCase {
 
 @MainActor
 final class MainTabbarMoreStackTests: XCTestCase {
+    func testOnlyAWalletSwitchDropsTheMoreStack() {
+        let same = MainTabbarController.isTheSameWallet
+        XCTAssertTrue(same(("testnet", nil), ("testnet", "a")), "the kept wallet opening on a first launch")
+        XCTAssertTrue(same(("testnet", "a"), ("testnet", "a")), "the same wallet started again")
+        XCTAssertFalse(same(("testnet", "a"), ("testnet", "b")))
+        XCTAssertFalse(same(("testnet", "a"), ("mainnet", "a")))
+        XCTAssertFalse(same(("testnet", nil), ("mainnet", "a")))
+    }
+
     func testAddingTabsKeepsTheScreensOpenOnMore() {
         let oldMenu = UIViewController()
         let connections = UIViewController()
@@ -7264,5 +7325,59 @@ final class MainTabbarMoreStackTests: XCTestCase {
     func testANewLayoutStartsAtTheMenu() {
         let menu = UIViewController()
         XCTAssertEqual(MainTabbarController.moreNavigation(menu: menu, keepingStackOf: nil).viewControllers, [menu])
+    }
+}
+
+final class IdentityRecoveryLedgerTests: XCTestCase {
+    private let context = "testnet:aa"
+
+    func testARunThatFailsLeavesNoAnswerAndMayBeRetried() {
+        var ledger = IdentityRecoveryLedger()
+        XCTAssertFalse(ledger.mayRetry(context), "no run yet: the startup's own run is not raced")
+        ledger.runStarted(context)
+        XCTAssertFalse(ledger.hasAnswer(context))
+        XCTAssertTrue(ledger.mayRetry(context), "Platform was down: a waiting login may ask again")
+        XCTAssertFalse(ledger.isSettled(context))
+    }
+
+    func testAskedRetriesAreCapped() {
+        var ledger = IdentityRecoveryLedger()
+        ledger.runStarted(context)
+        for _ in 0..<IdentityRecoveryLedger.maxAskedRetries {
+            XCTAssertTrue(ledger.claimRetry(context))
+            ledger.runStarted(context)
+        }
+        XCTAssertFalse(ledger.claimRetry(context), "each asked run may scan the seed without a budget")
+    }
+
+    func testASettledAnswerEndsTheRetries() {
+        var ledger = IdentityRecoveryLedger()
+        ledger.runStarted(context)
+        ledger.settle(context, answered: true)
+        XCTAssertTrue(ledger.hasAnswer(context))
+        XCTAssertFalse(ledger.mayRetry(context))
+    }
+
+    func testTheRetryCapSettlesWithoutAnAnswer() {
+        var ledger = IdentityRecoveryLedger()
+        ledger.runStarted(context)
+        ledger.settle(context, answered: false)
+        XCTAssertTrue(ledger.isSettled(context), "the cap still stops the unbudgeted scan")
+        XCTAssertFalse(ledger.mayRetry(context))
+        XCTAssertFalse(ledger.hasAnswer(context), "an identity was found: it is not known absent")
+
+        ledger.settle(context, answered: true)
+        XCTAssertTrue(ledger.hasAnswer(context), "a later adoption that confirms the row answers it")
+    }
+
+    func testForgettingAWalletClearsItsContexts() {
+        var ledger = IdentityRecoveryLedger()
+        ledger.runStarted(context)
+        ledger.settle("mainnet:aa", answered: false)
+        ledger.runStarted("testnet:bb")
+        ledger.forget { $0.hasSuffix(":aa") }
+        XCTAssertFalse(ledger.mayRetry(context))
+        XCTAssertFalse(ledger.isSettled("mainnet:aa"))
+        XCTAssertTrue(ledger.mayRetry("testnet:bb"))
     }
 }

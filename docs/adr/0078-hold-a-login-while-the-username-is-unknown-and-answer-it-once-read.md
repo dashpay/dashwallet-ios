@@ -37,23 +37,29 @@ snapshot read as "no identity" and showed "Create username" to a wallet that has
 
 - **Unknown, not missing:** the username state is unknown while the identity snapshot loads, while
   identity recovery for the wallet on its network has not settled, or while an identity's names
-  are not read. It is missing only when recovery settled with no identity, or the names were read
-  and none is the wallet's.
+  are not read. It is missing only when recovery proved there is no identity, or the names were
+  read and none is the wallet's. Recovery that found an identity but stopped before the store
+  confirmed its row (the retry cap) leaves the state unknown.
 - **What waits:** one login request, not parsed. It waits only when nothing else on the page owns
   the answer: no approve, purchase or return sheet, no connection sheet up or going, no signing,
   resolving or disconnect under way. Otherwise ADR-0058's answer applies at once. A `dash-st:`
   request never waits (unchanged).
 - **Replacement:** a newer request replaces the held one; the held one is dropped without an answer.
 - **Wake-up:** the SDK runtime start, identity recovery settling, and the registration update read
-  the state again. Holding a request starts the names' read again when an earlier one failed.
+  the state again. Holding a request starts the names' read again when an earlier one failed;
+  without an identity row it runs identity recovery again when its last run on this runtime
+  ended without an answer (Platform was down), at most twice per wallet and network, without
+  restarting Core.
 - **Scope:** the held request goes on only under the wallet and network it came to; after a
-  switch it is dropped without an answer.
+  switch it is dropped without an answer. A request held before any wallet was open (a first
+  launch that keeps the wallets) belongs to the first wallet that opens on that network.
 - **Timeout:** after 30 seconds still unknown, it is refused with ADR-0058's "still reading" note,
   and the app has to ask again.
 - **Missing:** once the state reads missing, the held request is refused exactly as ADR-0058
   says for a wallet without a username.
-- **Surviving the tab rebuild:** the DashPay tabs that appear once the name is read keep the More
-  tab's navigation and the Connections page on it.
+- **Surviving the tab rebuild:** the DashPay tabs that appear once the name is read, and an
+  active-wallet change that is no switch (the same wallet starting again, the first wallet
+  opening), keep the More tab's navigation and the Connections page on it.
 
 ## Consequences
 
@@ -67,7 +73,9 @@ snapshot read as "no identity" and showed "Create username" to a wallet that has
 - The page waits up to 30 seconds with a progress overlay before a refusal.
 - A request stays in memory while held; it is the request as given, not a parsed or approved one.
 - On a wallet without an identity the create-username page shows only after recovery settles; a
-  failed recovery keeps the state unknown for the rest of the start.
+  failed recovery keeps the state unknown for the rest of the start, past the two asked retries.
+- A wallet whose found identity the store never confirmed gets "still reading" on every login
+  until the next start, not a create-username prompt.
 
 **Neutral**
 - A no-username wallet and a token purchase keep ADR-0058's answers.
@@ -76,7 +84,8 @@ snapshot read as "no identity" and showed "Create username" to a wallet that has
 
 - Code: `ConnectionsViewModel.receive`, `holdUntilTheUsernameIsRead`, `refreshUsername`,
   `DashConnectHostingController.usernameState`, `DWSameSeedIdentityRecoveryCoordinator.isSettled`,
-  `MainTabbarController.moreNavigation`
+  `IdentityRecoveryLedger`, `PlatformAddressSyncCoordinator.retryIdentityRecovery`,
+  `MainTabbarController.moreNavigation`, `MainTabbarController.isTheSameWallet`
 - Supersedes [ADR-0058](0058-answer-a-login-without-a-username-with-the-pages-own-state.md)
 - Related ADR: [ADR-0056](0056-know-no-app-and-ask-before-returning-to-one.md)
 - Issue: [#1434](https://github.com/dashpay/dashwallet-ios/issues/1434)

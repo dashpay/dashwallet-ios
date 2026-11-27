@@ -75,6 +75,20 @@ struct ConnectionSheetItem: Identifiable, Equatable {
 
 @MainActor
 final class ConnectionsViewModel: ObservableObject {
+    /// The wallet a held request came to: its network, and the active
+    /// wallet's id once one is open (nil before a first launch opens it).
+    struct WalletScope: Equatable {
+        let network: String
+        let walletId: String?
+
+        /// Whether a request held under this scope goes on under `now`: same
+        /// network, and the same wallet, or the first one to open if none was
+        /// open when it came.
+        func admits(_ now: WalletScope) -> Bool {
+            network == now.network && (walletId == nil || walletId == now.walletId)
+        }
+    }
+
     /// What the wallet knows of the active identity's usernames.
     enum UsernameState: Equatable {
         case present
@@ -163,7 +177,7 @@ final class ConnectionsViewModel: ObservableObject {
     /// (`holdUntilTheUsernameIsRead`); the page shows it is working.
     @Published private(set) var isWaitingForUsername = false
     /// The waiting request. A newer one replaces it.
-    private var heldRequest: (content: String, byLink: Bool, walletScope: String)?
+    private var heldRequest: (content: String, byLink: Bool, walletScope: WalletScope)?
     private var usernameReadWait: Task<Void, Never>?
     /// How long a held request waits for the names before it is refused.
     private let usernameReadTimeout: Duration
@@ -265,7 +279,7 @@ final class ConnectionsViewModel: ObservableObject {
     private let rereadUsername: @MainActor () -> Void
     /// The active wallet and network. A held request goes on only under the
     /// ones it came to.
-    private let walletScope: @MainActor () -> String
+    private let walletScope: @MainActor () -> WalletScope
     private let now: () -> Date
     private var pendingLoginRequest: DashKeyRequest?
     /// Opens an App Connect request's return URL.
@@ -315,7 +329,7 @@ final class ConnectionsViewModel: ObservableObject {
         openURL: (@MainActor (URL) -> Void)? = nil,
         usernameState: @escaping @MainActor () -> UsernameState = { .present },
         rereadUsername: @escaping @MainActor () -> Void = {},
-        walletScope: @escaping @MainActor () -> String = { "" },
+        walletScope: @escaping @MainActor () -> WalletScope = { WalletScope(network: "", walletId: nil) },
         now: @escaping () -> Date = Date.init,
         notificationCenter: NotificationCenter = .default,
         usernameReadTimeout: Duration = .seconds(30)
@@ -622,6 +636,7 @@ final class ConnectionsViewModel: ObservableObject {
     /// from creating one. A request held for the names goes on once they
     /// are read.
     func refreshUsername() {
+        bindHeldRequestToTheOpenedWallet()
         readUsername()
         guard !usernameUnknown, let held = takeHeldRequest() else { return }
         DWLogger.log("🔗 DASHCONNECT :: held request goes on: the username was read")
@@ -665,6 +680,16 @@ final class ConnectionsViewModel: ObservableObject {
         }
     }
 
+    /// A request held before any wallet was open (a first launch that opens
+    /// the kept wallet) belongs to the wallet that opens first: from then on
+    /// a switch to another wallet drops it.
+    private func bindHeldRequestToTheOpenedWallet() {
+        guard let held = heldRequest, held.walletScope.walletId == nil else { return }
+        let now = walletScope()
+        guard now.walletId != nil, held.walletScope.admits(now) else { return }
+        heldRequest = (held.content, held.byLink, now)
+    }
+
     /// The held request, gone from the page either way. Nil when it came
     /// under another wallet or network: it is not answered under this one.
     private func takeHeldRequest() -> (content: String, byLink: Bool)? {
@@ -673,7 +698,7 @@ final class ConnectionsViewModel: ObservableObject {
         isWaitingForUsername = false
         usernameReadWait?.cancel()
         usernameReadWait = nil
-        guard held.walletScope == walletScope() else {
+        guard held.walletScope.admits(walletScope()) else {
             DWLogger.log("🔗 DASHCONNECT :: held request dropped: the wallet or network changed")
             return nil
         }

@@ -201,6 +201,12 @@ class MainTabbarController: UITabBarController {
     }
     #endif
 
+    #if DASHPAY
+    /// The wallet the tabs were built for; nil walletId while none was open
+    /// (a cold start before the runtime binds one).
+    private var tabsBuiltForWallet: (network: String, walletId: String?) = ("", nil)
+    #endif
+
     @objc
     init(homeModel: DWHomeProtocol) {
         super.init(nibName: nil, bundle: nil)
@@ -209,6 +215,7 @@ class MainTabbarController: UITabBarController {
         configureControllers()
         
         #if DASHPAY
+        tabsBuiltForWallet = Self.activeWallet()
         NotificationCenter.default.publisher(for: .DWDashPayRegistrationStatusUpdated)
             .sink { [weak self] _ in
                 self?.reconfigureDashPayTabsIfNeeded()
@@ -224,7 +231,7 @@ class MainTabbarController: UITabBarController {
         NotificationCenter.default.publisher(for: SwiftDashSDKWalletState.activeWalletDidChangeNotification)
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
-                self?.reconfigureDashPayTabsForActiveWalletChange()
+                self?.reconfigureDashPayTabsForActiveWalletChange(keepingTheSameWalletsMoreStack: true)
             }
             .store(in: &cancellableBag)
 
@@ -401,7 +408,12 @@ extension MainTabbarController {
     /// because the previously-selected tab index may not exist under the new
     /// wallet's tab set (the +2 shift `reconfigureDashPayTabsPreservingSelection`
     /// applies assumes tabs were added, which doesn't hold on removal).
-    private func reconfigureDashPayTabsForActiveWalletChange() {
+    ///
+    /// `keepingTheSameWalletsMoreStack`: a change that is no switch — the
+    /// wallet the tabs were built for starts again, or the first wallet opens
+    /// (a first launch that keeps the wallets) — keeps the More tab's screens,
+    /// so a DashConnect page holding a login for that wallet stays.
+    private func reconfigureDashPayTabsForActiveWalletChange(keepingTheSameWalletsMoreStack: Bool = false) {
         // A successful full wipe posts the wallet-removed change while the
         // recover/reset flow that initiated it is still awaiting the wiper's
         // barrier inside this tab stack. Rebuilding here would deallocate
@@ -418,10 +430,34 @@ extension MainTabbarController {
             pendingDashPayTabReconfiguration = true
             return
         }
-        configureControllers()
-        selectedIndex = 0
+        let wallet = Self.activeWallet()
+        let builtFor = tabsBuiltForWallet
+        if keepingTheSameWalletsMoreStack, Self.isTheSameWallet(builtFor: builtFor, now: wallet),
+           let previousMore = viewControllers?.first(where: { $0 === menuNavigationController?.navigationController })
+               as? BaseNavigationController {
+            let moreWasSelected = selectedViewController === previousMore
+            configureControllers(keepingMoreStackOf: previousMore)
+            selectedIndex = moreWasSelected ? (viewControllers?.firstIndex { $0 === previousMore } ?? 0) : 0
+        } else {
+            configureControllers()
+            selectedIndex = 0
+        }
+        tabsBuiltForWallet = wallet
         view.setNeedsLayout()
         view.layoutIfNeeded()
+    }
+
+    private static func activeWallet() -> (network: String, walletId: String?) {
+        (String(describing: WalletEnvironment.network), SwiftDashSDKHost.shared.wallet?.walletId.hexEncodedString())
+    }
+
+    /// Whether a change from the wallet the tabs were built for to `now` is
+    /// no switch: the same wallet on the same network, or the first wallet to
+    /// open on that network.
+    nonisolated static func isTheSameWallet(
+        builtFor: (network: String, walletId: String?), now: (network: String, walletId: String?)
+    ) -> Bool {
+        builtFor.network == now.network && (builtFor.walletId == nil || builtFor.walletId == now.walletId)
     }
 
     /// The same wallet gains its DashPay tabs: a screen open on More (a
