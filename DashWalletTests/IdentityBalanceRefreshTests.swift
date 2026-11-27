@@ -75,6 +75,37 @@ final class IdentityBalanceRefreshTests: XCTestCase {
         await task.value
     }
 
+    /// The Identity watcher needs the balance it read, changed or not (AC-08:
+    /// the Starting balance is a fresh read, never a stored value).
+    func testSuccessfulReadReturnsTheFetchedBalanceWhetherOrNotItChanged() async {
+        for (previous, fetched): (UInt64?, UInt64) in [(nil, 7), (42, 42), (42, 0), (42, 43)] {
+            let result = await IdentityBalanceRefresh.run(
+                isCurrent: { true }, previousBalance: { previous },
+                refresh: { fetched },
+                publish: { _ in },
+                onFailure: { XCTFail("Unexpected failure: \($0)") })
+            XCTAssertEqual(try? result.get(), fetched)
+        }
+    }
+
+    func testFailedReadReturnsTheErrorNeverTheStoredBalanceOrZero() async {
+        let result = await IdentityBalanceRefresh.run(
+            isCurrent: { true }, previousBalance: { 42 },
+            refresh: { throw Failure.offline },
+            publish: { _ in XCTFail("Failed read must not publish") },
+            onFailure: { _ in })
+        XCTAssertThrowsError(try result.get()) { XCTAssertEqual($0 as? Failure, .offline) }
+    }
+
+    func testStaleContextReturnsAFailureNotABalance() async {
+        let result = await IdentityBalanceRefresh.run(
+            isCurrent: { false }, previousBalance: { 42 },
+            refresh: { XCTFail("Old wallet must not be queried"); return 0 },
+            publish: { _ in XCTFail("Old wallet must not be published") },
+            onFailure: { _ in XCTFail("No operation expected") })
+        XCTAssertThrowsError(try result.get())
+    }
+
     func testUnchangedBalanceStillPersistsWithoutPublishing() async {
         for balance: UInt64 in [0, 42] {
             var persisted = false
