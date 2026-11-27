@@ -32,6 +32,10 @@ final class DashConnectHostingController: UIHostingController<ConnectionsScreen>
     /// link. A scanned code goes in as a scan, the way the screen's own
     /// scanner hands one over.
     private var pendingURIWasScanned = false
+    /// Set while a link closes what covers the screen: the dismiss's
+    /// completion delivers the request then, not `viewDidAppear`, which can
+    /// run first and whose answer the completion's cleanup would wipe.
+    private var closingCover = false
 
     /// `dashPayModel` tells whether the wallet has a username and starts
     /// creating one; without it the page does not ask. `viewModel` is for
@@ -110,6 +114,7 @@ final class DashConnectHostingController: UIHostingController<ConnectionsScreen>
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
+        guard !closingCover else { return }
         consumePendingURI()
     }
 
@@ -174,10 +179,14 @@ final class DashConnectHostingController: UIHostingController<ConnectionsScreen>
             return
         }
 
+        closingCover = true
         presenter.dismiss(animated: false) { [weak self] in
-            // The page's alert, if that was it, is gone now.
-            self?.viewModel.message = nil
-            self?.consumePendingURIIfOnScreen()
+            guard let self else { return }
+            closingCover = false
+            // The page's alert, if that was it, is gone now; cleared before
+            // the request is taken, so its answer stays.
+            viewModel.message = nil
+            consumePendingURIIfOnScreen()
         }
     }
 

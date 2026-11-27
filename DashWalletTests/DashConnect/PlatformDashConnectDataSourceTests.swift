@@ -7292,6 +7292,30 @@ extension ConnectionsViewModelTermsTests {
         try await assertALinkCloses(presentedAs: .fullScreen)
     }
 
+    /// The screen comes back into the window before the dismiss's completion
+    /// runs. The answer the link gets there (here: the username is not read
+    /// yet) stays; only an alert from before the link is cleared.
+    func testALinkThatClosesAFullScreenFlowKeepsTheAnswerItGets() async throws {
+        let spy = LoginApprovalSpy(shown: [Self.request(platformTimeMs: Self.platformNow, expiresAt: Self.platformNow + 3_600_000)])
+        let viewModel = ConnectionsViewModel(
+            dataSource: spy, featureUnavailable: false, usernameState: { .unknown }, now: { Self.phone })
+        let (window, tabBar, menuNav) = try Self.connectionsWindow(viewModel: viewModel)
+        defer { window.isHidden = true }
+
+        let other = UIViewController()
+        other.modalPresentationStyle = .fullScreen
+        await withCheckedContinuation { done in tabBar.present(other, animated: false) { done.resume() } }
+        await waitUntil { menuNav.topViewController?.view.window == nil }
+
+        Self.route("login", tabBar: tabBar, menuNav: menuNav)
+        await waitUntil(timeout: 10) { other.presentingViewController == nil }
+        // Past the dismiss's completion.
+        try await Task.sleep(nanoseconds: 500_000_000)
+
+        XCTAssertNil(other.presentingViewController, "the full-screen flow was not closed")
+        XCTAssertEqual(viewModel.message?.text, ConnectionsViewModel.usernameUnreadText)
+    }
+
     /// The page's own scanner is presented from the More navigation
     /// controller, not from the tab bar.
     func testALinkClosesWhatThePagePresentedFromItsNavigationAndShowsItsRequest() async throws {
