@@ -33,6 +33,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, assign) BOOL locksBalance;
 
+/// Whether this screen's scanner opens the Connections screen with a scanned
+/// DashConnect code. NO here; Home says YES, so the lock screen and the Send
+/// scanners keep treating these codes as not-a-payment.
+@property (readonly, nonatomic) BOOL readsDashConnectCodes;
+
 - (void)performScanQRCodeAction;
 /// Assume pasteboard contains needed data and pay
 - (void)performPayToPasteboardAction;
@@ -50,10 +55,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// Hand an already-built input to the classic payment processor.
 ///
-/// Declared for the Swift subclasses that shadow the scan delegate to fill a
-/// form instead: an input their form cannot hold — a BIP70 request, which
-/// carries a fetched confirmation rather than an address — still has to go
-/// somewhere, and this is where the base class sends it.
+/// Declared for the Swift subclasses that override `didScanPaymentInput:` to
+/// fill a form instead: an input their form cannot hold — a BIP70 request,
+/// which carries a fetched confirmation rather than an address — still has to
+/// go somewhere, and this is where the base class sends it. The QR router uses
+/// it too, to keep a merchant request's outputs and metadata intact.
 - (void)processPaymentInput:(DWPaymentInput *)input;
 
 /// Leave a send that has finished: dismiss the modal that hosts it, or pop the
@@ -78,6 +84,11 @@ NS_ASSUME_NONNULL_BEGIN
 /// it) an address send gets; the delegate wiring lives in the base class,
 /// which is where the conformance is.
 - (void)presentSendSuccessWithTxidWire:(NSData *)txidWire;
+
+/// Scanner completion — dismisses the scanner and processes the input.
+/// Subclasses override to take ownership of the scanned input (the send
+/// screen and payments landing feed their own view models instead).
+- (void)didScanPaymentInput:(DWPaymentInput *)paymentInput;
 
 @end
 

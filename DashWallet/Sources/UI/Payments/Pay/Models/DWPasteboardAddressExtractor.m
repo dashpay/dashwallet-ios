@@ -19,6 +19,8 @@
 
 #import <UIKit/UIKit.h>
 
+#import "dashwallet-Swift.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
 @implementation DWPasteboardAddressExtractor
@@ -28,12 +30,9 @@ NS_ASSUME_NONNULL_BEGIN
     NSMutableOrderedSet<NSString *> *resultSet = [NSMutableOrderedSet orderedSet];
     NSCharacterSet *whitespacesSet = [NSCharacterSet whitespaceAndNewlineCharacterSet];
 
-    NSString *str = [pasteboard.string stringByTrimmingCharactersInSet:whitespacesSet];
-    if (str.length > 0) {
-        NSCharacterSet *separatorsSet = [NSCharacterSet alphanumericCharacterSet].invertedSet;
-
-        [resultSet addObject:str];
-        [resultSet addObjectsFromArray:[str componentsSeparatedByCharactersInSet:separatorsSet]];
+    NSString *string = pasteboard.string;
+    if (string) {
+        [resultSet addObjectsFromArray:[self extractAddressesFromString:string]];
     }
 
     UIImage *img = [UIPasteboard generalPasteboard].image;
@@ -71,7 +70,17 @@ NS_ASSUME_NONNULL_BEGIN
         NSCharacterSet *separatorsSet = [NSCharacterSet alphanumericCharacterSet].invertedSet;
 
         [resultSet addObject:str];
-        [resultSet addObjectsFromArray:[str componentsSeparatedByCharactersInSet:separatorsSet]];
+        // Text that mentions a payment link is a payment, not prose: only the link itself is
+        // read, whole, and only when the text is that one link.
+        if ([DWParsedPaymentURI textMentionsPaymentLink:str]) {
+            NSString *link = [DWParsedPaymentURI soleLinkIn:str];
+            if (link) {
+                [resultSet addObject:link];
+            }
+        }
+        else {
+            [resultSet addObjectsFromArray:[str componentsSeparatedByCharactersInSet:separatorsSet]];
+        }
     }
 
     return resultSet.array;

@@ -80,19 +80,10 @@ final class RefundAddressHostingController: UIViewController, NavigationBarDispl
     }
 
     private func presentQRScanner() {
-        let scanner = GenericQRScannerController()
-        scanner.modalPresentationStyle = .fullScreen
-
-        scanner.onQRCodeScanned = { [weak self, weak scanner] scannedValue in
-            scanner?.dismiss(animated: true) {
-                self?.viewModel.setAddress(scannedValue)
-            }
+        // The refund address is on the sold coin's chain, not Dash.
+        let scanner = QRScannerController.addressScanner(expectsDashAddress: false) { [weak self] address in
+            self?.viewModel.setAddress(address)
         }
-
-        scanner.onCancel = { [weak scanner] in
-            scanner?.dismiss(animated: true)
-        }
-
         present(scanner, animated: true)
     }
 

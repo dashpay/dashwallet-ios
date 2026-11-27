@@ -59,10 +59,7 @@ final class PaymentProtocolTransport: PaymentProtocolTransporting {
         var request = URLRequest(url: url, cachePolicy: .reloadIgnoringLocalCacheData, timeoutInterval: Self.timeout)
         request.setValue("application/\(scheme)-paymentrequest", forHTTPHeaderField: "Accept")
 
-        let redirects = HTTPSRedirectGuard(isEnforced: requiresHTTPS)
-        let (data, response) = try await session.data(for: request, delegate: redirects)
-        if redirects.refusedRedirect { throw BIP70Error.insecureTransport }
-        let http = try validate(response, data: data, host: url.host)
+        let (data, http) = try await receive(request, host: url.host)
 
         switch http.mimeType?.lowercased() {
         case "application/\(scheme)-paymentrequest":
@@ -70,7 +67,9 @@ final class PaymentProtocolTransport: PaymentProtocolTransporting {
             return paymentRequest
         case "text/uri-list" where followURIList:
             // BIP73: the body is a list of URLs; fetch the first non-comment one once.
-            guard let next = Self.firstURL(inURIList: data) else { throw BIP70Error.unexpectedResponse(host: url.host) }
+            guard let next = Self.firstURL(inURIList: data) else {
+                throw BIP70Error.unexpectedResponse(host: url.host)
+            }
             return try await fetchRequest(from: next, scheme: scheme, followURIList: false)
         default:
             throw BIP70Error.unexpectedResponse(host: url.host)
@@ -88,10 +87,7 @@ final class PaymentProtocolTransport: PaymentProtocolTransporting {
         request.setValue("application/\(scheme)-paymentack", forHTTPHeaderField: "Accept")
         request.httpBody = payment.encoded()
 
-        let redirects = HTTPSRedirectGuard(isEnforced: requiresHTTPS)
-        let (data, response) = try await session.data(for: request, delegate: redirects)
-        if redirects.refusedRedirect { throw BIP70Error.insecureTransport }
-        let http = try validate(response, data: data, host: url.host)
+        let (data, http) = try await receive(request, host: url.host)
         guard http.mimeType?.lowercased() == "application/\(scheme)-paymentack" else {
             throw BIP70Error.unexpectedResponse(host: url.host)
         }
@@ -100,15 +96,39 @@ final class PaymentProtocolTransport: PaymentProtocolTransporting {
 
     // MARK: - Helpers
 
-    private func validate(_ response: URLResponse, data: Data, host: String?) throws -> HTTPURLResponse {
-        guard let http = response as? HTTPURLResponse else { throw BIP70Error.unexpectedResponse(host: host) }
-        guard (200..<300).contains(http.statusCode) else { throw BIP70Error.unexpectedResponse(host: host) }
-        guard data.count <= Self.maxPayloadBytes else { throw BIP70Error.payloadTooLarge }
-        return http
+    /// The body is read against the 50 KB cap as it arrives, so a merchant
+    /// that sends more is cut off instead of buffered whole.
+    private func receive(_ request: URLRequest, host: String?) async throws -> (Data, HTTPURLResponse) {
+        let redirects = HTTPSRedirectGuard(isEnforced: requiresHTTPS)
+        let (bytes, response) = try await session.bytes(for: request, delegate: redirects)
+        do {
+            if redirects.refusedRedirect { throw BIP70Error.insecureTransport }
+            guard let http = response as? HTTPURLResponse,
+                  (200..<300).contains(http.statusCode) else {
+                throw BIP70Error.unexpectedResponse(host: host)
+            }
+            // Redirects off https are refused before they are made; this backs that up.
+            if requiresHTTPS, !Self.isHTTPS(http.url) {
+                throw BIP70Error.insecureTransport
+            }
+            guard http.expectedContentLength <= Int64(Self.maxPayloadBytes) else {
+                throw BIP70Error.payloadTooLarge
+            }
+            var data = Data()
+            for try await byte in bytes {
+                guard data.count < Self.maxPayloadBytes else { throw BIP70Error.payloadTooLarge }
+                data.append(byte)
+            }
+            return (data, http)
+        } catch {
+            bytes.task.cancel()
+            throw error
+        }
     }
 
+    /// Unsigned requests are allowed, so the channel is the only thing authenticating the merchant.
     static func isHTTPS(_ url: URL?) -> Bool {
-        url?.scheme?.lowercased() == "https"
+        url?.scheme?.lowercased() == "https" && url?.host?.isEmpty == false
     }
 
     private static func firstURL(inURIList data: Data) -> URL? {

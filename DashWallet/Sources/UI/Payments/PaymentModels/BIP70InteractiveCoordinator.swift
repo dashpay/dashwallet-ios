@@ -113,6 +113,7 @@ final class BIP70InteractiveCoordinator: NSObject {
 
     private let service: BIP70PaymentService
     private let allowsInsecureTransport: Bool
+    private var fetchTask: Task<Void, Never>?
 
     @objc override convenience init() {
         let allowsInsecureTransport = BIP70InteractivePolicy.allowsInsecureTransport
@@ -124,6 +125,15 @@ final class BIP70InteractiveCoordinator: NSObject {
         self.service = service
         self.allowsInsecureTransport = allowsInsecureTransport
         super.init()
+    }
+
+    /// A fetch nobody waits for any more is not left downloading.
+    deinit {
+        fetchTask?.cancel()
+    }
+
+    @objc func cancelFetch() {
+        fetchTask?.cancel()
     }
 
     /// `BIP70InteractivePolicy.requiresAuthentication` for the ObjC payment processor, read
@@ -143,8 +153,19 @@ final class BIP70InteractiveCoordinator: NSObject {
     /// Fetch + verify, then apply the interactive rules. No build, no spend.
     func prepare(requestURL: URL, scheme: String, callbackScheme: String?,
                  network: PaymentNetwork) async throws -> Confirmation {
+        try await Self.prepare(service: service, allowsInsecureTransport: allowsInsecureTransport,
+                               requestURL: requestURL, scheme: scheme, callbackScheme: callbackScheme,
+                               network: network)
+    }
+
+    /// Takes what it needs instead of `self`, so a fetch in flight doesn't keep the coordinator
+    /// alive past `deinit`'s cancel.
+    private static func prepare(service: BIP70PaymentService, allowsInsecureTransport: Bool,
+                                requestURL: URL, scheme: String, callbackScheme: String?,
+                                network: PaymentNetwork) async throws -> Confirmation {
         let confirmation = try await service.prepareForConfirmation(
-            from: requestURL, scheme: Self.normalize(scheme), network: network, callbackScheme: callbackScheme)
+            from: requestURL, scheme: paymentProtocolScheme(scheme), network: network,
+            callbackScheme: callbackScheme)
         try BIP70InteractivePolicy.check(confirmation, allowsInsecureTransport: allowsInsecureTransport)
         return confirmation
     }
@@ -155,14 +176,18 @@ final class BIP70InteractiveCoordinator: NSObject {
                         scheme: String,
                         callbackScheme: String?,
                         completion: @escaping (BIP70ConfirmationBox?, NSError?) -> Void) {
-        Task {
+        let service = service
+        let allowsInsecureTransport = allowsInsecureTransport
+        fetchTask?.cancel()
+        fetchTask = Task {
             do {
                 let network = try PaymentNetworkResolver.current()
-                let confirmation = try await prepare(requestURL: requestURL, scheme: scheme,
-                                                     callbackScheme: callbackScheme, network: network)
+                let confirmation = try await BIP70InteractiveCoordinator.prepare(
+                    service: service, allowsInsecureTransport: allowsInsecureTransport,
+                    requestURL: requestURL, scheme: scheme, callbackScheme: callbackScheme, network: network)
                 await MainActor.run { completion(BIP70ConfirmationBox(confirmation), nil) }
             } catch {
-                await MainActor.run { completion(nil, Self.nsError(error)) }
+                await MainActor.run { completion(nil, BIP70InteractiveCoordinator.nsError(error)) }
             }
         }
     }
@@ -193,9 +218,12 @@ final class BIP70InteractiveCoordinator: NSObject {
 
     // MARK: - Helpers
 
-    private static func normalize(_ scheme: String) -> String {
+    /// The payment protocol a request is fetched for. A whole https URL (BIP73) names where the
+    /// request is, not its currency: the wallet asks it for a Dash request. A cleartext one is
+    /// not taken for Dash: anyone on the path could rewrite what it returns.
+    static func paymentProtocolScheme(_ scheme: String) -> String {
         switch scheme.lowercased() {
-        case "pay", "dashwallet": return "dash"
+        case "pay", "dashwallet", "https": return "dash"
         default: return scheme.lowercased()
         }
     }

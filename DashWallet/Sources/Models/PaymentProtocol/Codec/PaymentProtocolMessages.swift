@@ -105,7 +105,8 @@ struct PaymentDetails {
             case DetailsField.time: time = field.varint ?? 0
             case DetailsField.expires: expires = field.varint ?? 0
             case DetailsField.memo: memo = field.data.flatMap { String(data: $0, encoding: .utf8) }
-            case DetailsField.paymentURL: paymentURL = field.data.flatMap { String(data: $0, encoding: .utf8) }
+            // Present but undecodable stays present and unusable (empty), never absent or repaired.
+            case DetailsField.paymentURL: paymentURL = field.data.flatMap { String(data: $0, encoding: .utf8) } ?? ""
             case DetailsField.merchantData: merchantData = field.data
             default: break
             }

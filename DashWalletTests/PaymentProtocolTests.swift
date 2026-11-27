@@ -308,6 +308,34 @@ final class PaymentProtocolTests: XCTestCase {
         }
     }
 
+    /// A declared length over the cap is refused before the body is read.
+    func testTransportRejectsADeclaredOversizedPayload() async {
+        MockURLProtocol.responseHandler = { _ in
+            (200, ["Content-Type": "application/dash-paymentrequest", "Content-Length": "50001"], Data(count: 10))
+        }
+        await assertThrowsBIP70(try await makeTransport().fetchRequest(from: requestURL, scheme: "dash")) {
+            $0 == .payloadTooLarge
+        }
+    }
+
+    /// A redirect from https to http is not followed, so neither the request nor a signed
+    /// payment is ever sent in the clear.
+    func testHTTPSOnlyTransportNeverFollowsARedirectToCleartext() async {
+        let config = URLSessionConfiguration.ephemeral
+        config.protocolClasses = [DowngradingURLProtocol.self]
+        DowngradingURLProtocol.body = fixture
+        DowngradingURLProtocol.servedCleartext = false
+        let transport = PaymentProtocolTransport(session: URLSession(configuration: config), requiresHTTPS: true)
+        await assertThrowsBIP70(try await transport.fetchRequest(from: requestURL, scheme: "dash")) {
+            $0 == .insecureTransport
+        }
+        let payment = Payment(transactions: [Data([0x01])], memo: nil)
+        await assertThrowsBIP70(try await transport.postPayment(payment, to: requestURL, scheme: "dash")) {
+            $0 == .insecureTransport
+        }
+        XCTAssertFalse(DowngradingURLProtocol.servedCleartext, "the cleartext redirect was not followed")
+    }
+
     func testTransportFollowsBIP73() async throws {
         let realURL = "https://merchant.example/real"
         let body = fixture
@@ -689,7 +717,7 @@ final class BIP70PaymentServiceTests: XCTestCase {
     private var p2sh: Data { Data([0xa9, 0x14]) + Data((1...20).map { UInt8($0) }) + Data([0x87]) }
 
     private func unsigned(network: String? = "test", outputs: [PaymentOutput]? = nil,
-                          paymentURL: String? = "http://h/pay", expires: UInt64? = nil,
+                          paymentURL: String? = "https://h/pay", expires: UInt64? = nil,
                           merchantData: Data? = Data([0x01, 0x02, 0x03])) -> PaymentRequest {
         let outs = outputs ?? [PaymentOutput(amount: 100_000, script: p2pkh)]
         let details = PaymentDetails(network: network, outputs: outs, expires: expires ?? futureExpiry,
@@ -708,6 +736,26 @@ final class BIP70PaymentServiceTests: XCTestCase {
         do { _ = try await expression(); XCTFail("expected throw", file: file, line: line) }
         catch let e as BIP70Error { XCTAssertEqual(e, expected, file: file, line: line) }
         catch { XCTFail("non-BIP70 error: \(error)", file: file, line: line) }
+    }
+
+    /// A payment_url that is present but unusable is refused, not taken for an absent one:
+    /// an absent one would skip the merchant's acknowledgement.
+    func testPrepareRefusesAnUnusablePaymentURL() async {
+        var requests = ["https:///pay", "not a url", "", "https://h/pay me", "//h/pay", "ftp://h/pay"].map { unsigned(paymentURL: $0) }
+        let noURL = unsigned(paymentURL: nil)
+        let malformedPath = Data("https://h/pay".utf8) + Data([0xff, 0xfe])
+        for bytes in [Data([0xff]), malformedPath] {
+            let field = Data([0x32, UInt8(bytes.count)]) + bytes
+            XCTAssertEqual(PaymentDetails(field).paymentURL, "", "undecodable bytes are neither absent nor repaired")
+            requests.append(PaymentRequest(pkiType: "none", serializedDetails: noURL.serializedDetails + field))
+        }
+        for request in requests {
+            let w = FakeWallet()
+            await assertThrowsBIP70(
+                try await service(FakeTransport(request), w).prepareForConfirmation(from: url, scheme: "dash", network: .testnet),
+                .malformedRequest)
+            XCTAssertTrue(w.calls.isEmpty)
+        }
     }
 
     func testPrepareBuildsAndSpendsNothing() async throws {
@@ -803,6 +851,19 @@ final class BIP70PaymentServiceTests: XCTestCase {
         XCTAssertEqual(confirmation.recipients.count, 2)
         XCTAssertEqual(confirmation.amount, 300_000)
         XCTAssertEqual(w.lastRecipients.map { $0.amountDuffs }, [100_000, 200_000])
+    }
+
+    /// A total that overflows or exceeds the coin supply is refused before
+    /// anything is shown.
+    func testOutOfRangeTotalIsRefused() async {
+        for outs in [[PaymentOutput(amount: UInt64.max, script: p2pkh), PaymentOutput(amount: 1, script: p2pkh)],
+                     [PaymentOutput(amount: kMaxDashSupplyDuffs + 1, script: p2pkh)]] {
+            let w = FakeWallet()
+            let svc = service(FakeTransport(unsigned(outputs: outs)), w)
+            await assertThrowsBIP70(try await svc.prepareForConfirmation(from: url, scheme: "dash", network: .testnet),
+                                    .malformedRequest)
+            XCTAssertTrue(w.calls.isEmpty)
+        }
     }
 
     func testNetworkMismatchThrowsBeforeBuild() async {
@@ -1501,14 +1562,15 @@ final class BIP70PaymentServiceTests: XCTestCase {
         XCTAssertNil(box.callbackScheme)
     }
 
-    /// Without `sender` the deep-link router rejects a `pay=` link, so the scan still falls back to
-    /// `BIP70URI` and stays unpayable: the deep link's own rule, not a scan-only one.
+    /// Without `sender` the deep-link router rejects a `pay=` link, and the scan keeps that
+    /// verdict: the deep link's own rule, not a scan-only one.
     func testParsedBoxDashWalletPayLinkWithoutSenderStaysRejected() {
         let box = ParsedPaymentURI.parse(paymentString: "dashwallet://pay=yRpspK93iBf5kASFGCnmkJ1VFGo2tCdFSW&amount=1")
-        // The rewrite was not applied: `BIP70URI` read the raw link, so `pay=` is still in the
-        // address. This holds on every network; the verdicts below alone would also pass on
-        // mainnet for a testnet address.
-        XCTAssertEqual(box.address, "pay=yRpspK93iBf5kASFGCnmkJ1VFGo2tCdFSW")
+        // A refused pay link is not reread as the plain alias: nothing is parsed out of it. This
+        // holds on every network; the verdicts below alone would also pass on mainnet for a
+        // testnet address.
+        XCTAssertNil(box.address)
+        XCTAssertNil(box.rURL)
         XCTAssertFalse(box.isAddressPayableForCurrentNetwork)
         XCTAssertFalse(box.isValidDashPaymentIntent)
     }
@@ -1597,6 +1659,19 @@ final class BIP70PaymentServiceTests: XCTestCase {
         XCTAssertEqual(request?.absoluteString, "ctx://callback=address&address=Xabc&source=dashwallet")
     }
 
+    /// The wrapper's parameter map keeps one value per key, so an amount given twice or
+    /// malformed would vanish into an open amount: the link is refused instead.
+    func testDeepLinkPayActionRefusesAnAmbiguousAmount() throws {
+        for link in ["dashwallet://pay=Xabc&amount=99999999999&amount=&sender=ctx",
+                     "dashwallet://pay=Xabc&amount=1&req-amount=2&sender=ctx",
+                     "dashwallet://pay=Xabc&amount=1=2&sender=ctx"] {
+            let url = try XCTUnwrap(URL(string: link))
+            XCTAssertNil(DWURLParser.action(for: url), link)
+            XCTAssertNil(DWURLParser.paymentURL(forScannedLink: url), link)
+        }
+        XCTAssertNotNil(DWURLParser.action(for: try XCTUnwrap(URL(string: "dashwallet://pay=Xabc&req-amount=1&sender=ctx"))))
+    }
+
     /// A deep link names the app that asked, as the link wrote it, and keeps it as the callback.
     func testDeepLinkPayActionNamesAValidSender() throws {
         let url = try XCTUnwrap(URL(string: "dashwallet://pay=Xabc&amount=1&sender=v4v.app&label=Shop"))
@@ -1621,25 +1696,37 @@ final class BIP70PaymentServiceTests: XCTestCase {
         XCTAssertFalse(action.paymentURL.absoluteString.contains("sender"))
     }
 
-    /// `BIP70URI` reads `req-sender` as `sender`, so an invalid `sender` must not leave a
-    /// `req-sender` behind to be called back.
-    func testDeepLinkPayActionDropsReqSenderWithAnInvalidSender() throws {
-        let url = try XCTUnwrap(URL(string: "dashwallet://pay=Xabc&amount=1&sender=https&req-sender=foo"))
-        let action = try XCTUnwrap(DWURLParser.action(for: url) as? DWURLPayAction)
-        let uri = try XCTUnwrap(BIP70URI(action.paymentURL.absoluteString))
-        XCTAssertEqual(uri.address, "Xabc")
-        XCTAssertNil(uri.callbackScheme)
-        XCTAssertFalse(action.paymentURL.absoluteString.contains("sender"))
+    /// A required callback that `sender` does not name — an invalid `sender`, or another app —
+    /// cannot be met: the link is refused rather than paid without it or called back elsewhere.
+    func testDeepLinkPayActionRefusesAReqSenderItsSenderDoesNotName() throws {
+        for query in ["sender=https&req-sender=foo", "sender=ctx&req-sender=foo"] {
+            let url = try XCTUnwrap(URL(string: "dashwallet://pay=Xabc&amount=1&\(query)"))
+            XCTAssertNil(DWURLParser.action(for: url), query)
+        }
     }
 
-    /// The app named on screen and the app called back are the same one: `sender`.
-    func testDeepLinkPayActionIgnoresReqSenderNextToAValidSender() throws {
-        let url = try XCTUnwrap(URL(string: "dashwallet://pay=Xabc&amount=1&sender=ctx&req-sender=foo"))
-        let action = try XCTUnwrap(DWURLParser.action(for: url) as? DWURLPayAction)
-        let uri = try XCTUnwrap(BIP70URI(action.paymentURL.absoluteString))
-        XCTAssertEqual(uri.callbackScheme, "ctx")
-        XCTAssertTrue(uri.label?.contains("ctx") ?? false)
-        XCTAssertFalse(action.paymentURL.absoluteString.contains("foo"))
+    /// A wrapper is read from its host alone, so text Foundation puts in a
+    /// user, port, path or fragment — a requirement among it — refuses the
+    /// link, opened or scanned, rather than being dropped.
+    func testAPayWrapperWithTextOutsideItsHostIsRefused() throws {
+        let address = "yRpspK93iBf5kASFGCnmkJ1VFGo2tCdFSW"
+        for link in ["dashwallet://pay=\(address)&amount=1&sender=ctx&label=a/b&req-memo=hi",
+                     "dashwallet://pay=\(address)&amount=1&sender=ctx#&req-memo=hi",
+                     "dashwallet://pay=\(address)&amount=1&sender=ctx?label=a#&req-memo=hi",
+                     "dashwallet://req-memo=hi@pay=\(address)&amount=1&sender=ctx",
+                     "dashwallet://pay=\(address)&amount=1&sender=ctx&label=a:5",
+                     "dashwallet://pay=\(address)&amount=1&sender=ctx/"] {
+            let url = try XCTUnwrap(URL(string: link), link)
+            XCTAssertNil(DWURLParser.action(for: url), link)
+            XCTAssertNil(DWURLParser.paymentURL(forScannedLink: url), link)
+            XCTAssertFalse(ParsedPaymentURI.parse(paymentString: link).isValidDashPaymentIntent, link)
+        }
+        for link in ["dashwallet://pay=\(address)&amount=1&sender=ctx", "dashwallet://pay=\(address)&amount=1&sender=ctx&label=Joe%20Shop"] {
+            XCTAssertNotNil(DWURLParser.action(for: try XCTUnwrap(URL(string: link))), link)
+        }
+        // An encoded requirement in the host is still read as one.
+        let encoded = "dashwallet://pay=\(address)&amount=1&sender=ctx&req%2Dmemo=hi"
+        XCTAssertFalse(ParsedPaymentURI.parse(paymentString: encoded).isValidDashPaymentIntent)
     }
 
     /// A `req-label` cannot replace the label the wallet wrote for a valid `sender`.
@@ -1660,13 +1747,45 @@ final class BIP70PaymentServiceTests: XCTestCase {
         XCTAssertEqual(uri.label, "Shop")
     }
 
-    /// A link the wallet read itself carries no sender under either name.
-    func testParsedBoxDropsReqSenderOfDashWalletPayLink() {
-        let box = ParsedPaymentURI.parse(
-            paymentString: "dashwallet://pay=yRpspK93iBf5kASFGCnmkJ1VFGo2tCdFSW&amount=1&sender=ctx&req-sender=foo")
+    /// A link the wallet read itself drops an optional sender and refuses a
+    /// required one: it calls no app back.
+    func testParsedBoxDropsSenderAndRefusesReqSenderOfDashWalletPayLink() {
+        let link = "dashwallet://pay=yRpspK93iBf5kASFGCnmkJ1VFGo2tCdFSW&amount=1&sender=ctx"
+        let box = ParsedPaymentURI.parse(paymentString: link)
         XCTAssertEqual(box.address, "yRpspK93iBf5kASFGCnmkJ1VFGo2tCdFSW")
         XCTAssertNil(box.callbackScheme)
         XCTAssertNil(box.label)
+        XCTAssertFalse(box.hasUnsupportedRequirement)
+
+        let required = ParsedPaymentURI.parse(paymentString: "\(link)&req-sender=ctx")
+        XCTAssertTrue(required.hasUnsupportedRequirement)
+        XCTAssertFalse(required.isValidDashPaymentIntent)
+        XCTAssertNil(required.label)
+    }
+
+    /// An opened link meets `req-sender` only with one callback that names an app, and any
+    /// optional `sender` naming the same one; an invalid optional sender is still just dropped.
+    func testAnOpenedLinksRequiredCallbackMustBeUnambiguous() throws {
+        let link = "dash:yRpspK93iBf5kASFGCnmkJ1VFGo2tCdFSW?amount=1"
+        let met = ParsedPaymentURI.parse(openedLink: "\(link)&req-sender=ctx&sender=ctx")
+        XCTAssertFalse(met.hasUnsupportedRequirement)
+        XCTAssertEqual(met.callbackScheme, "ctx")
+        for unmet in ["req-sender=", "req-sender=https", "req-sender=ctx&sender=other",
+                      "sender=other&req-sender=ctx", "req-sender=ctx&req-sender=ctx"] {
+            let parsed = ParsedPaymentURI.parse(openedLink: "\(link)&\(unmet)")
+            XCTAssertTrue(parsed.hasUnsupportedRequirement, unmet)
+            XCTAssertNil(parsed.callbackScheme, unmet)
+        }
+        let dropped = ParsedPaymentURI.parse(openedLink: "\(link)&sender=https")
+        XCTAssertFalse(dropped.hasUnsupportedRequirement)
+        XCTAssertNil(dropped.callbackScheme)
+
+        let wrapper = "dashwallet://pay=yRpspK93iBf5kASFGCnmkJ1VFGo2tCdFSW&amount=1&sender=ctx"
+        let action = try XCTUnwrap(DWURLParser.action(for: try XCTUnwrap(URL(string: "\(wrapper)&req-sender=ctx"))) as? DWURLPayAction)
+        XCTAssertEqual(try XCTUnwrap(BIP70URI(action.paymentURL.absoluteString)).callbackScheme, "ctx")
+        for unmet in ["req-sender=other", "req-sender=https", "req-sender=ctx&req-sender=ctx"] {
+            XCTAssertNil(DWURLParser.action(for: try XCTUnwrap(URL(string: "\(wrapper)&\(unmet)"))), unmet)
+        }
     }
 
     func testAddressRequestNeedsAValidSender() throws {
@@ -1697,6 +1816,23 @@ final class BIP70PaymentServiceTests: XCTestCase {
             XCTAssertEqual(read?.parsedURI?.callbackScheme, "ctx")
             XCTAssertNil(read?.callbackScheme)
             XCTAssertNil(read?.paymentIntent?.callbackScheme)
+        }
+    }
+
+    /// NFC and paste fetch only a Dash merchant request or a whole https request URL: another
+    /// currency's request is never fetched and shown as a Dash payment.
+    func testNFCAndPasteFetchOnlyDashRequests() {
+        let foreign = "bitcoin:?r=https://merchant.example/r"
+        XCTAssertFalse(ParsedPaymentURI.parse(paymentString: foreign).isFetchableDashRequest)
+        XCTAssertTrue(ParsedPaymentURI.parse(paymentString: "dash:?r=https://merchant.example/r").isFetchableDashRequest)
+        XCTAssertTrue(ParsedPaymentURI.parse(paymentString: "https://merchant.example/r").isFetchableDashRequest)
+        let builder = DWPaymentInputBuilder()
+        for source in [DWPaymentInputSource.pasteboard, .NFC] {
+            var read: DWPaymentInput?
+            builder.payFirst(from: [foreign], source: source) { read = $0 }
+            XCTAssertNotNil(read, "answered at once, without a fetch")
+            XCTAssertNil(read?.parsedURI)
+            XCTAssertNil(read?.bip70Confirmation)
         }
     }
 
@@ -1771,4 +1907,35 @@ final class BIP70PaymentServiceTests: XCTestCase {
         intent.amount = 42_000_000
         XCTAssertEqual(intent.amount, 42_000_000)
     }
+}
+
+/// Redirects every https request to the same path over http, and serves a payment request there.
+/// A refused redirect ends with the redirect response itself.
+private final class DowngradingURLProtocol: URLProtocol {
+    static var body = Data()
+    static var servedCleartext = false
+
+    override class func canInit(with request: URLRequest) -> Bool { true }
+    override class func canonicalRequest(for request: URLRequest) -> URLRequest { request }
+
+    override func startLoading() {
+        guard let url = request.url else { return }
+        if url.scheme == "https", var components = URLComponents(url: url, resolvingAgainstBaseURL: false) {
+            components.scheme = "http"
+            let redirect = HTTPURLResponse(url: url, statusCode: 302, httpVersion: "HTTP/1.1",
+                                           headerFields: ["Location": components.url!.absoluteString])!
+            client?.urlProtocol(self, wasRedirectedTo: URLRequest(url: components.url!), redirectResponse: redirect)
+            client?.urlProtocol(self, didReceive: redirect, cacheStoragePolicy: .notAllowed)
+            client?.urlProtocolDidFinishLoading(self)
+            return
+        }
+        Self.servedCleartext = true
+        let response = HTTPURLResponse(url: url, statusCode: 200, httpVersion: "HTTP/1.1",
+                                       headerFields: ["Content-Type": "application/dash-paymentrequest"])!
+        client?.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
+        client?.urlProtocol(self, didLoad: Self.body)
+        client?.urlProtocolDidFinishLoading(self)
+    }
+
+    override func stopLoading() {}
 }

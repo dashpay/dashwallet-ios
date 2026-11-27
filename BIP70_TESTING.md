@@ -186,7 +186,7 @@ xcrun simctl spawn booted log show --last 2m --predicate 'eventMessage CONTAINS[
 - **Entry points** funnel into `DSPaymentRequest`: QR (`r=`), `dash:`/`pay:`/`dashwallet:` deep
   links, `.dashpaymentrequest` UTI, pasteboard, Apple Watch, and programmatic
   `SendCoinsService.payWithDashUrl`.
-- **Fetch** (`fetchBIP70`): [`DWQRScanModel.m:204`](DashWallet/Sources/UI/Payments/ScanQR/DWQRScanModel.m#L204)
+- **Fetch** (`fetchBIP70`): [`QRScannerViewModel.swift:255`](DashWallet/Sources/UI/SwiftUI%20Components/QR/Scanner/QRScannerViewModel.swift#L255)
   (QR, fetch-then-present — the canonical path), [`DWPaymentInputBuilder.m:94`](DashWallet/Sources/UI/Payments/PaymentModels/DWPaymentInputBuilder.m#L94)
   (BIP73), [`DWPaymentProcessor.m:351`](DashWallet/Sources/UI/Payments/PaymentModels/DWPaymentProcessor.m#L351) (on Send).
 - **The BIP70 gate**: [`DWPaymentProcessor.m:398`](DashWallet/Sources/UI/Payments/PaymentModels/DWPaymentProcessor.m#L398)

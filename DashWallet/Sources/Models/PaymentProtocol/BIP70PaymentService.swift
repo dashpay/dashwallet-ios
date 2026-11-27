@@ -234,12 +234,23 @@ final class BIP70PaymentService {
         let recipients = try ScriptAddressCodec.resolveOutputs(details.outputs, network: network)
         guard !recipients.isEmpty else { throw BIP70Error.malformedRequest }
 
-        // A request whose outputs do not sum within UInt64 is malformed, not a crash.
+        // A merchant-controlled total: checked, and within the coin supply.
         var amount: UInt64 = 0
         for recipient in recipients {
-            let (sum, overflowed) = amount.addingReportingOverflow(recipient.amount)
-            guard !overflowed else { throw BIP70Error.malformedRequest }
+            let (sum, overflow) = amount.addingReportingOverflow(recipient.amount)
+            guard !overflow, sum <= kMaxDashSupplyDuffs else { throw BIP70Error.malformedRequest }
             amount = sum
+        }
+        // A payment_url the wallet can't post to is refused, not taken for none: without it the
+        // send would skip the merchant's acknowledgement.
+        var paymentURL: URL?
+        if let raw = details.paymentURL {
+            // Taken as written: a URL Foundation had to repair is not the merchant's endpoint.
+            guard let url = URL(string: raw), url.absoluteString == raw, url.host?.isEmpty == false,
+                  ["http", "https"].contains(url.scheme?.lowercased()) else {
+                throw BIP70Error.malformedRequest
+            }
+            paymentURL = url
         }
         return Confirmation(
             merchantName: verdict.commonName,
@@ -248,7 +259,7 @@ final class BIP70PaymentService {
             amount: amount,
             estimatedFee: Self.estimatedFee(recipientCount: recipients.count),
             network: network,
-            paymentURL: details.paymentURL.flatMap { URL(string: $0) },
+            paymentURL: paymentURL,
             scheme: scheme,
             merchantData: details.merchantData,
             memo: details.memo,

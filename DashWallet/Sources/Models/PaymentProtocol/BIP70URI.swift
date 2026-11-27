@@ -36,6 +36,9 @@ struct BIP70URI {
     /// `?amount=` parsed from decimal DASH to duffs. Authoritative amount for a BIP70 send still
     /// comes from the signed `PaymentDetails`; this is for the plain-send fallback / UI hints.
     let amount: UInt64?
+    /// An `amount` was given that is not one the wallet can pay: repeated, empty, unreadable, negative, or above
+    /// the coin supply. Not the same as no amount: the payer did not ask for an open amount.
+    let hasInvalidAmount: Bool
     let label: String?
     let message: String?
     /// `?r=` BIP72 payment-request URL — the BIP70 trigger. For `.bip73URL` it's the input itself.
@@ -51,6 +54,19 @@ struct BIP70URI {
     let fiatAmount: Float?
     /// Keys carrying the `req-` prefix (params the request demands; amount immutability etc.).
     let requiredFields: Set<String>
+    /// A `req-sender` that names no app scheme, is given twice, or disagrees with `sender`: no
+    /// callback can be the one the request demands.
+    let hasUnmetCallbackRequirement: Bool
+
+    /// The parameters a payment honours. BIP21: a `req-` parameter outside them makes the URI
+    /// unpayable. `user`, `currency` and `local` are read but no payment applies them, so they can
+    /// only be optional. `IS` (InstantSend, Dash Android's `req-IS`) is met by every payment: the
+    /// network locks transactions automatically.
+    static let understoodFields: Set<String> = ["amount", "label", "message", "r", "sender", "IS"]
+
+    var hasUnsupportedRequirement: Bool {
+        hasUnmetCallbackRequirement || !requiredFields.isSubset(of: Self.understoodFields)
+    }
 
     /// true ⇒ BIP70 protocol flow (fetch `r`); false ⇒ plain BIP21 address send.
     var isBIP70: Bool { r != nil }
@@ -92,10 +108,14 @@ struct BIP70URI {
 
         // Parse the query string.
         var amount: UInt64?
+        var hasInvalidAmount = false
+        var amountSeen = false
+        var requestSeen = false
         var label: String?
         var message: String?
         var r: URL?
-        var callbackScheme: String?
+        var senders: [String] = []
+        var requiredSenders: [String] = []
         var dashpayUsername: String?
         var fiatCurrencyCode: String?
         var fiatAmount: Float?
@@ -110,12 +130,26 @@ struct BIP70URI {
             if key.hasPrefix("req-") { requiredFields.insert(String(key.dropFirst(4))) }
 
             switch key {
-            case "amount", "req-amount": amount = Self.duffs(fromDecimalDash: value)
+            case "amount", "req-amount":
+                // One amount, under either spelling: a second one is a conflict, not an override.
+                hasInvalidAmount = hasInvalidAmount || amountSeen
+                amountSeen = true
+                amount = Self.duffs(fromDecimalDash: value)
+                hasInvalidAmount = hasInvalidAmount || amount == nil
             case "label", "req-label": label = value
             case "message", "req-message": message = value
-            case "r", "req-r": r = URL(string: value)
-            // Not a scheme an app can own → no callback; the rest of the link still stands.
-            case "sender", "req-sender": callbackScheme = CallbackScheme.validated(value)
+            case "r", "req-r":
+                // One request: a second one is a conflict, and no request may then be paid, nor the
+                // address in its place.
+                if requestSeen {
+                    r = nil
+                    requiredFields.insert("r")
+                } else {
+                    r = URL(string: value)
+                }
+                requestSeen = true
+            case "sender": senders.append(value)
+            case "req-sender": requiredSenders.append(value)
             case "user", "req-user": dashpayUsername = value
             case "currency", "req-currency": fiatCurrencyCode = value
             case "local", "req-local": fiatAmount = (value as NSString).floatValue
@@ -124,10 +158,22 @@ struct BIP70URI {
         }
 
         self.amount = amount
+        // A required amount of nothing is no invoice the wallet can pay.
+        self.hasInvalidAmount = hasInvalidAmount || (requiredFields.contains("amount") && amount == 0)
         self.label = label
         self.message = message
         self.r = r
-        self.callbackScheme = callbackScheme
+        // An optional sender that is not a scheme an app can own is no callback; the rest of the
+        // link still stands. A required one must name one app, and any optional one the same.
+        if requiredSenders.isEmpty {
+            callbackScheme = senders.last.flatMap(CallbackScheme.validated)
+            hasUnmetCallbackRequirement = false
+        } else {
+            let required = requiredSenders.count == 1 ? CallbackScheme.validated(requiredSenders[0]) : nil
+            let agrees = senders.allSatisfy { CallbackScheme.validated($0) == required }
+            callbackScheme = agrees ? required : nil
+            hasUnmetCallbackRequirement = required == nil || !agrees
+        }
         self.dashpayUsername = dashpayUsername
         self.fiatCurrencyCode = fiatCurrencyCode
         self.fiatAmount = fiatAmount
@@ -164,6 +210,7 @@ struct BIP70URI {
         scheme = "dash"
         address = bareAddressCandidate
         amount = nil
+        hasInvalidAmount = false
         label = nil
         message = nil
         r = nil
@@ -172,6 +219,7 @@ struct BIP70URI {
         fiatCurrencyCode = nil
         fiatAmount = nil
         requiredFields = []
+        hasUnmetCallbackRequirement = false
     }
 
     private init(bip73URL url: URL, scheme: String) {
@@ -179,6 +227,7 @@ struct BIP70URI {
         self.scheme = scheme
         address = nil
         amount = nil
+        hasInvalidAmount = false
         label = nil
         message = nil
         r = url
@@ -187,15 +236,24 @@ struct BIP70URI {
         fiatCurrencyCode = nil
         fiatAmount = nil
         requiredFields = []
+        hasUnmetCallbackRequirement = false
     }
 
     /// Decimal DASH string → duffs (1 DASH = 100_000_000 duffs), via `Decimal` to avoid binary
     /// floating-point error, rounding **up** to the next duff for sub-duff remainders
-    /// (`DSPaymentRequest.m:146` `NSRoundUp` parity). nil for an unparseable or negative amount.
+    /// (`DSPaymentRequest.m:146` `NSRoundUp` parity). nil for an unparseable or negative amount,
+    /// and for one above the coin supply, before it is narrowed.
     private static func duffs(fromDecimalDash value: String) -> UInt64? {
-        guard !value.isEmpty, let dash = Decimal(string: value), dash >= 0 else { return nil }
-        return NSDecimalNumber(decimal: dash * Decimal(100_000_000))
-            .rounding(accordingToBehavior: roundUpToDuff).uint64Value
+        // The whole token, not a numeric prefix: "1abc" or "1,000" is no amount.
+        guard value.range(of: #"\A(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)(?:[eE][+-]?[0-9]+)?\z"#, options: .regularExpression) != nil,
+              let dash = Decimal(string: value, locale: Locale(identifier: "en_US_POSIX")), !dash.isNaN else { return nil }
+        // An exponent past what `Decimal` holds comes back as NaN, which compares as no amount at all.
+        let product = dash * Decimal(100_000_000)
+        guard !product.isNaN else { return nil }
+        let duffs = NSDecimalNumber(decimal: product).rounding(accordingToBehavior: roundUpToDuff)
+        guard !duffs.decimalValue.isNaN,
+              duffs.compare(NSDecimalNumber(value: kMaxDashSupplyDuffs)) != .orderedDescending else { return nil }
+        return duffs.uint64Value
     }
 
     private static let roundUpToDuff = NSDecimalNumberHandler(roundingMode: .up,
