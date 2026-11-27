@@ -159,6 +159,14 @@ final class ConnectionsViewModel: ObservableObject {
     /// The active identity's names are not read yet: a login request is
     /// not taken or approved until they are, and is not told to create one.
     private(set) var usernameUnknown = false
+    /// A request that came while the names were unread waits for them
+    /// (`holdUntilTheUsernameIsRead`); the page shows it is working.
+    @Published private(set) var isWaitingForUsername = false
+    /// The waiting request. A newer one replaces it.
+    private var heldRequest: (content: String, byLink: Bool)?
+    private var usernameReadWait: Task<Void, Never>?
+    /// How long a held request waits for the names before it is refused.
+    private let usernameReadTimeout: Duration
     @Published var pendingRequest: ConnectionRequest? {
         didSet {
             // Terms belong to one request, by its ephemeral key: a sheet for
@@ -301,8 +309,10 @@ final class ConnectionsViewModel: ObservableObject {
         openURL: (@MainActor (URL) -> Void)? = nil,
         usernameState: @escaping @MainActor () -> UsernameState = { .present },
         now: @escaping () -> Date = Date.init,
-        notificationCenter: NotificationCenter = .default
+        notificationCenter: NotificationCenter = .default,
+        usernameReadTimeout: Duration = .seconds(30)
     ) {
+        self.usernameReadTimeout = usernameReadTimeout
         // Every network: a request is refused while the network's Platform
         // protocol is below the one App Connect needs (14).
         let computedFeatureUnavailable = featureUnavailable ?? false
@@ -330,11 +340,15 @@ final class ConnectionsViewModel: ObservableObject {
             .store(in: &cancellables)
 
         // The identity's names may still be loading when the page opens:
-        // they are read again once they load, or the identity changes.
-        notificationCenter.publisher(for: .DWDashPayRegistrationStatusUpdated)
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] _ in self?.refreshUsername() }
-            .store(in: &cancellables)
+        // they are read again once they load, or the identity changes. On a
+        // cold start from a link the SDK is not running yet either, and its
+        // start is the only signal when the names come from its cache.
+        for name in [Notification.Name.DWDashPayRegistrationStatusUpdated, SwiftDashSDKHost.runtimeDidStartNotification] {
+            notificationCenter.publisher(for: name)
+                .receive(on: DispatchQueue.main)
+                .sink { [weak self] _ in self?.refreshUsername() }
+                .store(in: &cancellables)
+        }
     }
 
     /// The rows of `tab`. A disconnected app is listed while it is not a row.
@@ -590,11 +604,56 @@ final class ConnectionsViewModel: ObservableObject {
     }
 
     /// Reads again whether the wallet has a username, for a page coming back
-    /// from creating one.
+    /// from creating one. A request held for the names goes on once they
+    /// are read.
     func refreshUsername() {
+        readUsername()
+        guard !usernameUnknown, let held = takeHeldRequest() else { return }
+        DWLogger.log("🔗 DASHCONNECT :: held request goes on: the username was read")
+        receive(held.content, byLink: held.byLink)
+    }
+
+    private func readUsername() {
         let username = usernameState()
         needsUsername = username == .missing
         usernameUnknown = username == .unknown
+    }
+
+    /// A login request while the names are unread (a link that cold-starts
+    /// the wallet comes before the SDK runs) waits for them instead of being
+    /// refused; `refreshUsername` takes it on. If they are still unread after
+    /// `usernameReadTimeout`, it is refused as before.
+    private func holdUntilTheUsernameIsRead(_ content: String, byLink: Bool) {
+        DWLogger.log("🔗 DASHCONNECT :: request held: the username is not read yet")
+        heldRequest = (content, byLink)
+        isWaitingForUsername = true
+        usernameReadWait?.cancel()
+        let timeout = usernameReadTimeout
+        usernameReadWait = Task { [weak self] in
+            try? await Task.sleep(for: timeout)
+            guard !Task.isCancelled else { return }
+            self?.usernameReadTimedOut()
+        }
+    }
+
+    private func usernameReadTimedOut() {
+        guard let held = takeHeldRequest() else { return }
+        readUsername()
+        if usernameUnknown {
+            DWLogger.log("🔗 DASHCONNECT :: held request refused: the username was not read in time")
+            answerWithoutUsername()
+        } else {
+            receive(held.content, byLink: held.byLink)
+        }
+    }
+
+    private func takeHeldRequest() -> (content: String, byLink: Bool)? {
+        guard let held = heldRequest else { return nil }
+        heldRequest = nil
+        isWaitingForUsername = false
+        usernameReadWait?.cancel()
+        usernameReadWait = nil
+        return held
     }
 
     /// Why a login is not taken or approved without a known username, or
@@ -609,17 +668,25 @@ final class ConnectionsViewModel: ObservableObject {
         guard !featureUnavailable else { return }
         // Read before the request: the page shows whether to create a
         // username, and a request needs one unless it is a state transition.
-        refreshUsername()
+        // A newer request replaces one still waiting for the names.
+        readUsername()
+        _ = takeHeldRequest()
         // Without a username only a `dash-st:` request goes on. A key
         // registration runs: it completes a two-QR login this wallet
         // approved already, and fails without that approved row
         // (`pendingApprovedConnectionForKeyRegistration`). A token purchase
         // is refused once parsed, before the network is read for it
         // (`handleStateTransition`). Any other request is not approved
-        // (`answerWithoutUsername`).
+        // (`answerWithoutUsername`), or waits while the names are unread.
         if needsUsername || usernameUnknown,
            !DashConnectUri.isStUri(content.trimmingCharacters(in: .whitespacesAndNewlines)) {
-            answerWithoutUsername()
+            // Only with nothing on screen: a sheet that is up keeps its own
+            // answer, as before.
+            if usernameUnknown, pendingRequest == nil, pendingTokenPurchase == nil, pendingReturn == nil {
+                holdUntilTheUsernameIsRead(content, byLink: byLink)
+            } else {
+                answerWithoutUsername()
+            }
             return
         }
 

@@ -1422,11 +1422,14 @@ private final class LoginApprovalSpy: DashConnectDataSource {
     }
 
     private var storedParseCount = 0
+    private var storedParsedContents: [String] = []
     private var storedHoldsVersionRead = false
     private var versionGate: CheckedContinuation<UInt32, Error>?
 
     /// How many times a scanned or opened request was handed to the parser.
     var parseCount: Int { lock.withLock { storedParseCount } }
+    /// What was handed to the parser, in order.
+    var parsedContents: [String] { lock.withLock { storedParsedContents } }
 
     /// When true, `protocolVersion()` suspends until `releaseVersionRead`.
     var holdsVersionRead: Bool {
@@ -1465,6 +1468,7 @@ private final class LoginApprovalSpy: DashConnectDataSource {
     func parseQR(_ content: String) async throws -> DashConnectQr {
         let failure = lock.withLock { () -> Error? in
             storedParseCount += 1
+            storedParsedContents.append(content)
             return storedParseFailure
         }
         if let failure { throw failure }
@@ -7000,17 +7004,90 @@ final class ConnectionsViewModelTermsTests: XCTestCase {
 
     // MARK: Username
 
-    func testALoginIsNotTakenWhileTheUsernameIsUnread() async {
+    func testALoginIsNotTakenWhileTheUsernameStaysUnread() async {
         let spy = LoginApprovalSpy(shown: [Self.request(platformTimeMs: Self.platformNow, expiresAt: Self.platformNow + 3_600_000)])
         let viewModel = ConnectionsViewModel(
-            dataSource: spy, featureUnavailable: false, usernameState: { .unknown }, now: { Self.phone })
+            dataSource: spy, featureUnavailable: false, usernameState: { .unknown }, now: { Self.phone },
+            usernameReadTimeout: .milliseconds(50))
 
         viewModel.onQRScanned("login")
+        XCTAssertTrue(viewModel.isWaitingForUsername)
+        XCTAssertNil(viewModel.message, "nothing is refused while the names may still load")
+
+        await waitUntil { viewModel.message != nil }
+        XCTAssertEqual(spy.parseCount, 0)
+        XCTAssertNil(viewModel.pendingRequest)
+        XCTAssertFalse(viewModel.isWaitingForUsername)
+        XCTAssertFalse(viewModel.needsUsername, "the user is not asked to create a name they may have")
+        XCTAssertEqual(viewModel.message?.text, ConnectionsViewModel.usernameUnreadText)
+    }
+
+    func testALinkThatColdStartsTheWalletIsTakenOnceTheNamesAreRead() async {
+        for signal in [Notification.Name.DWDashPayRegistrationStatusUpdated, SwiftDashSDKHost.runtimeDidStartNotification] {
+            var username = ConnectionsViewModel.UsernameState.unknown
+            let center = NotificationCenter()
+            let spy = LoginApprovalSpy(shown: [Self.request(platformTimeMs: Self.platformNow, expiresAt: Self.platformNow + 3_600_000)])
+            let viewModel = ConnectionsViewModel(
+                dataSource: spy, featureUnavailable: false, usernameState: { username }, now: { Self.phone },
+                notificationCenter: center)
+
+            viewModel.onURIReceived("login")
+            XCTAssertEqual(spy.parseCount, 0, "\(signal)")
+            XCTAssertTrue(viewModel.isWaitingForUsername, "\(signal)")
+
+            username = .present
+            center.post(name: signal, object: nil)
+            await waitUntil { viewModel.pendingRequest != nil }
+
+            XCTAssertNotNil(viewModel.pendingRequest, "\(signal)")
+            XCTAssertFalse(viewModel.isWaitingForUsername, "\(signal)")
+            XCTAssertNil(viewModel.message, "\(signal)")
+        }
+    }
+
+    func testAHeldLinkIsRefusedOnceTheNamesShowNoUsername() async {
+        var username = ConnectionsViewModel.UsernameState.unknown
+        let center = NotificationCenter()
+        let spy = LoginApprovalSpy(shown: [Self.request(platformTimeMs: Self.platformNow, expiresAt: Self.platformNow + 3_600_000)])
+        let viewModel = ConnectionsViewModel(
+            dataSource: spy, featureUnavailable: false, usernameState: { username }, now: { Self.phone },
+            notificationCenter: center)
+        viewModel.onURIReceived("login")
+
+        username = .missing
+        center.post(name: SwiftDashSDKHost.runtimeDidStartNotification, object: nil)
+        await waitUntil { viewModel.needsUsername }
 
         XCTAssertEqual(spy.parseCount, 0)
         XCTAssertNil(viewModel.pendingRequest)
-        XCTAssertFalse(viewModel.needsUsername, "the user is not asked to create a name they may have")
-        XCTAssertEqual(viewModel.message?.text, ConnectionsViewModel.usernameUnreadText)
+        XCTAssertFalse(viewModel.isWaitingForUsername)
+    }
+
+    func testANewerLinkReplacesTheHeldOne() async {
+        var username = ConnectionsViewModel.UsernameState.unknown
+        let center = NotificationCenter()
+        let spy = LoginApprovalSpy(shown: [Self.request(platformTimeMs: Self.platformNow, expiresAt: Self.platformNow + 3_600_000)])
+        let viewModel = ConnectionsViewModel(
+            dataSource: spy, featureUnavailable: false, usernameState: { username }, now: { Self.phone },
+            notificationCenter: center)
+        viewModel.onURIReceived("first")
+        viewModel.onURIReceived("second")
+
+        username = .present
+        center.post(name: .DWDashPayRegistrationStatusUpdated, object: nil)
+        await waitUntil { viewModel.pendingRequest != nil }
+
+        XCTAssertEqual(spy.parsedContents, ["second"])
+    }
+
+    func testAnIdentityNotLoadedYetIsUnknownNotMissing() {
+        typealias Host = DashConnectHostingController
+        XCTAssertEqual(Host.usernameState(isLoading: true, hasIdentity: false, namesAreLoaded: false, hasUsernames: false), .unknown,
+                       "the SDK has not started: the identity is not known to be absent")
+        XCTAssertEqual(Host.usernameState(isLoading: true, hasIdentity: true, namesAreLoaded: false, hasUsernames: false), .unknown)
+        XCTAssertEqual(Host.usernameState(isLoading: false, hasIdentity: false, namesAreLoaded: false, hasUsernames: false), .missing)
+        XCTAssertEqual(Host.usernameState(isLoading: false, hasIdentity: true, namesAreLoaded: true, hasUsernames: false), .missing)
+        XCTAssertEqual(Host.usernameState(isLoading: false, hasIdentity: true, namesAreLoaded: true, hasUsernames: true), .present)
     }
 
     func testALoginIsNotApprovedWhileTheUsernameIsUnread() async {

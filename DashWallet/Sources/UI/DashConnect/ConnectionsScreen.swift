@@ -77,7 +77,7 @@ struct ConnectionsScreen: View {
                 content
             }
 
-            if viewModel.isProcessingStateTransition || viewModel.isDisconnecting {
+            if viewModel.isProcessingStateTransition || viewModel.isDisconnecting || viewModel.isWaitingForUsername {
                 Color.black.opacity(0.08)
                     .ignoresSafeArea()
 

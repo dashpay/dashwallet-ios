@@ -63,12 +63,23 @@ final class DashConnectHostingController: UIHostingController<ConnectionsScreen>
     private static func activeIdentityUsernameState() -> ConnectionsViewModel.UsernameState {
         #if DASHPAY
         let identity = DWCurrentUserIdentityInfo.shared.refreshedSnapshot()
-        guard identity.hasIdentity else { return .missing }
-        guard identity.namesAreLoaded else { return .unknown }
-        return identity.usernames.isEmpty ? .missing : .present
+        return usernameState(
+            isLoading: identity.isLoading, hasIdentity: identity.hasIdentity,
+            namesAreLoaded: identity.namesAreLoaded, hasUsernames: !identity.usernames.isEmpty)
         #else
         return .present
         #endif
+    }
+
+    /// No identity counts as missing only once the snapshot is read: while
+    /// it loads (the SDK not started yet on a cold start from a link) the
+    /// identity is not known to be absent, so the state is unknown.
+    nonisolated static func usernameState(
+        isLoading: Bool, hasIdentity: Bool, namesAreLoaded: Bool, hasUsernames: Bool
+    ) -> ConnectionsViewModel.UsernameState {
+        guard hasIdentity else { return isLoading ? .unknown : .missing }
+        guard namesAreLoaded else { return .unknown }
+        return hasUsernames ? .present : .missing
     }
 
     private static func createUsername(
