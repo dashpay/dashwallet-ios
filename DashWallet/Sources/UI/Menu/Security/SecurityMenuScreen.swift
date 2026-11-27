@@ -155,7 +155,7 @@ struct SecurityMenuScreen: View {
         case .changePin:
             viewModel.authenticate { authenticated in
                 if authenticated {
-                    let controller = DWSetPinViewController(intent: .changePin)
+                    let controller = SetPinViewController(intent: .changePin)
                     controller.delegate = delegateInternal
                     self.vc?.pushViewController(controller, animated: true)
                 }
@@ -250,7 +250,7 @@ struct SecurityMenuScreen: View {
 }
 
 extension SecurityMenuScreen {
-    class DelegateInternal: NSObject, DWSecureWalletDelegate, DWSetPinViewControllerDelegate, DWWipeDelegate {
+    class DelegateInternal: NSObject, DWSecureWalletDelegate, SetPinViewControllerDelegate, DWWipeDelegate {
         let onHide: () -> ()
         weak var wipeDelegate: DWWipeDelegate?
 
@@ -262,8 +262,8 @@ extension SecurityMenuScreen {
         func secureWalletRoutineDidVerify(_ controller: UIViewController) { }
         func secureWalletRoutineDidFinish(_ controller: VerifiedSuccessfullyViewController) { }
         func secureWalletRoutineDidCancel(_ controller: UIViewController) { onHide() }
-        func setPinViewControllerDidSetPin(_ controller: DWSetPinViewController) { onHide() }
-        func setPinViewControllerDidCancel(_ controller: DWSetPinViewController) { onHide() }
+        func setPinViewControllerDidSetPin(_ controller: SetPinViewController) { onHide() }
+        func setPinViewControllerDidCancel(_ controller: SetPinViewController) { onHide() }
 
         /// A wipe invalidates the entire main UI, not just this screen: route
         /// to the app-level DWWipeDelegate chain (MainTabbar → root VC), which

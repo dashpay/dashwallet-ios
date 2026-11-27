@@ -119,7 +119,6 @@ static const bool _SNAPSHOT = 0;
 #import "UIViewController+DWDisplayError.h"
 #import "DWSharedUIConstants.h"
 #import "DWDashPayReadyProtocol.h"
-#import "DWSetPinViewController.h"
 #import "DWBiometricAuthModel.h"
 #import "DWRecoverModel.h"
 #import "DWPreviewSeedPhraseModel.h"

@@ -231,7 +231,7 @@ struct PinPromptView: View {
                     .foregroundColor(.dash.primaryText)
 
                 dots
-                    .modifier(ShakeEffect(animatableData: CGFloat(viewModel.shakeToken)))
+                    .modifier(ShakeEffect(shakes: CGFloat(viewModel.shakeToken), oscillations: 1))
 
                 if let subtitle = viewModel.subtitleMessage, viewModel.lockoutMessage == nil {
                     Text(subtitle)
@@ -296,15 +296,5 @@ struct PinPromptView: View {
                     )
             }
         }
-    }
-}
-
-// MARK: - Shake
-
-private struct ShakeEffect: GeometryEffect {
-    var animatableData: CGFloat
-    func effectValue(size: CGSize) -> ProjectionTransform {
-        let translation = 10 * sin(animatableData * .pi * 2)
-        return ProjectionTransform(CGAffineTransform(translationX: translation, y: 0))
     }
 }
