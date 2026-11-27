@@ -46,7 +46,7 @@ final class DashConnectHostingController: UIHostingController<ConnectionsScreen>
             rereadUsername: { if dashPayModel != nil { Self.rereadActiveIdentityNames() } },
             walletScope: {
                 ConnectionsViewModel.WalletScope(
-                    network: String(describing: WalletEnvironment.network),
+                    network: ConnectionsViewModel.WalletScope.activeChain,
                     walletId: WalletEnvironment.activeWalletIdHex as String?)
             })
         self.viewModel = viewModel

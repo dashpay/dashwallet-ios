@@ -582,18 +582,33 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
               DWSameSeedIdentityRecoveryCoordinator.shared.claimRetry(walletId: wallet.walletId, network: network)
         else { return }
         DWLogger.log("🪪 IDENT-RECOVERY [\(wallet.walletId.hexEncodedString().prefix(8))] retry asked by a waiting login")
-        let previous = identityRecoveryTask
-        identityRecoveryTask = Task {
-            await withTaskCancellationHandler {
-                await previous?.value
-            } onCancel: {
-                previous?.cancel()
-            }
+        identityRecoveryTask = Self.chainedRecovery(after: identityRecoveryTask, cancellingIt: false) {
             await DWSameSeedIdentityRecoveryCoordinator.shared.recoverIfNeeded(
                 wallet: wallet, modelContainer: container, network: network)
         }
     }
 #endif
+
+    /// The one way a recovery run replaces the one in `identityRecoveryTask`:
+    /// the new run starts only once `previous` has returned, and cancelling
+    /// it cancels `previous` too, so the slot always reaches every run still
+    /// going and `cancelAndAwaitIdentityRecovery` waits for all of them.
+    /// `cancellingIt`: a start's own run stops the one it replaces first.
+    static func chainedRecovery(
+        after previous: Task<Void, Never>?,
+        cancellingIt: Bool,
+        _ run: @escaping @MainActor () async -> Void
+    ) -> Task<Void, Never> {
+        if cancellingIt { previous?.cancel() }
+        return Task { @MainActor in
+            await withTaskCancellationHandler {
+                await previous?.value
+            } onCancel: {
+                previous?.cancel()
+            }
+            await run()
+        }
+    }
 
     /// Wait until every shielded-sync stop `performStop` started has
     /// returned. The SDK's async stop cancels the loop at once, then waits up
@@ -1413,14 +1428,17 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         // outlives the manager it runs against.
         if let container = SwiftDashSDKHost.shared.modelContainer {
             if identityRecoveryInBackground {
-                identityRecoveryTask?.cancel()
-                identityRecoveryTask = Task {
+                identityRecoveryTask = Self.chainedRecovery(after: identityRecoveryTask, cancellingIt: true) {
                     await DWSameSeedIdentityRecoveryCoordinator.shared.recoverIfNeeded(
                         wallet: resolvedWallet,
                         modelContainer: container,
                         network: network)
                 }
             } else {
+                // A retry a waiting login started while this start was
+                // suspended runs against the same context: it ends first.
+                await cancelAndAwaitIdentityRecovery()
+                guard lifecycleGeneration == generation, walletManager === manager else { return }
                 await DWSameSeedIdentityRecoveryCoordinator.shared.recoverIfNeeded(
                     wallet: resolvedWallet,
                     modelContainer: container,

@@ -39,8 +39,11 @@ snapshot read as "no identity" and showed "Create username" to a wallet that has
   identity recovery for the wallet on its network has not settled, or while an identity's names
   are not read. It is missing only when recovery proved there is no identity, or the names were
   read and none is the wallet's. Recovery that found an identity but stopped before the store
-  confirmed its row (the retry cap) leaves the state unknown.
-- **What waits:** one login request, not parsed. It waits only when nothing else on the page owns
+  confirmed its row (the retry cap) leaves the state unknown. An empty scan is no proof of absence
+  while the SDK wallet manages an identity (its discovery reports only identities it did not
+  manage): that identity is acted on as found.
+- **What waits:** one login request that reads as a request for the wallet's network (the local
+  parse, nothing from the network); one that does not read is refused at once. It waits only when nothing else on the page owns
   the answer: no approve, purchase or return sheet, no connection sheet up or going, no signing,
   resolving or disconnect under way. Otherwise ADR-0058's answer applies at once. A `dash-st:`
   request never waits (unchanged).
@@ -49,8 +52,10 @@ snapshot read as "no identity" and showed "Create username" to a wallet that has
   the state again. Holding a request starts the names' read again when an earlier one failed;
   without an identity row it runs identity recovery again when its last run on this runtime
   ended without an answer (Platform was down), at most twice per wallet and network, without
-  restarting Core.
-- **Scope:** the held request goes on only under the wallet and network it came to; after a
+  restarting Core. Only a request that reads may start a read or a recovery run. A recovery run
+  that replaces another starts only once that one returned, so a stop waits for every run.
+- **Scope:** the held request goes on only under the wallet and chain it came to (on devnet the
+  chain includes the configured devnet name; recovery's answers are kept per chain too); after a
   switch it is dropped without an answer. A request held before any wallet was open (a first
   launch that keeps the wallets) belongs to the first wallet that opens on that network.
 - **Timeout:** after 30 seconds still unknown, it is refused with ADR-0058's "still reading" note,
@@ -71,7 +76,9 @@ snapshot read as "no identity" and showed "Create username" to a wallet that has
 
 **Negative**
 - The page waits up to 30 seconds with a progress overlay before a refusal.
-- A request stays in memory while held; it is the request as given, not a parsed or approved one.
+- A request stays in memory while held; it is kept as given and parsed again when taken.
+- The request itself still names only `devnet`, so a request made for another devnet with the
+  same seed is not told apart; the held one is dropped when the configured devnet changes.
 - On a wallet without an identity the create-username page shows only after recovery settles; a
   failed recovery keeps the state unknown for the rest of the start, past the two asked retries.
 - A wallet whose found identity the store never confirmed gets "still reading" on every login

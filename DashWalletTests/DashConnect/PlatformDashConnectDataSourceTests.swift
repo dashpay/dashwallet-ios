@@ -1393,8 +1393,17 @@ private final class LoginApprovalSpy: DashConnectDataSource {
         return parsed ?? .login(loginRequest)
     }
 
+    private var storedResolvedCount = 0
+    /// Requests that went past the parse to be resolved for the sheet. A
+    /// held request is parsed once before it waits, so the parse count does
+    /// not tell whether it was taken.
+    var resolvedCount: Int { lock.withLock { storedResolvedCount } }
+
     func makeConnectionRequest(from loginRequest: DashKeyRequest) async -> ConnectionRequest {
-        lock.withLock { shown.count > 1 ? shown.removeFirst() : shown[0] }
+        lock.withLock {
+            storedResolvedCount += 1
+            return shown.count > 1 ? shown.removeFirst() : shown[0]
+        }
     }
 
     func approveLogin(_ request: DashKeyRequest, consent: ConnectionRequest) async throws -> DAppConnection {
@@ -6951,7 +6960,7 @@ final class ConnectionsViewModelTermsTests: XCTestCase {
         XCTAssertNil(viewModel.message, "nothing is refused while the names may still load")
 
         await waitUntil { viewModel.message != nil }
-        XCTAssertEqual(spy.parseCount, 0)
+        XCTAssertEqual(spy.resolvedCount, 0)
         XCTAssertNil(viewModel.pendingRequest)
         XCTAssertFalse(viewModel.isWaitingForUsername)
         XCTAssertFalse(viewModel.needsUsername, "the user is not asked to create a name they may have")
@@ -6971,7 +6980,7 @@ final class ConnectionsViewModelTermsTests: XCTestCase {
                 notificationCenter: center)
 
             viewModel.onURIReceived("login")
-            XCTAssertEqual(spy.parseCount, 0, "\(signal)")
+            XCTAssertEqual(spy.resolvedCount, 0, "\(signal)")
             XCTAssertTrue(viewModel.isWaitingForUsername, "\(signal)")
 
             username = .present
@@ -6997,7 +7006,7 @@ final class ConnectionsViewModelTermsTests: XCTestCase {
         center.post(name: SwiftDashSDKHost.runtimeDidStartNotification, object: nil)
         await waitUntil { viewModel.needsUsername }
 
-        XCTAssertEqual(spy.parseCount, 0)
+        XCTAssertEqual(spy.resolvedCount, 0)
         XCTAssertNil(viewModel.pendingRequest)
         XCTAssertFalse(viewModel.isWaitingForUsername)
     }
@@ -7010,9 +7019,37 @@ final class ConnectionsViewModelTermsTests: XCTestCase {
             now: { Self.phone })
 
         viewModel.onURIReceived("first")
+        await waitUntil { rereads == 1 }
         XCTAssertEqual(rereads, 1, "a read that failed before is not left to retry by itself")
         viewModel.onURIReceived("second")
+        await waitUntil { rereads == 2 }
         XCTAssertEqual(rereads, 2, "every held request has a read on its way")
+    }
+
+    /// A retry of the identity's recovery is capped, so only a request that
+    /// reads as one for this network may spend it: one that does not is
+    /// refused at once, with no read started.
+    func testAHeldLinkThatDoesNotReadSpendsNoRetry() async {
+        var rereads = 0
+        let spy = LoginApprovalSpy(shown: [Self.request(platformTimeMs: Self.platformNow, expiresAt: Self.platformNow + 3_600_000)])
+        spy.parseFailure = DashConnectPlatformError.unsupportedRequestNetwork(expected: .testnet, actual: .mainnet)
+        let viewModel = ConnectionsViewModel(
+            dataSource: spy, featureUnavailable: false, usernameState: { .unknown }, rereadUsername: { rereads += 1 },
+            now: { Self.phone })
+
+        viewModel.onURIReceived("dashpay://connect?malformed")
+        await waitUntil { viewModel.message != nil }
+
+        XCTAssertEqual(rereads, 0)
+        XCTAssertFalse(viewModel.isWaitingForUsername)
+        XCTAssertEqual(spy.resolvedCount, 0)
+        XCTAssertNotEqual(viewModel.message?.text, ConnectionsViewModel.usernameUnreadText, "it is refused for what it is")
+
+        spy.parseFailure = nil
+        viewModel.onURIReceived("login")
+        await waitUntil { rereads == 1 }
+        XCTAssertEqual(rereads, 1, "a request that reads still starts the read")
+        XCTAssertTrue(viewModel.isWaitingForUsername)
     }
 
     func testANewerLinkReplacesTheHeldOne() async {
@@ -7029,7 +7066,8 @@ final class ConnectionsViewModelTermsTests: XCTestCase {
         center.post(name: .DWDashPayRegistrationStatusUpdated, object: nil)
         await waitUntil { viewModel.pendingRequest != nil }
 
-        XCTAssertEqual(spy.parsedContents, ["second"])
+        XCTAssertEqual(spy.resolvedCount, 1)
+        XCTAssertEqual(spy.parsedContents.last, "second")
     }
 
     func testAnIdentityNotKnownYetIsUnknownNotMissing() {
@@ -7055,7 +7093,9 @@ final class ConnectionsViewModelTermsTests: XCTestCase {
     func testAHeldLinkIsNotTakenUnderAnotherWallet() async {
         for (from, to) in [(Self.scope("testnet", "a"), Self.scope("testnet", "b")),
                            (Self.scope("testnet", "a"), Self.scope("mainnet", "a")),
-                           (Self.scope("testnet", nil), Self.scope("mainnet", "a"))] {
+                           (Self.scope("testnet", nil), Self.scope("mainnet", "a")),
+                           (Self.scope("devnet-a", "x"), Self.scope("devnet-b", "x")),
+                           (Self.scope("devnet-a", nil), Self.scope("devnet-b", "x"))] {
             var username = ConnectionsViewModel.UsernameState.unknown
             var wallet = from
             let center = NotificationCenter()
@@ -7070,7 +7110,7 @@ final class ConnectionsViewModelTermsTests: XCTestCase {
             center.post(name: SwiftDashSDKHost.runtimeDidStartNotification, object: nil)
             await waitUntil { !viewModel.isWaitingForUsername }
 
-            XCTAssertEqual(spy.parseCount, 0, "a request is answered only under the wallet it came to: \(from) → \(to)")
+            XCTAssertEqual(spy.resolvedCount, 0, "a request is answered only under the wallet it came to: \(from) → \(to)")
             XCTAssertNil(viewModel.pendingRequest)
         }
     }
@@ -7091,7 +7131,7 @@ final class ConnectionsViewModelTermsTests: XCTestCase {
         center.post(name: SwiftDashSDKHost.runtimeDidStartNotification, object: nil)
         await waitUntil { viewModel.pendingRequest != nil }
 
-        XCTAssertEqual(spy.parseCount, 1, "the kept wallet opening after a first-launch link is the wallet it came to")
+        XCTAssertEqual(spy.resolvedCount, 1, "the kept wallet opening after a first-launch link is the wallet it came to")
     }
 
     func testALinkHeldBeforeTheWalletOpensIsDroppedWhenThatWalletIsSwitchedAway() async {
@@ -7115,7 +7155,7 @@ final class ConnectionsViewModelTermsTests: XCTestCase {
         center.post(name: SwiftDashSDKHost.runtimeDidStartNotification, object: nil)
         await waitUntil { !viewModel.isWaitingForUsername }
 
-        XCTAssertEqual(spy.parseCount, 0, "once a wallet opened, a switch to another drops the held request")
+        XCTAssertEqual(spy.resolvedCount, 0, "once a wallet opened, a switch to another drops the held request")
         XCTAssertNil(viewModel.pendingRequest)
     }
 
@@ -7307,6 +7347,8 @@ final class MainTabbarMoreStackTests: XCTestCase {
         XCTAssertFalse(same(("testnet", "a"), ("testnet", "b")))
         XCTAssertFalse(same(("testnet", "a"), ("mainnet", "a")))
         XCTAssertFalse(same(("testnet", nil), ("mainnet", "a")))
+        XCTAssertFalse(same(("devnet-a", "x"), ("devnet-b", "x")), "one seed has one wallet id on every devnet")
+        XCTAssertFalse(same(("devnet-a", nil), ("devnet-b", "x")))
     }
 
     func testAddingTabsKeepsTheScreensOpenOnMore() {

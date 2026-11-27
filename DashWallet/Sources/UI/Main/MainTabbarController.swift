@@ -448,16 +448,17 @@ extension MainTabbarController {
     }
 
     private static func activeWallet() -> (network: String, walletId: String?) {
-        (String(describing: WalletEnvironment.network), SwiftDashSDKHost.shared.wallet?.walletId.hexEncodedString())
+        (ConnectionsViewModel.WalletScope.activeChain, SwiftDashSDKHost.shared.wallet?.walletId.hexEncodedString())
     }
 
     /// Whether a change from the wallet the tabs were built for to `now` is
-    /// no switch: the same wallet on the same network, or the first wallet to
-    /// open on that network.
+    /// no switch: the same wallet on the same chain, or the first wallet to
+    /// open on that chain. The rule a held DashConnect login goes on by.
     nonisolated static func isTheSameWallet(
         builtFor: (network: String, walletId: String?), now: (network: String, walletId: String?)
     ) -> Bool {
-        builtFor.network == now.network && (builtFor.walletId == nil || builtFor.walletId == now.walletId)
+        ConnectionsViewModel.WalletScope(network: builtFor.network, walletId: builtFor.walletId)
+            .admits(ConnectionsViewModel.WalletScope(network: now.network, walletId: now.walletId))
     }
 
     /// The same wallet gains its DashPay tabs: a screen open on More (a

@@ -1005,11 +1005,17 @@ enum SameSeedIdentityRecoveryPipeline {
     /// `allowDiscovery: false` adopts and refreshes whatever identity rows
     /// exist locally without ever scanning — for a readiness verdict that
     /// says a scan cannot succeed (`.discoveryFailed`).
+    /// `managedIdentityIds`: the identities the SDK wallet already manages.
+    /// Its discovery reports only identities it did not manage before, so
+    /// an empty scan over an empty local store is no proof of absence while
+    /// the wallet manages one (a same-runtime retry after an earlier run
+    /// loaded it): those ids are acted on instead.
     static func run(
         knownIdentityIds: [Data] = [],
         allowDiscovery: Bool = true,
         localIdentityIds: () -> [Data],
         discover: () async throws -> [Data],
+        managedIdentityIds: () throws -> [Data] = { [] },
         refreshNames: ([Data]) async throws -> Void,
         adopt: () -> Bool
     ) async throws -> Outcome {
@@ -1028,6 +1034,9 @@ enum SameSeedIdentityRecoveryPipeline {
             // as a hydration fallback instead of losing the same launch.
             if identityIds.isEmpty {
                 identityIds = discoveredIds
+            }
+            if identityIds.isEmpty {
+                identityIds = try managedIdentityIds()
             }
         }
         // A cancelled run stops before the name refresh: its owner is tearing
@@ -1432,6 +1441,7 @@ final class DWSameSeedIdentityRecoveryCoordinator {
                         "🪪 IDENT-RECOVERY :: wallet=\(walletHex.prefix(8), privacy: .public) no local identities; scanning seed from index 0")
                     return try await wallet.discoverIdentities(startIndex: 0)
                 },
+                managedIdentityIds: { try wallet.inMemoryIdentityIds() },
                 refreshNames: { identityIds in
                     for identityId in identityIds {
                         try Task.checkCancellation()
@@ -1505,8 +1515,10 @@ final class DWSameSeedIdentityRecoveryCoordinator {
         }
     }
 
+    /// Per chain: two devnets share `Network.devnet` and, for one seed, the
+    /// wallet id, yet an identity on one is no answer for the other.
     private static func contextKey(walletId: Data, network: Network) -> String {
-        "\(network.rawValue):" + walletId.hexEncodedString()
+        "\(network.persistenceScope):" + walletId.hexEncodedString()
     }
 
     /// Existence check for the startup-budget decision. Queried from the

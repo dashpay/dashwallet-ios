@@ -78,8 +78,14 @@ final class ConnectionsViewModel: ObservableObject {
     /// The wallet a held request came to: its network, and the active
     /// wallet's id once one is open (nil before a first launch opens it).
     struct WalletScope: Equatable {
+        /// The chain: `activeChain` when built for the app.
         let network: String
         let walletId: String?
+
+        /// The active chain: the network, and on devnet its configured name,
+        /// since two devnets are two chains where one seed has the same
+        /// wallet id. The tab bar's More stack is kept by the same value.
+        static var activeChain: String { WalletEnvironment.network?.persistenceScope ?? "" }
 
         /// Whether a request held under this scope goes on under `now`: same
         /// network, and the same wallet, or the first one to open if none was
@@ -178,6 +184,9 @@ final class ConnectionsViewModel: ObservableObject {
     @Published private(set) var isWaitingForUsername = false
     /// The waiting request. A newer one replaces it.
     private var heldRequest: (content: String, byLink: Bool, walletScope: WalletScope)?
+    /// Which hold `heldRequest` is: a check that finishes after a newer
+    /// request replaced it does nothing.
+    private var heldRequestGeneration = 0
     private var usernameReadWait: Task<Void, Never>?
     /// How long a held request waits for the names before it is refused.
     private let usernameReadTimeout: Duration
@@ -656,10 +665,28 @@ final class ConnectionsViewModel: ObservableObject {
     private func holdUntilTheUsernameIsRead(_ content: String, byLink: Bool) {
         DWLogger.log("🔗 DASHCONNECT :: request held: the username is not read yet")
         heldRequest = (content, byLink, walletScope())
+        heldRequestGeneration &+= 1
+        let generation = heldRequestGeneration
         isWaitingForUsername = true
         // A read that failed earlier is not tried again by itself: the
-        // request that waits for it starts it.
-        rereadUsername()
+        // request that waits for it starts it, once it reads as a request
+        // for this wallet's network. The parse is local; one that does not
+        // read is refused now, and never spends a retry of the identity's
+        // recovery (`rereadUsername`), which is capped.
+        Task { [weak self] in
+            guard let self else { return }
+            do {
+                _ = try await dataSource.parseQR(content)
+            } catch {
+                guard generation == heldRequestGeneration, heldRequest != nil else { return }
+                DWLogger.log("🔗 DASHCONNECT :: held request refused: it does not read (\(type(of: error)))")
+                _ = takeHeldRequest()
+                showRequestFailure(error)
+                return
+            }
+            guard generation == heldRequestGeneration, heldRequest != nil else { return }
+            rereadUsername()
+        }
         usernameReadWait?.cancel()
         let timeout = usernameReadTimeout
         usernameReadWait = Task { [weak self] in
@@ -850,18 +877,22 @@ final class ConnectionsViewModel: ObservableObject {
                 }
             } catch {
                 guard generation == requestGeneration else { return }
-                let failure = ConnectionsScreenMessage(
-                    kind: .error,
-                    text: String(localized: "Could not complete the DashConnect request: \(error.localizedDescription)", comment: "DashConnect")
-                )
-                // A request that did not read leaves an open connection's
-                // sheet up, and says so on it.
-                if shownConnection != nil {
-                    connectionSheetMessage = failure
-                } else {
-                    message = failure
-                }
+                showRequestFailure(error)
             }
+        }
+    }
+
+    private func showRequestFailure(_ error: Error) {
+        let failure = ConnectionsScreenMessage(
+            kind: .error,
+            text: String(localized: "Could not complete the DashConnect request: \(error.localizedDescription)", comment: "DashConnect")
+        )
+        // A request that did not read leaves an open connection's
+        // sheet up, and says so on it.
+        if shownConnection != nil {
+            connectionSheetMessage = failure
+        } else {
+            message = failure
         }
     }
 
