@@ -506,9 +506,12 @@ final class PendingInvitationViewModelTests: XCTestCase {
         XCTAssertEqual(store.receive(linkB), .stored)
         await settle { viewModel.cardState == .valid(amountDuffs: 3_000_000) }
 
+        let shown = outcomes
         viewModel.concludeClaimRefusal(.alreadyHasOtherIdentity, for: claimed)
         XCTAssertEqual(store.pending?.rawLink, linkB)
         XCTAssertEqual(viewModel.cardState, .valid(amountDuffs: 3_000_000))
+        XCTAssertEqual(outcomes, shown, "no second outcome for A")
+        XCTAssertNil(viewModel.undeliveredOutcome, "nothing queued over B's card")
     }
 
     // MARK: - Wipe

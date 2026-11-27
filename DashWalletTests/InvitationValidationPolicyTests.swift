@@ -163,6 +163,23 @@ final class InvitationValidationPolicyTests: XCTestCase {
             .undetermined)
     }
 
+    /// A spent voucher is reported as spent even while a paid registration
+    /// waits: Finish registration is only for a claimable invitation.
+    func testAPendingRegistrationDoesNotHideASpentVoucher() {
+        for recovers in [true, false] {
+            XCTAssertEqual(
+                InvitationValidationPolicy.verdict(
+                    status: status(amount: 3_000_000, claimed: true, ours: true), inviter: inviter,
+                    minimumDuffs: minimum, claim: .registrationPending, paidRegistrationRecovers: recovers),
+                .ownClaimNotLoaded)
+            XCTAssertEqual(
+                InvitationValidationPolicy.verdict(
+                    status: status(amount: 3_000_000, claimed: true), inviter: inviter,
+                    minimumDuffs: minimum, claim: .registrationPending, paidRegistrationRecovers: recovers),
+                .alreadyClaimed(inviter: inviter))
+        }
+    }
+
     // MARK: - Whose claim it was
 
     func testClaimedByThisWalletButNotLoadedPointsAtFindIdentities() {
@@ -292,6 +309,26 @@ final class InvitationValidationPolicyTests: XCTestCase {
                        "\(String(describing: C.CoordinatorError.invitationRegistrationPending as C.CoordinatorError?))")
         XCTAssertEqual("\(String(describing: C.invitationRefusal(.undetermined)))",
                        "\(String(describing: C.CoordinatorError.invitationUndetermined as C.CoordinatorError?))")
+    }
+
+    /// A refused repeated claim continues only on the invitation's own
+    /// identity, and only when the wallet would resume it.
+    func testARepeatedClaimContinuesOnlyOnTheInvitationsUnnamedIdentity() {
+        typealias C = DWIdentityRegistrationCoordinator
+        let own = Data(repeating: 0x11, count: 32)
+        let other = Data(repeating: 0x22, count: 32)
+        func facts(snapshot: Data?, needsUsername: Bool) -> InvitationClaimFacts {
+            InvitationClaimFacts(
+                identities: [.init(identityId: own, identityIndex: C.pinnedIdentityIndex)],
+                hasPaidRegistrationLock: false, snapshotIdentityId: snapshot, snapshotNeedsUsername: needsUsername)
+        }
+        let unnamed = facts(snapshot: own, needsUsername: true)
+        XCTAssertEqual(C.repeatedClaimIdentity(found: own, prospective: own, facts: unnamed), own)
+        XCTAssertNil(C.repeatedClaimIdentity(found: other, prospective: own, facts: unnamed), "not the invitation's identity")
+        XCTAssertNil(C.repeatedClaimIdentity(
+            found: own, prospective: own, facts: facts(snapshot: own, needsUsername: false)),
+            "already named, or its names are not read yet")
+        XCTAssertNil(C.repeatedClaimIdentity(found: own, prospective: own, facts: nil), "the wallet could not be read")
     }
 
     func testTypedClaimRefusalsAreMapped() {

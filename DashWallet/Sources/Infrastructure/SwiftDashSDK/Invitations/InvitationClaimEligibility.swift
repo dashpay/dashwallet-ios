@@ -43,11 +43,11 @@ enum InvitationClaimDecision: Equatable {
     /// No identity and no paid registration: the invitation may be claimed.
     case claim
 
-    /// For the log: the case, and a short identity id (public data).
+    /// For the log: the case only. The shared log carries no identity id.
     var logLabel: String {
         switch self {
-        case .resumeOwnClaim(let identityId):
-            return "resumeOwnClaim(\(identityId.prefix(4).map { String(format: "%02x", $0) }.joined())…)"
+        case .resumeOwnClaim:
+            return "resumeOwnClaim"
         case .otherIdentity: return "otherIdentity"
         case .undetermined: return "undetermined"
         case .registrationPending: return "registrationPending"

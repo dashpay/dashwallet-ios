@@ -816,7 +816,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             // the name registers on the identity's own credits.
             let finished = try await resumeUsernameRegistration(
                 identityId: identityId, username: username, temporaryUsername: temporaryUsername,
-                topUpSource: nil)
+                topUpSource: nil, requiresUnnamed: true)
             // The voucher was spent by this wallet's own claim: every copy goes.
             PendingInvitationStore.shared.retireConsumed(normalizedURI: invitationURI)
             return finished
@@ -829,6 +829,21 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         case .otherIdentity, .registrationPending, .undetermined:
             throw Self.invitationRefusal(decision) ?? CoordinatorError.invitationUndetermined
         }
+    }
+
+    /// After a refused repeated claim: the identity at the pinned slot gets
+    /// the invitation's username only when it is the invitation's own and
+    /// the wallet, read again, would resume it (names loaded, none, no
+    /// request). nil stops the claim.
+    nonisolated static func repeatedClaimIdentity(
+        found: Identifier, prospective: Data, facts: InvitationClaimFacts?
+    ) -> Identifier? {
+        guard found == prospective, let facts,
+              InvitationClaimEligibility.decide(
+                  facts, prospectiveIdentityId: prospective, pinnedIndex: pinnedIdentityIndex)
+                  == .resumeOwnClaim(prospective)
+        else { return nil }
+        return found
     }
 
     /// The error for a decision that stops an invitation claim; nil for the
@@ -1205,8 +1220,23 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                 else {
                     throw Self.invitationClaimFailure(claimError)
                 }
+                // The same rule as a resume before the PIN: the name goes on
+                // only while the identity's names are loaded and it has none
+                // and no request. Another device may have named it already,
+                // and a just-loaded identity's names are usually not read
+                // yet: the card's next check then decides.
+                let snapshot = DWCurrentUserIdentityInfo.shared.refreshedSnapshot()
+                let facts = snapshot.isLoading ? nil : try? InvitationClaimEligibility.localFacts(
+                    walletId: wallet.walletId, pinnedIndex: Self.pinnedIdentityIndex,
+                    modelContainer: modelContainer, snapshot: snapshot)
+                guard let recovered = Self.repeatedClaimIdentity(
+                    found: existingId, prospective: prospectiveId, facts: facts)
+                else {
+                    Self.logger.info("🪪 IDENT-COORD :: invitation claim refused; the invitation's identity is not known to need a name — not registering")
+                    throw CoordinatorError.invitationOwnClaimRecorded
+                }
                 Self.logger.info("🪪 IDENT-COORD :: invitation claim refused, the invitation's identity found at index \(Self.pinnedIdentityIndex) — recovering it")
-                identityId = existingId
+                identityId = recovered
             }
             // The voucher is spent now, whatever happens to the username
             // next: from here on this is an ordinary "identity exists,
@@ -1365,7 +1395,10 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         username: String,
         temporaryUsername: String? = nil,
         topUpSource: DWIdentityFundingSource? = nil,
-        authorizedTopUpDuffs: UInt64? = nil
+        authorizedTopUpDuffs: UInt64? = nil,
+        /// An invitation's identity: after the PIN it must still have no
+        /// name and no request (names loaded), or nothing is registered.
+        requiresUnnamed: Bool = false
     ) async throws -> Identifier {
         guard !isAttemptActive else {
             throw CoordinatorError.alreadyInFlight
@@ -1413,6 +1446,14 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             lastErrorMessage = CoordinatorError.authFailed.localizedDescription
             newController.enterFailed(lastErrorMessage ?? "")
             throw CoordinatorError.authFailed
+        }
+        if requiresUnnamed, !DWCurrentUserIdentityInfo.shared.refreshedSnapshot().needsUsername {
+            // A name or request appeared during the PIN prompt (another
+            // device): the invitation's username does not go on top of it.
+            Self.logger.info("🪪 IDENT-COORD :: invitation resume — the identity is no longer known to need a name; not registering")
+            lastErrorMessage = CoordinatorError.invitationOwnClaimRecorded.localizedDescription
+            newController.enterFailed(lastErrorMessage ?? "")
+            throw CoordinatorError.invitationOwnClaimRecorded
         }
         do {
             try validateRegistrationContext(walletId: wallet.walletId, network: network)

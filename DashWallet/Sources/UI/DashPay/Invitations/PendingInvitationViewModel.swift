@@ -276,15 +276,14 @@ final class PendingInvitationViewModel: ObservableObject {
     /// (its keys belong to the wallet's other identity, or the wallet has
     /// one): ends this wallet's copy the way the card's own check would.
     /// `invitation` is the very one `create(proceed:)` handed to the form;
-    /// nothing happens unless its wallet and network are still the active
-    /// ones.
+    /// nothing happens unless it is still the pending invitation of the
+    /// active wallet and network.
     func concludeClaimRefusal(_ verdict: InvitationValidation, for invitation: PendingInvitation) {
-        guard verdict.isDefinitive, isActive(invitation.scope) else { return }
+        // Only the invitation still pending: one the card already ended has
+        // shown its outcome, and its replacement keeps its own verdict.
+        guard verdict.isDefinitive, isActive(invitation.scope), store.pending == invitation else { return }
         DWLogger.log("Invitations: the claim ended this wallet's invitation")
-        // Another invitation may be shown by now: its verdict stays its own.
-        if self.invitation == invitation {
-            lastVerdict = (verdict, Date(), invitation)
-        }
+        lastVerdict = (verdict, Date(), invitation)
         concludeDefinitive(verdict, for: invitation)
         refreshCardState()
     }

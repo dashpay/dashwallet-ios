@@ -239,21 +239,28 @@ enum InvitationValidationPolicy {
         case .undetermined:
             return .undetermined
         case .registrationPending:
-            // Finish registration is offered only where it would work.
+            // A spent voucher stays spent whatever the wallet is paying for:
+            // Finish registration only for one that can still be claimed,
+            // and only where it would work.
+            if status.alreadyClaimed { return claimedVerdict(status: status, inviter: inviter) }
             return paidRegistrationRecovers ? .pendingPaidRegistration : .undetermined
         case .claim:
             break
         }
-        if status.alreadyClaimed {
-            // `true`: the wallet records the identity, yet the store has no
-            // identity, so its save failed. `nil` (or a contradictory
-            // `false`): spent, whoever spent it — the dialog says how to
-            // restore it if it was this wallet.
-            return status.claimedByThisWallet == true ? .ownClaimNotLoaded : .alreadyClaimed(inviter: inviter)
-        }
+        if status.alreadyClaimed { return claimedVerdict(status: status, inviter: inviter) }
         if status.amountDuffs < minimumDuffs { return .invalid(.belowMinimum, inviter: inviter) }
         if !status.isInstant && !status.isChainLocked { return .awaitingChainLock }
         return .valid(amountDuffs: status.amountDuffs, inviter: inviter)
+    }
+
+    /// A spent voucher, on a wallet with no identity. `true`: the wallet
+    /// records the identity, yet the store has none, so its save failed.
+    /// `nil` (or a contradictory `false`): spent, whoever spent it — the
+    /// dialog says how to restore it if it was this wallet.
+    private static func claimedVerdict(
+        status: ManagedPlatformWallet.InvitationClaimStatus, inviter: InvitationInviter
+    ) -> InvitationValidation {
+        status.claimedByThisWallet == true ? .ownClaimNotLoaded : .alreadyClaimed(inviter: inviter)
     }
 
     /// Which usernames `amountDuffs` pays for when a contested name costs
@@ -445,8 +452,7 @@ enum InvitationValidator {
             queryStatus: { uri in
                 do {
                     let status = try await wallet.invitationClaimStatusForThisWallet(uri: uri)
-                    DWLogger.log(
-                        "🎟️ INVITE :: status amount=\(status.amountDuffs) claimed=\(status.alreadyClaimed) ours=\(status.claimedByThisWallet.map(String.init(describing:)) ?? "unknown")")
+                    DWLogger.log("🎟️ INVITE :: status check completed")
                     return status
                 } catch {
                     logger.info("🎟️ INVITE :: status failed: \(String(describing: error), privacy: .public)")
