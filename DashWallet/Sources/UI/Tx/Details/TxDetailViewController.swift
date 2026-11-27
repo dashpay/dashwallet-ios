@@ -105,7 +105,8 @@ extension BaseTxDetailsViewController: UITableViewDelegate {
 // MARK: - TXDetailViewController
 
 @objc(DWTxDetailViewController)
-class TXDetailViewController: BaseTxDetailsViewController {
+class TXDetailViewController: BaseTxDetailsViewController, NavigationBarDisplayable {
+    var isNavigationBarHidden: Bool { true }
     @objc var model: TxDetailModel!
 
     var dataSource: UITableViewDiffableDataSource<Section, Item>! = nil
@@ -221,11 +222,20 @@ class TXDetailViewController: BaseTxDetailsViewController {
         super.init(coder: coder)
     }
 
+    /// The close circle, when this screen opens as the root of a modal
+    /// navigation stack. Embedded (a SwiftUI sheet, a snapshot) it has none.
+    internal var showsNavigationBar: Bool {
+        navigationController?.viewControllers.first === self
+    }
+
     override func configureHierarchy() {
         super.configureHierarchy()
 
-        let item = UIBarButtonItem(barButtonSystemItem: .close, target: self, action: #selector(closeAction))
-        navigationItem.rightBarButtonItem = item
+        if showsNavigationBar {
+            installNavigationBar(NavigationBarModel(trailing: .init(element: .close) { [weak self] in
+                self?.closeAction()
+            }))
+        }
     }
 
     override func viewDidLoad() {
@@ -800,8 +810,9 @@ protocol SuccessTxDetailViewControllerDelegate: AnyObject {
 // MARK: - SuccessTxDetailViewController
 
 @objc
-class SuccessTxDetailViewController: TXDetailViewController, NavigationBarDisplayable {
-    var isNavigationBarHidden: Bool { true }
+class SuccessTxDetailViewController: TXDetailViewController {
+    /// Closes with its own button at the bottom.
+    override var showsNavigationBar: Bool { false }
 
     @objc weak var delegate: SuccessTxDetailViewControllerDelegate?
 

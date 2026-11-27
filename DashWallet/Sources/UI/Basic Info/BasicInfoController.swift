@@ -19,7 +19,8 @@ import UIKit
 
 // MARK: - BasicInfoController
 
-final class BasicInfoController: BaseViewController {
+final class BasicInfoController: BaseViewController, NavigationBarDisplayable {
+    var isNavigationBarHidden: Bool { true }
 
     private var scrollView: UIScrollView!
     private var iconView: UIImageView!
@@ -77,11 +78,9 @@ extension BasicInfoController {
     private func configureHierarchy() {
         view.backgroundColor = .dw_background()
 
-        let action = UIAction { [weak self] _ in
+        installNavigationBar(NavigationBarModel(trailing: .init(element: .close) { [weak self] in
             self?.closeAction()
-        }
-        let closeItem = UIBarButtonItem(systemItem: .close, primaryAction: action)
-        navigationItem.rightBarButtonItem = closeItem
+        }), background: .dw_background())
 
         scrollView = UIScrollView(frame: .zero)
         scrollView.translatesAutoresizingMaskIntoConstraints = false
