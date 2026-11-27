@@ -82,6 +82,9 @@ enum CoreTwoStepResult {
     case completed
     /// The asset lock is recorded and the second step is not confirmed yet.
     case unconfirmed
+    /// The second step failed for `after` once the coordinator recorded the asset lock it built: the money is held in
+    /// the lock.
+    case lockHeld(HeldAssetLock, after: Error)
     /// `assetLockRecorded`: the asset lock exists, so the money has left the source.
     case failed(Error, assetLockRecorded: Bool)
 }
@@ -336,7 +339,8 @@ final class ExternalSendExecutor: ExternalSendExecuting {
     private let isBlockedByInitialRestoreSync: () -> Bool
     private let currentContext: @MainActor () -> ExternalSendContext
     private let currentIdentityId: @MainActor () -> Data?
-    private let logOutcome: (SendOutcome) -> Void
+    /// Writes a send's outcome line (`SendDecision.logLine`).
+    private let logOutcome: (SendOutcome, String) -> Void
     private let slowNetworkDelay: Duration
     private let paymentNetwork: @MainActor () -> PaymentNetwork?
 
@@ -360,7 +364,7 @@ final class ExternalSendExecutor: ExternalSendExecuting {
         currentIdentityId: @escaping @MainActor () -> Data? = {
             DWCurrentUserIdentityInfo.shared.refreshedSnapshot().identityId
         },
-        logOutcome: @escaping (SendOutcome) -> Void = { $0.log() },
+        logOutcome: @escaping (SendOutcome, String) -> Void = { DWLogger.log($1) },
         slowNetworkDelay: Duration = .seconds(20),
         paymentNetwork: @escaping @MainActor () -> PaymentNetwork? = { try? PaymentNetworkResolver.current() }
     ) {
@@ -418,12 +422,10 @@ final class ExternalSendExecutor: ExternalSendExecuting {
     }
 
     func send(_ prepared: PreparedExternalSend) async -> SendOutcome {
-        let outcome: SendOutcome
+        let decision: SendDecision
         // A send that already took the plan may have spent: fail closed, never offer a Retry.
         if prepared.sendTookPlan {
-            let outcome = SendOutcome.inFlight
-            logOutcome(outcome)
-            return outcome
+            return report(SendDecision(.inFlight, cause: "planAlreadySent"), of: prepared)
         }
         guard isStillPreparedFor(prepared) else {
             discard(prepared)
@@ -431,21 +433,26 @@ final class ExternalSendExecutor: ExternalSendExecuting {
         }
         switch prepared.takePlanForSend() {
         case nil:
-            outcome = .notSent(.failed)
+            decision = SendDecision(.notSent(.failed), cause: "noPlan")
         case let .standard(transaction, callbackScheme)?:
-            outcome = await broadcast(transaction)
-            if case .sent = outcome {
+            decision = await broadcast(transaction)
+            if case .sent = decision.outcome {
                 prepared.opens(BIP70PaymentService.makeCallbackURL(
                     scheme: callbackScheme, address: transaction.address,
                     txidHexDisplay: transaction.txHash.hexEncodedString()))
             }
         case .paymentRequest(let request)?:
-            outcome = await sendPaymentRequest(request, into: prepared)
+            decision = await sendPaymentRequest(request, into: prepared)
         case .routed(let destination)?:
-            outcome = await runRouted(prepared, destination: destination)
+            decision = await runRouted(prepared, destination: destination)
         }
-        logOutcome(outcome)
-        return outcome
+        return report(decision, of: prepared)
+    }
+
+    /// Logs the send's one outcome line, with its route and what decided it.
+    private func report(_ decision: SendDecision, of prepared: PreparedExternalSend) -> SendOutcome {
+        logOutcome(decision.outcome, decision.logLine(route: prepared.route, isMax: prepared.isMax))
+        return decision.outcome
     }
 
     func discard(_ prepared: PreparedExternalSend) {
@@ -497,24 +504,26 @@ final class ExternalSendExecutor: ExternalSendExecuting {
     /// The BIP70 send POSTs the Payment before it broadcasts, so a failure there leaves the signed bytes with the
     /// merchant; `SendOutcome(error:)` keeps whatever is not proven unsent `inFlight`.
     private func sendPaymentRequest(_ request: PreparedPaymentRequestSend, into prepared: PreparedExternalSend) async
-        -> SendOutcome {
+        -> SendDecision {
         do {
-            guard let result = try await request.send() else { return .notSent(.failed) }
+            guard let result = try await request.send() else {
+                return SendDecision(.notSent(.failed), cause: "requestAlreadyRun")
+            }
             prepared.opens(result.callbackURL)
-            return .sent
+            return SendDecision(.sent)
         } catch {
-            return SendOutcome(error: error)
+            return .decided(by: error)
         }
     }
 
     /// `PreparedStandardSend.broadcast` blocks until the network answers, so it runs off the main actor.
-    private func broadcast(_ transaction: PreparedStandardSend) async -> SendOutcome {
+    private func broadcast(_ transaction: PreparedStandardSend) async -> SendDecision {
         let result = await Task.detached { Result { try transaction.broadcast() } }.value
         switch result {
         case .success:
-            return .sent
+            return SendDecision(.sent)
         case .failure(let error):
-            return SendOutcome(error: error)
+            return .decided(by: error)
         }
     }
 
@@ -613,17 +622,17 @@ final class ExternalSendExecutor: ExternalSendExecuting {
     }
 
     /// The user authenticated on Continue, so the seam's own prompt is suppressed for the run.
-    private func runRouted(_ prepared: PreparedExternalSend, destination: Destination) async -> SendOutcome {
+    private func runRouted(_ prepared: PreparedExternalSend, destination: Destination) async -> SendDecision {
         if let refusal = Self.minimumAmountRefusal(prepared) {
-            return SendOutcome(error: refusal)
+            return .decided(by: refusal)
         }
         if let refusal = await platformMaxRefusal(prepared) {
-            return refusal
+            return SendDecision(refusal)
         }
         if let refusal = await identityMaxRefusal(prepared) {
-            return refusal
+            return SendDecision(refusal)
         }
-        guard isStillPreparedFor(prepared) else { return .notSent(.failed) }
+        guard isStillPreparedFor(prepared) else { return SendDecision(.notSent(.failed), cause: "contextChanged") }
         switch prepared.route {
         case .coreToShielded, .coreToIdentity:
             return await runTwoStep(prepared, destination: destination)
@@ -635,7 +644,9 @@ final class ExternalSendExecutor: ExternalSendExecuting {
             }
         case .identityToCore, .identityToPlatform, .identityToIdentity:
             // `send` refuses an Identity-source send prepared without a Current identity.
-            guard let identityId = prepared.sourceIdentityId else { return .notSent(.failed) }
+            guard let identityId = prepared.sourceIdentityId else {
+                return SendDecision(.notSent(.failed), cause: "noSourceIdentity")
+            }
             return await runCredits {
                 await identityCredits.run(
                     route: prepared.route, destination: destination, identityId: identityId,
@@ -658,7 +669,7 @@ final class ExternalSendExecutor: ExternalSendExecuting {
         return prepared.fee - prepared.assetLockMinerFee
     }
 
-    private func runTwoStep(_ prepared: PreparedExternalSend, destination: Destination) async -> SendOutcome {
+    private func runTwoStep(_ prepared: PreparedExternalSend, destination: Destination) async -> SendDecision {
         // The funding call waits for the lock's InstantSend proof, up to minutes when it is late; past the delay
         // the holder may leave Confirm and the send goes on.
         let delay = slowNetworkDelay
@@ -675,28 +686,30 @@ final class ExternalSendExecutor: ExternalSendExecuting {
         }
         switch result {
         case .completed:
-            return .sent
+            return SendDecision(.sent)
         case .unconfirmed:
-            return .inFlight
+            return SendDecision(.inFlight, cause: "unconfirmed")
+        case let .lockHeld(lock, error):
+            return .decided(by: error, after: .lockHeld(lock))
         case let .failed(error, recorded):
-            return recorded ? .inFlight : SendOutcome(error: error)
+            return .decided(by: error, after: recorded ? .assetLockRecorded : nil)
         }
     }
 
-    private func runCredits(_ run: () async -> CreditsSendResult) async -> SendOutcome {
+    private func runCredits(_ run: () async -> CreditsSendResult) async -> SendDecision {
         creditsOutcome(await DWIdentityAuthorizer.preauthorized(run))
     }
 
-    private func creditsOutcome(_ result: CreditsSendResult) -> SendOutcome {
+    private func creditsOutcome(_ result: CreditsSendResult) -> SendDecision {
         switch result {
         case .completed:
-            return .sent
+            return SendDecision(.sent)
         case .unconfirmed:
-            return .inFlight
+            return SendDecision(.inFlight, cause: "unconfirmed")
         case .notStarted:
-            return .notSent(.failed)
+            return SendDecision(.notSent(.failed), cause: "notStarted")
         case let .failed(error, handedOver):
-            return handedOver ? .inFlight : SendOutcome(error: error)
+            return .decided(by: error, after: handedOver ? .handedOver : nil)
         }
     }
 
@@ -993,20 +1006,23 @@ struct LiveCoreTwoStepSend: CoreTwoStepSending {
         } else {
             await coordinator.performAssetLock(recipientAmountDuffs: amount, recipientRaw43: raw43)
         }
-        return Self.result(of: coordinator)
+        return Self.result(
+            of: coordinator, fundingTypeRaw: ShieldedTransferCoordinator.shieldedAssetLockFundingType)
     }
 
     @MainActor
-    private static func result(of coordinator: ShieldedTransferCoordinator) -> CoreTwoStepResult {
+    private static func result(of coordinator: ShieldedTransferCoordinator, fundingTypeRaw: Int) -> CoreTwoStepResult {
         result(
             phase: coordinator.phase, lastFailure: coordinator.lastFailure,
-            lockKept: coordinator.lastAssetLockOutPoint != nil)
+            heldLock: coordinator.lastAssetLockOutPoint.map {
+                HeldAssetLock(fundingTypeRaw: fundingTypeRaw, txidWire: $0.txidWire, vout: $0.vout)
+            })
     }
 
-    /// What a coordinator's asset-lock call reports once it returned. `lockKept` is whether the coordinator recorded a
-    /// built lock that is still there after the failure (`ShieldedTransferCoordinator.keepsLockForRetry`).
+    /// What a coordinator's asset-lock call reports once it returned. `heldLock` is the built lock the coordinator
+    /// recorded and still keeps after the failure (`ShieldedTransferCoordinator.keepsLockForRetry`).
     static func result(
-        phase: ShieldedTransferCoordinator.Phase, lastFailure: Error?, lockKept: Bool
+        phase: ShieldedTransferCoordinator.Phase, lastFailure: Error?, heldLock: HeldAssetLock?
     ) -> CoreTwoStepResult {
         switch phase {
         case .success:
@@ -1014,7 +1030,9 @@ struct LiveCoreTwoStepSend: CoreTwoStepSending {
         case .submittedUnconfirmed:
             return .unconfirmed
         default:
-            return .failed(lastFailure ?? UnfinishedTransfer(), assetLockRecorded: lockKept)
+            let failure = lastFailure ?? UnfinishedTransfer()
+            if let heldLock { return .lockHeld(heldLock, after: failure) }
+            return .failed(failure, assetLockRecorded: false)
         }
     }
 
@@ -1231,7 +1249,7 @@ struct LiveShieldedPlatformSend: ShieldedPlatformSending {
 /// The identity top-up from Platform credits (`IdentityCreditsTopUp.fromPlatform`, the core of the Top Up sheet). Every
 /// identity, the holder's Current one too, takes the SDK's top-up for any identity (dashpay/platform#5929): it reads
 /// the identity from Platform, so one Platform does not show yet is `identityNotFound` before anything is signed. A
-/// failure before any credits moved is `notStarted`.
+/// missing wallet is `notStarted`; a failure carries its error.
 struct LiveIdentityTopUpFromCredits: IdentityTopUpFromCreditsSending {
     /// The wallet or its store is not open, so nothing was planned or sent.
     struct WalletNotOpen: Error {}
@@ -1253,8 +1271,6 @@ struct LiveIdentityTopUpFromCredits: IdentityTopUpFromCreditsSending {
         do {
             try await topUp(identityId, amount)
             return .completed
-        } catch is PlatformPaymentIdentityFundingPolicy.PlanningError {
-            return .notStarted
         } catch is WalletNotOpen {
             return .notStarted
         } catch PlatformWalletError.notFound {
@@ -1262,6 +1278,7 @@ struct LiveIdentityTopUpFromCredits: IdentityTopUpFromCreditsSending {
             // broadcast (signing may already have run), so nothing was sent and the send starts over from preparation.
             return .notStarted
         } catch {
+            // A `PlanningError` is thrown before any credits moved; `SendOutcome(error:)` reports it not sent.
             return .failed(error, handedOver: false)
         }
     }
