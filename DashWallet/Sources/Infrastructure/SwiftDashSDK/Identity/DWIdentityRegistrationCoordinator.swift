@@ -1408,7 +1408,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
     /// attempt stops rather than guess.
     ///
     /// Sources: Core builds a new asset lock (`topUpIdentityWithFunding`),
-    /// Platform spends DIP-17 address credits (`topUpFromAddresses`, inputs
+    /// Platform spends DIP-17 address credits (`topUpIdentityFromAddresses`, inputs
     /// planned by `PlatformPaymentIdentityFundingPolicy`). Shielded has no
     /// top-up route in this flow — the SDK's pool top-up is not wired into
     /// the app — so it fails here, before anything is broadcast.
@@ -1468,7 +1468,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                     walletId: wallet.walletId,
                     modelContainer: plan.modelContainer,
                     targetCredits: topUpDuffs * PlatformPaymentIdentityFundingPolicy.creditsPerDuff)
-                _ = try await wallet.topUpFromAddresses(
+                _ = try await wallet.topUpIdentityFromAddresses(
                     identityId: identityId,
                     inputs: inputs,
                     addressSigner: signer)

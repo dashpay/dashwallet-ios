@@ -170,6 +170,7 @@ import XCTest
         XCTAssertEqual(firstWallet.topUpCalls, 1)
         // A new reviewed request can target another identity/runtime.
         host.wallet = ManagedPlatformWallet()
+        host.wallet!.managedIdentityIds = [Data([3])]
         await runner.runTopUp(.init(identityId: Data([3]), source: .shielded), request)
         XCTAssertEqual(runner.phase, .success)
         XCTAssertEqual(runner.notice, .succeeded)
@@ -198,5 +199,41 @@ import XCTest
         XCTAssertEqual(balance, 97)
         XCTAssertEqual(host.manager!.unshieldCalls, 1)
         XCTAssertEqual(host.wallet!.topUpCalls, 1)
+    }
+
+    func testAnIdentityTheWalletDoesNotManageStopsEveryRouteBeforeAnyCall() async {
+        let sources: [IdentityTopUpViewModel.FundingSource] = [.shielded, .platform, .transparent]
+        for source in sources {
+            host.wallet = ManagedPlatformWallet()
+            host.manager = NativeManager()
+            host.wallet!.managedIdentityIds = []
+            let model = IdentityTopUpViewModel()
+            let result = await model.topUp(identityId: Data([2]), amountDuffs: 100, source: source)
+            XCTAssertNil(result, "\(source)")
+            XCTAssertEqual(model.errorMessage, IdentityTopUpViewModel.TopUpError.walletChanged.errorDescription, "\(source)")
+            XCTAssertFalse(model.movedToPlatform, "\(source)")
+            XCTAssertFalse(model.submittedUnconfirmed, "\(source)")
+            XCTAssertEqual(host.manager!.unshieldCalls, 0, "\(source)")
+            XCTAssertEqual(host.wallet!.topUpCalls, 0, "\(source)")
+        }
+    }
+
+    func testAWalletSwitchDuringTheUnshieldStopsTheSecondLeg() async {
+        let original = host.wallet!
+        host.manager!.afterUnshield = { [host] in
+            let other = ManagedPlatformWallet()
+            other.walletId = Data([9])
+            host.wallet = other
+        }
+        let model = IdentityTopUpViewModel()
+        let result = await model.topUp(identityId: Data([2]), amountDuffs: 100, source: .shielded)
+        XCTAssertNil(result)
+        XCTAssertTrue(model.movedToPlatform)
+        XCTAssertFalse(model.submittedUnconfirmed)
+        XCTAssertTrue(model.errorMessage?.contains(
+            IdentityTopUpViewModel.TopUpError.walletChanged.errorDescription!) == true)
+        XCTAssertEqual(host.manager!.unshieldCalls, 1)
+        XCTAssertEqual(original.topUpCalls, 0)
+        XCTAssertEqual(host.wallet!.topUpCalls, 0)
     }
 }

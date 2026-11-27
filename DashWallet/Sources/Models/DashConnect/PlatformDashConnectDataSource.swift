@@ -38,7 +38,6 @@ enum DashConnectPlatformError: LocalizedError, Equatable {
     case authorizationCancelled
     case authorizationFailed
     case randomGenerationFailed(OSStatus)
-    case noAuthenticationKey
     case existingDocumentLookupFailed
     case tokenPurchaseWrongIdentity
     case tokenPurchaseTokenIdMismatch
@@ -108,8 +107,6 @@ enum DashConnectPlatformError: LocalizedError, Equatable {
                     localized: "Failed to generate secure random bytes for DashConnect (%d).",
                     comment: "DashConnect: the placeholder is a system status code"),
                 status)
-        case .noAuthenticationKey:
-            return String(localized: "No enabled AUTHENTICATION ECDSA key is available for this identity.", comment: "DashConnect")
         case .existingDocumentLookupFailed:
             return String(localized: "The loginKeyResponse document on Platform could not be read.", comment: "DashConnect")
         case .ephemeralKeyGenerationFailed:
@@ -311,14 +308,6 @@ protocol DashConnectPlatformPort: Sendable {
 }
 
 final class PlatformDashConnectDataSource: DashConnectDataSource {
-    struct DocumentSigningKeyCandidate: Equatable {
-        let keyId: UInt32
-        let purpose: KeyPurpose
-        let securityLevel: SecurityLevel
-        let keyType: KeyType
-        let disabledAt: Int64?
-    }
-
     private struct Context {
         let wallet: ManagedPlatformWallet
         let sdk: SDK
@@ -3843,62 +3832,6 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         }
 
         return (context.storedUsername, false)
-    }
-
-    private func selectDocumentSigningKeyId(
-        wallet: ManagedPlatformWallet,
-        identityId: Data
-    ) throws -> UInt32 {
-        let keys = try wallet.managedIdentity(identityId: identityId)
-            .getPublicKeys()
-            .map {
-                DocumentSigningKeyCandidate(
-                    keyId: UInt32(bitPattern: $0.keyId),
-                    purpose: $0.purpose,
-                    securityLevel: $0.securityLevel,
-                    keyType: $0.keyType,
-                    disabledAt: $0.disabledAt
-                )
-            }
-
-        return try Self.selectDocumentSigningKeyId(from: keys)
-    }
-
-    static func selectDocumentSigningKeyId(
-        from keys: [DocumentSigningKeyCandidate]
-    ) throws -> UInt32 {
-        let eligible = keys
-            .filter {
-                $0.disabledAt == nil
-                    && $0.purpose == .authentication
-                    && $0.keyType == .ecdsaSecp256k1
-                    && ($0.securityLevel == .high || $0.securityLevel == .critical)
-            }
-            .sorted {
-                let lhsPriority = signingPriority(for: $0.securityLevel)
-                let rhsPriority = signingPriority(for: $1.securityLevel)
-                if lhsPriority != rhsPriority {
-                    return lhsPriority < rhsPriority
-                }
-                return $0.keyId < $1.keyId
-            }
-
-        guard let key = eligible.first else {
-            throw DashConnectPlatformError.noAuthenticationKey
-        }
-
-        return key.keyId
-    }
-
-    private static func signingPriority(for securityLevel: SecurityLevel) -> Int {
-        switch securityLevel {
-        case .high:
-            return 0
-        case .critical:
-            return 1
-        case .master, .medium:
-            return 2
-        }
     }
 
     /// A random 32-byte value is a valid secp256k1 scalar with overwhelming
