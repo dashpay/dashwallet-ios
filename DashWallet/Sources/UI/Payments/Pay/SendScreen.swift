@@ -384,23 +384,25 @@ struct SendSourceScreen: View {
 /// old single-screen form did — Core → Core into the L1 payment processor,
 /// everything else into `SendConfirmSheet`.
 ///
-/// Also the amount step for a DashPay contact, which the picker and the
-/// contact profile open directly: same screen, same view model, with the
-/// recipient rendered as a contact. Send asks for the PIN and has the view
-/// model sign the payment (`prepareContactReview`), then opens
-/// `ConfirmContactSendSheet` on it with the exact fee and total; once the
+/// Also the amount step for a DashPay contact, which the contact profile and
+/// the contact picker open (the picker through the From step when more than
+/// one balance can pay): same screen, same view model, with the recipient
+/// rendered as a contact. Paid from the Transparent balance, Send asks for the
+/// PIN and has the view model sign the payment (`prepareContactReview`), then
+/// opens `ConfirmContactSendSheet` on it with the exact fee and total; once the
 /// review is sent and closed, `onContinueContact` has the host run
-/// `sendToContact`, which broadcasts that signed payment.
+/// `sendToContact`, which broadcasts that signed payment. Paid from Platform or
+/// Shielded, it confirms on `SendConfirmSheet` like any withdrawal.
 struct ExternalSendAmountScreen: View {
     @ObservedObject var viewModel: SendViewModel
-    /// Pop back to the step that chose the recipient — the source step for an
-    /// address, the contact picker for a contact.
+    /// Pop back to the previous step — the source step for an address and for
+    /// a contact with a choice of balance, otherwise the contact picker.
     var onBack: () -> Void
     /// Core → Core: hand (address, amount in duffs) to the hosting
     /// controller, which routes through the L1 payment processor.
     var onContinueCore: (String, UInt64) -> Void
-    /// Contact route: the review was sent and has closed. The host runs
-    /// `viewModel.sendToContact()` and shows the outcome.
+    /// Transparent contact route: the review was sent and has closed. The
+    /// host runs `viewModel.sendToContact()` and shows the outcome.
     var onContinueContact: () -> Void
     /// A non-core route finished successfully (confirm sheet's Done).
     var onSendCompleted: () -> Void
@@ -411,6 +413,7 @@ struct ExternalSendAmountScreen: View {
     @State private var didCompleteSend = false
     /// Pre-send review for the DashPay contact route.
     @State private var showContactConfirm = false
+    @State private var showPayAgainConfirm = false
     /// The review the sheet is showing (`SendViewModel.contactReviewID`),
     /// set when it appears. Its `onDismiss` closes that review only, so a
     /// late dismissal never closes the next one; and the amount step's Send
@@ -430,7 +433,7 @@ struct ExternalSendAmountScreen: View {
                 })
                 SendContactIntro(
                     contact: contact,
-                    balanceDuffs: viewModel.coreToCoreSpendableDuffs)
+                    balanceDuffs: viewModel.contactSpendableDuffs)
                     .padding(.horizontal, 20)
             } else {
                 SendStepHeader(onBack: onBack)
@@ -449,7 +452,7 @@ struct ExternalSendAmountScreen: View {
                             .padding(.top, 12)
                     }
 
-                    if !isContactSend {
+                    if showsFromSummary {
                         fromSummary
                     }
 
@@ -479,13 +482,41 @@ struct ExternalSendAmountScreen: View {
                         TransferAmountValidationNote(message: message)
                             .padding(.horizontal, 20)
                     }
+                    #if DASHPAY
+                    // Not on a host that offers only Transparent: the
+                    // note points to Platform, which it can't pay from.
+                    if isContactSend && !viewModel.contactIsTransparentOnly {
+                        Text(ShieldedTransferCoordinator.CoordinatorError.shieldedContactPaymentsUnavailable.localizedDescription)
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                            .padding(.horizontal, 20)
+                    }
+                    if viewModel.contactPriorPaymentAwaitsDecision {
+                        Button(String(localized: "Pay again", comment: "Send to contact: pay despite an earlier payment whose outcome is unknown")) {
+                            showPayAgainConfirm = true
+                        }
+                        .alert(
+                            String(localized: "Pay this contact again?", comment: "Send to contact: confirm paying despite an earlier unconfirmed payment"),
+                            isPresented: $showPayAgainConfirm
+                        ) {
+                            Button(String(localized: "Pay again", comment: "Send to contact: pay despite an earlier payment whose outcome is unknown"), role: .destructive) {
+                                viewModel.payAgainDespiteUnconfirmedPayment()
+                            }
+                            Button(String(localized: "Cancel", comment: ""), role: .cancel) {}
+                        } message: {
+                            Text(String(
+                                localized: "The earlier payment may still arrive, and your contact could be paid twice.",
+                                comment: "Send to contact: risk of paying again despite an earlier unconfirmed payment"))
+                        }
+                    }
+                    #endif
 
                     // The address flow meets this gate on the source step,
                     // which won't advance while it is up — but a restored
                     // wallet can start resyncing while this screen is open, and
                     // the contact flow never passes through that step at all.
                     if viewModel.isBlockedBySync {
-                        SyncGateNote()
+                        SyncGateNote(paysContact: viewModel.paysContact)
                             .padding(.horizontal, 20)
                     }
                 }
@@ -562,6 +593,11 @@ struct ExternalSendAmountScreen: View {
                     isFullPlatformWithdrawal: viewModel.isFullPlatformWithdrawal,
                     isFullShieldedSweep: viewModel.isFullShieldedSweep,
                     coreShieldedDrain: viewModel.frozenCoreDrainSubmission?.confirmation,
+                    contactRecipient: viewModel.contactPaymentRecipient,
+                    contactCoreFeeCredits: viewModel.contactCoreFeeCredits,
+                    contactNetworkFeeCredits: viewModel.contactNetworkFeeCredits,
+                    contactUnavailableMessage: contactUnavailableMessage,
+                    recheckContact: recheckContact,
                     onCancel: { showConfirm = false },
                     onCompleted: {
                         didCompleteSend = true
@@ -571,6 +607,22 @@ struct ExternalSendAmountScreen: View {
                     .presentationDragIndicator(.hidden)
             }
         }
+    }
+
+    private var contactUnavailableMessage: String? {
+        #if DASHPAY
+        viewModel.contactUnavailableMessage
+        #else
+        nil
+        #endif
+    }
+
+    private func recheckContact() -> String? {
+        #if DASHPAY
+        viewModel.recheckContactAvailability()
+        #else
+        nil
+        #endif
     }
 
     private var shieldedRecipientRaw43: Data? {
@@ -602,10 +654,11 @@ struct ExternalSendAmountScreen: View {
         HardwareNumericKeyboardView(
             value: keypadBinding,
             showDecimalSeparator: true,
-            // A contact payment's review, opened by this tap, is the last
-            // step before the broadcast; every other route continues to a
-            // flow of its own (the L1 payment processor or `SendConfirmSheet`).
-            actionButtonText: isContactSend
+            // A Transparent contact payment's review, opened by this tap, is
+            // the last step before the broadcast; every other route continues
+            // to a flow of its own (the L1 payment processor or
+            // `SendConfirmSheet`).
+            actionButtonText: isContactCoreSend
                 ? String(localized: "Send", comment: "")
                 : String(localized: "Continue", comment: ""),
             actionEnabled: viewModel.canContinue,
@@ -615,7 +668,7 @@ struct ExternalSendAmountScreen: View {
     }
 
     private func continueAction() {
-        if isContactSend {
+        if isContactCoreSend {
             // Never straight to the broadcast: this signs the payment (after
             // the PIN) and opens the review on its exact fee and total; only
             // the review's Send broadcasts it.
@@ -654,6 +707,26 @@ struct ExternalSendAmountScreen: View {
         #endif
     }
 
+    /// A contact paid from the Transparent balance, through the SDK's
+    /// one-shot contact send. Platform and Shielded pay a contact through a
+    /// withdrawal, confirmed on `SendConfirmSheet` like any other.
+    private var isContactCoreSend: Bool {
+        isContactSend && viewModel.route == .coreToCore
+    }
+
+    /// Whether there is a From step behind this screen for the card to go
+    /// back to.
+    private var fromSummaryIsEditable: Bool {
+        !isContactSend || viewModel.contactOffersSourceChoice
+    }
+
+    /// The From card states the source chosen on the step behind this one. A
+    /// contact send with no such step states its balance in the intro, and
+    /// names the source only when it is not the Transparent balance.
+    private var showsFromSummary: Bool {
+        fromSummaryIsEditable || viewModel.source != .core
+    }
+
     /// From the amount step's Send to the review, and from the review's Send
     /// on — `isSendingToContact` covers the review's exit as well as the
     /// broadcast.
@@ -666,9 +739,9 @@ struct ExternalSendAmountScreen: View {
     }
 
     /// The source picked on the previous step, read-only. Tapping goes back —
-    /// except on the contact route, where the transparent balance is the only
-    /// possible source and there is no From step behind this screen, so the
-    /// card is a fact rather than a way back.
+    /// except on a contact route with only one funded balance, where there
+    /// is no From step behind this screen, so the card is a fact rather than
+    /// a way back.
     private var fromSummary: some View {
         Button(action: onBack) {
             HStack(spacing: 10) {
@@ -685,7 +758,7 @@ struct ExternalSendAmountScreen: View {
                         .foregroundColor(.primaryText)
                 }
                 Spacer()
-                if !isContactSend {
+                if fromSummaryIsEditable {
                     Image(systemName: "chevron.right")
                         .font(.system(size: 13, weight: .medium))
                         .foregroundColor(.secondary)
@@ -697,7 +770,7 @@ struct ExternalSendAmountScreen: View {
             .cornerRadius(10)
         }
         .buttonStyle(.plain)
-        .disabled(isContactSend)
+        .disabled(!fromSummaryIsEditable)
         .padding(.horizontal, 20)
     }
 
@@ -802,11 +875,10 @@ private struct SendStepHeader: View {
 /// to make from here.
 private struct SendContactIntro: View {
     let contact: ContactItem
-    /// The funding balance in duffs, shown on its own line. A contact can only
-    /// be paid from Core today, so the screen states what is available rather
-    /// than offering a choice. It is the fee-aware spendable figure the Send
-    /// button is gated on, not the raw balance — typing the number shown here
-    /// must not come back as "insufficient balance".
+    /// The selected source's balance in duffs, shown on its own line. It is
+    /// the spendable figure the button is gated on, not the raw balance —
+    /// typing the number shown here must not come back as "insufficient
+    /// balance".
     let balanceDuffs: UInt64
 
     /// Hidden first, like the merchant pay screen: the number is here to be
@@ -839,10 +911,11 @@ private struct SendContactIntro: View {
                 }
 
                 // What the send has to spend, not which balance it came from:
-                // a contact can only be paid from Core, so naming the source
-                // says nothing the user can act on — the number does. Masked
-                // until asked for, with the eye control and the hidden-first
-                // default `DashSpendPayIntro` established for this same row.
+                // the From card below names the source whenever there was a
+                // choice of one, or when it is not the Transparent balance.
+                // Masked until asked for, with the eye control and the
+                // hidden-first default `DashSpendPayIntro` established for
+                // this same row.
                 HStack(spacing: 4) {
                     Text(String(localized: "Balance:", comment: "Send screen: the funding balance"))
 
@@ -1195,10 +1268,39 @@ struct SendConfirmSheet: View {
     /// recipient's address through the SDK wallet drain. `dashDuffs` and
     /// `fiatText` are then its estimate; the figures below come from here.
     var coreShieldedDrain: CoreShieldedDrainConfirmation? = nil
+    /// A DashPay contact paid through `.platformToCore` / `.shieldedToCore`.
+    /// There is no `destinationAddress` then: the coordinator reserves one of
+    /// the contact's addresses after the user confirms and authorizes.
+    var contactRecipient: ContactPaymentRecipient? = nil
+    /// The Core fee added on top of a contact payment so the contact receives
+    /// at least the amount shown (`SendViewModel.contactCoreFeeCredits`).
+    var contactCoreFeeCredits: UInt64 = 0
+    /// A contact payment's network fee, priced by the amount step
+    /// (`SendViewModel.contactNetworkFeeCredits`): the single-input Platform
+    /// withdrawal fee, or the fee of the Shielded notes the withdrawal would spend — either
+    /// an upper bound. Shown, and authorized with the amount; nil refuses the
+    /// payment.
+    var contactNetworkFeeCredits: UInt64? = nil
+    /// Why the contact cannot be paid now, from the amount step's model.
+    var contactUnavailableMessage: String? = nil
+    /// Has that model re-read the contacts service and answers the same
+    /// reason; Confirm and Try again ask it before they start. The model's
+    /// refreshed state is the one the sheet shows.
+    var recheckContact: () -> String? = { nil }
     var onCancel: () -> Void
     var onCompleted: () -> Void
 
     @StateObject private var coordinator = ShieldedTransferCoordinator()
+
+    private var contactBlockMessage: String? {
+        contactRecipient == nil ? nil : contactUnavailableMessage
+    }
+
+    /// False when the contact can no longer be paid; the refreshed model then
+    /// shows why.
+    private func contactCanBePaid() -> Bool {
+        contactRecipient == nil || recheckContact() == nil
+    }
 
     /// The lock `CoreCoinConsolidationSheet` is up for, after the coordinator
     /// refused it over the asset-lock input limit.
@@ -1213,7 +1315,9 @@ struct SendConfirmSheet: View {
         DashUIKit.BottomSheet(
             title: String(localized: "Confirm", comment: ""),
             showBackButton: .constant(false),
-            isDismissalEnabled: .constant(!isInFlight),
+            // A swipe is a Cancel, which is only safe before anything was
+            // sent — see `closeAction`.
+            isDismissalEnabled: .constant(!isInFlight && !isTerminal),
             // Supplying `onClose` makes the close button live regardless of
             // `isDismissalEnabled`, so the protected phases have to gate it here.
             isCloseButtonEnabled: !isInFlight,
@@ -1223,10 +1327,19 @@ struct SendConfirmSheet: View {
             case .success:
                 successBody
             case .submittedUnconfirmed:
-                ShieldedSubmittedUnconfirmedView(
-                    onDone: onCompleted,
-                    detail: unconfirmedDetail,
-                    onResume: canResumeUnconfirmedLock ? resumeUnconfirmedLock : nil)
+                if coordinator.contactWithdrawalOutcomeUnknown {
+                    ShieldedSubmittedUnconfirmedView(
+                        title: String(localized: "Payment status unknown", comment: "DashPay contact payment"),
+                        message: String(
+                            localized: "We couldn't confirm whether this payment went through. Don't send it again — check your balance and this contact's activity first.",
+                            comment: "DashPay contact payment"),
+                        onDone: onCompleted)
+                } else {
+                    ShieldedSubmittedUnconfirmedView(
+                        onDone: onCompleted,
+                        detail: unconfirmedDetail,
+                        onResume: canResumeUnconfirmedLock ? resumeUnconfirmedLock : nil)
+                }
             default:
                 detailsBody
             }
@@ -1263,17 +1376,21 @@ struct SendConfirmSheet: View {
     /// there would drop the user back on the amount screen with the amount
     /// still entered, one tap away from sending it twice.
     private var closeAction: () -> Void {
-        switch coordinator.phase {
-        case .success, .submittedUnconfirmed:
-            return onCompleted
-        default:
-            return onCancel
-        }
+        isTerminal ? onCompleted : onCancel
     }
 
     private var isInFlight: Bool {
         switch coordinator.phase {
         case .signing, .locking, .proving, .broadcasting:
+            return true
+        default:
+            return false
+        }
+    }
+
+    private var isTerminal: Bool {
+        switch coordinator.phase {
+        case .success, .submittedUnconfirmed:
             return true
         default:
             return false
@@ -1320,6 +1437,15 @@ struct SendConfirmSheet: View {
                     .padding(.top, 12)
             }
 
+            if let contactBlockMessage, !isInFlight {
+                Text(contactBlockMessage)
+                    .font(.system(size: 13))
+                    .foregroundColor(.red)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 24)
+                    .padding(.top, 8)
+            }
+
             Spacer(minLength: 12)
 
             switch coordinator.phase {
@@ -1327,6 +1453,7 @@ struct SendConfirmSheet: View {
                 ButtonsGroup(
                     orientation: .horizontal,
                     size: .large,
+                    positiveActionEnabled: contactBlockMessage == nil,
                     positiveButtonText: String(localized: "Confirm", comment: ""),
                     positiveButtonAction: confirm,
                     negativeButtonText: String(localized: "Cancel", comment: ""),
@@ -1349,6 +1476,7 @@ struct SendConfirmSheet: View {
                     ButtonsGroup(
                         orientation: .horizontal,
                         size: .large,
+                        positiveActionEnabled: contactBlockMessage == nil,
                         positiveButtonText: String(localized: "Try again", comment: ""),
                         positiveButtonAction: tryAgain,
                         negativeButtonText: String(localized: "Close", comment: ""),
@@ -1377,6 +1505,20 @@ struct SendConfirmSheet: View {
                 amountDuffs: dashDuffs,
                 fiatText: displayedFiatText)
 
+            // Paid from Platform or Shielded, the payment is sent now and
+            // lands a few minutes later: say so.
+            if let contactRecipient {
+                Text(String.localizedStringWithFormat(
+                    String(
+                        localized: "%@ will receive it in a few minutes, once the network processes the payment.",
+                        comment: "DashPay contact payment sent from Platform or Shielded"),
+                    contactRecipient.displayName))
+                    .font(.callout)
+                    .foregroundColor(.dash.secondaryText)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 24)
+            }
+
             Spacer(minLength: 12)
 
             DashButton(
@@ -1402,10 +1544,25 @@ struct SendConfirmSheet: View {
                     .font(.system(size: 14))
                     .foregroundColor(.dash.secondaryText)
                 Spacer()
-                Text(truncateMiddle(destinationAddress))
-                    .font(.system(.footnote, design: .monospaced))
-                    .foregroundColor(.dash.primaryText)
-                    .lineLimit(1)
+                if let contactRecipient {
+                    VStack(alignment: .trailing, spacing: 2) {
+                        Text(contactRecipient.displayName)
+                            .font(.footnote)
+                            .foregroundColor(.dash.primaryText)
+                            .lineLimit(1)
+                        if let detail = contactRecipient.distinguishingDetail {
+                            Text(detail)
+                                .font(.caption)
+                                .foregroundColor(.dash.secondaryText)
+                                .lineLimit(1)
+                        }
+                    }
+                } else {
+                    Text(truncateMiddle(destinationAddress))
+                        .font(.system(.footnote, design: .monospaced))
+                        .foregroundColor(.dash.primaryText)
+                        .lineLimit(1)
+                }
             }
             .padding(.horizontal, 14)
             .padding(.vertical, 14)
@@ -1471,6 +1628,15 @@ struct SendConfirmSheet: View {
     /// the internal transfer's confirm sheet. `nil` → the row shows "—".
     private var networkFeeCredits: UInt64? {
         if let drain = coreShieldedDrain { return drain.totalFeeCredits }
+        // A contact payment states the fee the amount step priced, plus the
+        // Core fee: both are part of what it costs the sender.
+        if contactRecipient != nil, route == .platformToCore || route == .shieldedToCore {
+            return contactNetworkFeeCredits.map { $0 + contactCoreFeeCredits }
+        }
+        return routeFeeCredits
+    }
+
+    private var routeFeeCredits: UInt64? {
         switch route {
         case .coreToShielded:
             // The lock charges the fee rounded UP to a whole duff — display
@@ -1517,6 +1683,16 @@ struct SendConfirmSheet: View {
             guard let total = Int64(exactly: drain.candidateBalanceDuffs) else { return "—" }
             return "≈ " + total.formattedDashAmount
         }
+        // A contact paid from Platform or Shielded loses the amount plus the
+        // withdrawal fee from that balance; the fee is an estimate.
+        if contactRecipient != nil, route == .platformToCore || route == .shieldedToCore {
+            guard let amountDuffs = UInt64(exactly: dashDuffs),
+                  let feeCredits = networkFeeCredits,
+                  let totalDuffs = Self.withdrawalDebitDuffs(amountDuffs: amountDuffs, feeCredits: feeCredits),
+                  let signedTotal = Int64(exactly: totalDuffs)
+            else { return "—" }
+            return "~ " + signedTotal.formattedDashAmount
+        }
         guard route == .coreToShielded else {
             return dashDuffs.formattedDashAmount
         }
@@ -1528,6 +1704,14 @@ struct SendConfirmSheet: View {
               let signedLockDuffs = Int64(exactly: lockDuffs)
         else { return "—" }
         return signedLockDuffs.formattedDashAmount
+    }
+
+    /// What a withdrawal takes from its funding balance: the amount plus the
+    /// fee, rounded up to a whole duff. Nil on overflow.
+    nonisolated static func withdrawalDebitDuffs(amountDuffs: UInt64, feeCredits: UInt64) -> UInt64? {
+        let feeDuffs = feeCredits / 1000 + (feeCredits % 1000 == 0 ? 0 : 1)
+        let (total, overflow) = amountDuffs.addingReportingOverflow(feeDuffs)
+        return overflow ? nil : total
     }
 
     // MARK: - Info card
@@ -1585,6 +1769,15 @@ struct SendConfirmSheet: View {
                 localized: "All eligible funds in your Transparent balance will be sent to this address when you confirm. Nothing is kept as change. The amount and fees are estimates. CoinJoin funds are excluded. Dash sent to a wrong address can't be recovered.",
                 comment: "Send confirm sheet: Core drain")
         }
+        // A contact is paid by name, so say who receives it and when, not
+        // how the payment reaches their address.
+        if let contactRecipient {
+            return String.localizedStringWithFormat(
+                String(
+                    localized: "%@ receives it once the network processes the payment — this can take up to 10 minutes.",
+                    comment: "Send confirm sheet: DashPay contact payment from Platform or Shielded"),
+                contactRecipient.displayName)
+        }
         switch route {
         case .shieldedToCore:
             return String(
@@ -1636,6 +1829,7 @@ struct SendConfirmSheet: View {
     // MARK: - Actions
 
     private func confirm() {
+        guard contactCanBePaid() else { return }
         Task {
             switch route {
             case .coreToShielded:
@@ -1668,12 +1862,16 @@ struct SendConfirmSheet: View {
                     amountCredits: creditsAmount,
                     fullBalance: isFullPlatformWithdrawal,
                     feeHeadroomCredits: withdrawalFeeCredits,
-                    toCoreAddress: destinationAddress)
+                    toCoreAddress: destinationAddress,
+                    contactRecipient: contactRecipient,
+                    contactNetworkFeeCredits: contactNetworkFeeCredits)
             case .shieldedToCore:
                 await coordinator.performWithdraw(
                     amountCredits: creditsAmount,
                     sweepAll: isFullShieldedSweep,
-                    toCoreAddress: destinationAddress)
+                    toCoreAddress: destinationAddress,
+                    contactRecipient: contactRecipient,
+                    contactNetworkFeeCredits: contactNetworkFeeCredits)
             case .shieldedToPlatform:
                 await coordinator.performUnshield(
                     amountCredits: creditsAmount,
@@ -1728,14 +1926,18 @@ struct SendConfirmSheet: View {
 
 /// Shared explanation for the restored-wallet initial-sync gate.
 struct SyncGateNote: View {
+    var paysContact = false
+
     var body: some View {
         HStack(alignment: .firstTextBaseline, spacing: 8) {
             Image(systemName: "clock.arrow.circlepath")
                 .font(.system(size: 13))
                 .foregroundColor(.orange)
-            Text(String(
-                localized: "Your restored wallet is completing its initial sync. Sending from your Transparent balance will be available once it finishes.",
-                comment: "Core send blocked during a restored wallet's initial sync"))
+            Text(paysContact
+                ? WalletSendService.contactPaymentRestoreSyncMessage
+                : String(
+                    localized: "Your restored wallet is completing its initial sync. Sending from your Transparent balance will be available once it finishes.",
+                    comment: "Core send blocked during a restored wallet's initial sync"))
                 .font(.caption)
                 .foregroundColor(.dash.secondaryText)
                 .fixedSize(horizontal: false, vertical: true)

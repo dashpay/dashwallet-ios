@@ -54,6 +54,22 @@ final class SendViewModel: ObservableObject {
         didSet { destinationDidChange() }
     }
     @Published private(set) var destination: DestinationKind? = nil
+    /// The wallet and DashPay identity the contact was chosen from,
+    /// captured with it. A Platform- or Shielded-funded payment is checked
+    /// against it before and after every await; nil when either was not
+    /// ready, which leaves only the Transparent balance on offer and Send
+    /// refusing. Plain data, so declared in every target; only
+    /// `setContactRecipient` sets either.
+    private(set) var contactPaymentRecipient: ContactPaymentRecipient?
+    /// True when more than one balance could fund this contact payment at
+    /// the time the contact was chosen, so the flow asks which one (the
+    /// From step) instead of going straight to the amount.
+    private(set) var contactOffersSourceChoice = false
+    /// The balances this contact payment may be paid from, fixed with the
+    /// source when the contact is chosen (`contactSourcePlan`).
+    private var contactSources: [ChainNetwork] = [.core]
+    /// The host offers only the Transparent balance (the contact profile's Pay).
+    private(set) var contactIsTransparentOnly = false
     #if DASHPAY
     /// The DashPay contact this send pays, when the flow was opened from the
     /// contact picker instead of the address field.
@@ -107,6 +123,8 @@ final class SendViewModel: ObservableObject {
     @Published private(set) var contactSendError: String?
     /// Keeps `contactRecipient` current; see `setContactRecipient`.
     private var contactRefresh: AnyCancellable?
+    /// Keeps the payment lock current while the step is open.
+    private var contactLockRefresh: AnyCancellable?
     /// Where the step reads a contact's current state.
     private var contactLookup: @MainActor (Data) -> ContactItem? = {
         SwiftDashSDKContactsService.shared.contactItem(for: $0)
@@ -114,10 +132,17 @@ final class SendViewModel: ObservableObject {
 
     /// A contact send step that reads contacts from `contactLookup` instead
     /// of the contacts service.
-    convenience init(contactLookup: @escaping @MainActor (Data) -> ContactItem?) {
+    convenience init(
+        contactLookup: @escaping @MainActor (Data) -> ContactItem?,
+        contactPayableDuffs: (@MainActor (ChainNetwork) -> UInt64)? = nil
+    ) {
         self.init()
         self.contactLookup = contactLookup
+        self.contactPayableDuffsOverride = contactPayableDuffs
     }
+
+    /// Replaces `contactPayableDuffs(from:)` for a test.
+    private var contactPayableDuffsOverride: (@MainActor (ChainNetwork) -> UInt64)?
 
     /// The contact is not among the active wallet's established contacts any
     /// more — removed, or the active wallet has no such contact. Cleared when
@@ -579,9 +604,17 @@ final class SendViewModel: ObservableObject {
         }
     }
 
-    /// Recomputes `shieldedSpendCeilingCredits` from the current note set.
-    /// Cached rather than computed per keystroke — it reads SwiftData.
+    /// The notes a Shielded → Core withdrawal would select from, for
+    /// `contactNetworkFeeCredits`; nil off that route or while they aren't
+    /// ready. Refreshed with the ceiling.
+    private var shieldedWithdrawalNoteValues: [UInt64]?
+
+    /// Recomputes `shieldedSpendCeilingCredits` (and the withdrawal notes)
+    /// from the current note set. Cached rather than computed per keystroke —
+    /// it reads SwiftData.
     private func refreshShieldedSpendCeiling() {
+        shieldedWithdrawalNoteValues = route == .shieldedToCore
+            ? ShieldedTransferCoordinator.withdrawalNoteValues() : nil
         guard let feeKind = shieldedFeeKind(for: route) else {
             shieldedSpendCeilingCredits = nil
             return
@@ -683,15 +716,27 @@ final class SendViewModel: ObservableObject {
 
     #if DASHPAY
     /// Open this send on a DashPay contact instead of an address. Called by
-    /// the contact picker before the amount step is pushed; the address step
-    /// and the From step are both skipped, because neither has anything left
-    /// to ask.
+    /// the contact picker before the next step is pushed; the address step is
+    /// skipped, because there is no address to type.
     ///
-    /// The destination is assigned rather than parsed — there is no text to
-    /// parse — and the source is put on Core, the only balance
-    /// `contactValidSources` admits.
-    func setContactRecipient(_ contact: ContactItem) {
+    /// The destination is assigned rather than parsed — a contact receives at
+    /// a DIP-15 Core address — so a contact can be paid from any balance a
+    /// Core address can. The source starts on the first of those with funds.
+    ///
+    /// - Parameters:
+    ///   - paymentRecipient: the wallet, identity and network the host
+    ///     captured when the contact was chosen; nil when they were not ready,
+    ///     which leaves the payment unable to send.
+    ///   - transparentOnly: offer only the Transparent balance, for a host that
+    ///     has no From step and no withdrawal confirmation (the contact
+    ///     profile's Pay).
+    func setContactRecipient(
+        _ contact: ContactItem,
+        paymentRecipient: ContactPaymentRecipient? = nil,
+        transparentOnly: Bool = false
+    ) {
         contactRecipient = contact
+        contactIsTransparentOnly = transparentOnly
         // Every host of the amount step gets the newer snapshots, not just one:
         // `paymentChannelBroken` can change while the step is open. Only
         // `contactRecipient` is replaced — the destination and source stay as
@@ -700,18 +745,42 @@ final class SendViewModel: ObservableObject {
             .publisher(for: SwiftDashSDKContactsService.contactsDidChangeNotification)
             .receive(on: RunLoop.main)
             .sink { [weak self] _ in self?.refreshContactRecipient() }
+        // The lock moves while the step is open: the journal changes, the
+        // caught-up Core tip it reads moves (`coreTipHeight`), and the SDK's
+        // persister settles a Shielded spend's activity row.
+        contactLockRefresh = NotificationCenter.default
+            .publisher(for: DashPayWithdrawalStore.didChangeNotification).map { _ in () }
+            .merge(with: NotificationCenter.default
+                .publisher(for: SwiftDashSDKContactsService.contactsDidChangeNotification).map { _ in () })
+            .merge(with: SwiftDashSDKSPVCoordinator.shared.$liveSyncedTipHeight
+                .removeDuplicates().dropFirst().map { _ in () })
+            .merge(with: NotificationCenter.default.publisher(for: .NSManagedObjectContextDidSave).map { _ in () })
+            .throttle(for: .seconds(1), scheduler: RunLoop.main, latest: true)
+            .sink { [weak self] _ in self?.refreshContactPaymentLock() }
         // The caller's snapshot may already be stale — the contact removed or
         // no longer established before any notification reached this step.
         refreshContactRecipient()
+        contactPaymentRecipient = paymentRecipient.flatMap {
+            $0.identityId == contact.contactIdentityId ? $0 : nil
+        }
         // A fresh amount step for a contact whose last payment has an unknown
         // outcome opens already locked — otherwise Back and reselecting the
         // contact would hand back the Send button the lock exists to withhold.
-        contactSendOutcomeIsUnknown = WalletSendService.shared.unknownContactPaymentOutcomes
-            .contains(contactIdentityId: contact.contactIdentityId)
+        refreshContactPaymentLock()
         destination = .core
-        // Not the user's pick: it is the only legal source, and recording it
-        // as a pick would let it survive a later destination change.
-        setSourceWithoutClaimingUserIntent(.core)
+        // Each balance counts by what one contact payment from it can send,
+        // so dust neither opens the payment on nor offers a source that pays
+        // nothing.
+        let plan = Self.contactSourcePlan(
+            validSources: Self.contactValidSources(
+                hasWalletContext: contactPaymentRecipient != nil,
+                transparentOnly: transparentOnly),
+            balanceDuffs: { self.contactPayableDuffsOverride?($0) ?? self.contactPayableDuffs(from: $0) })
+        contactSources = plan.sources
+        contactOffersSourceChoice = plan.offersChoice
+        // Not the user's pick, so the From step still reads as a suggestion.
+        // The assignment refreshes the route-dependent preflights.
+        setSourceWithoutClaimingUserIntent(plan.initialSource)
     }
 
     /// Re-read the contact from the contacts service: a contact that is gone,
@@ -737,20 +806,124 @@ final class SendViewModel: ObservableObject {
         return latest
     }
 
-    /// A contact payment can only be funded from the transparent balance.
-    ///
-    /// Not a property of DashPay but of the SDK seam as it stands:
-    /// `prepareDashPayPayment` derives the contact's DIP-15 receive address
-    /// inside Rust and builds and signs the L1 transaction there —
-    /// the address itself never crosses the FFI boundary. `platformToCore` and
-    /// `shieldedToCore` both need a Core address to pay to, so there is
-    /// nothing to hand them.
-    ///
-    /// TODO(dashpay-contact-address): when the SDK exposes the derived
-    /// address, a contact becomes an ordinary Core destination — this list
-    /// then matches the one `.core` addresses already get in `validSources`,
-    /// and `route` stops needing its own contact branch.
-    static let contactValidSources: [ChainNetwork] = [.core]
+    /// What one contact payment from `source` can send, for picking the
+    /// source before its route's preflights have run: Transparent's
+    /// fee-aware spendable amount; for Platform the largest address (a
+    /// payment spends one) less the fee that input keeps, and for Shielded
+    /// the note-priced ceiling (or the balance less a full bundle's fee),
+    /// each less the Core fee and nothing below the withdrawal floor.
+    private func contactPayableDuffs(from source: ChainNetwork) -> UInt64 {
+        switch source {
+        case .core:
+            return coreToCoreSpendableDuffs
+        case .platform:
+            // The one address a payment spends, less the fee its input keeps.
+            let largest = PlatformAddressSyncCoordinator.shared.derivedAddresses.map(\.balance).max() ?? 0
+            let fee = ShieldedTransferCoordinator.platformSingleInputWithdrawalFeeCredits
+            return Self.contactPayableDuffs(envelopeCredits: largest > fee ? largest - fee : 0)
+        case .shielded:
+            let ceiling = ShieldedTransferCoordinator.spendCeilingCredits(feeKind: .withdrawal)
+                ?? ShieldedTransferCoordinator.fullBundleWithdrawalFeeCredits()
+                .map { shieldedBalance > $0 ? shieldedBalance - $0 : 0 }
+                ?? 0
+            return Self.contactPayableDuffs(envelopeCredits: ceiling)
+        }
+    }
+
+    /// What a contact withdrawal can pay out of `credits` it may spend: less
+    /// the Core fee added on top, and nothing below the withdrawal floor.
+    nonisolated static func contactPayableDuffs(envelopeCredits credits: UInt64) -> UInt64 {
+        let coreFee = ShieldedTransferCoordinator.contactCoreFeeCredits
+        guard credits >= coreFee,
+              credits - coreFee >= ShieldedTransferCoordinator.contactWithdrawalMinimumCredits
+        else { return 0 }
+        return (credits - coreFee) / 1000
+    }
+
+    /// Which balances a contact payment offers, which it opens on, and
+    /// whether the From step is shown: the funded valid sources (Transparent
+    /// alone when none is), opening on the first, with a choice offered only
+    /// when more than one is funded.
+    static func contactSourcePlan(
+        validSources: [ChainNetwork],
+        balanceDuffs: (ChainNetwork) -> UInt64
+    ) -> (sources: [ChainNetwork], initialSource: ChainNetwork, offersChoice: Bool) {
+        let funded = validSources.filter { balanceDuffs($0) > 0 }
+        let sources = funded.isEmpty ? [ChainNetwork.core] : funded
+        return (sources, sources[0], sources.count > 1)
+    }
+
+    /// Which balances can pay a contact. Transparent pays through
+    /// `prepareDashPayPayment`, which derives the contact's address and signs
+    /// in one SDK call. Platform pays through a withdrawal to an
+    /// address reserved with `reserveContactPaymentAddress` once the payment
+    /// is confirmed; without the captured wallet context there is nothing to
+    /// check that reservation against, so only Transparent remains — as it
+    /// does for a host that offers only Transparent.
+    static func contactValidSources(hasWalletContext: Bool, transparentOnly: Bool = false) -> [ChainNetwork] {
+        hasWalletContext && !transparentOnly ? [.core, .platform] : [.core]
+    }
+
+    /// What the contact intro offers as the balance to spend: the envelope
+    /// the Send button is gated on for the selected source, not its raw
+    /// balance, so typing the number shown never comes back as insufficient.
+    var contactSpendableDuffs: UInt64 {
+        switch source {
+        case .core:
+            return coreToCoreSpendableDuffs
+        case .platform:
+            return platformToCoreCapCredits / 1000
+        case .shielded:
+            // Without the note-priced ceiling, `canContinue` falls back to
+            // the balance less the worst-case reserve; so does this.
+            let ceiling = shieldedSpendCeilingCredits ?? creditsMinusFeeReserve(shieldedBalance)
+            return contactShieldedRecipientCredits(withinCeiling: ceiling) / 1000
+        }
+    }
+
+    /// What a contact can be paid from Shielded out of a spend ceiling: less
+    /// the Core fee added on top, and no more than one withdrawal may carry.
+    private func contactShieldedRecipientCredits(withinCeiling ceiling: UInt64) -> UInt64 {
+        min(ceiling > contactCoreFeeCredits ? ceiling - contactCoreFeeCredits : 0,
+            ShieldedTransferCoordinator.contactWithdrawalMaximumCredits)
+    }
+
+    /// A Shielded contact payment above what one withdrawal may carry.
+    private var exceedsContactShieldedMaximum: Bool {
+        route == .shieldedToCore && contactCoreFeeCredits > 0
+            && creditsPreview > ShieldedTransferCoordinator.contactWithdrawalMaximumCredits
+    }
+
+    /// The Core fee a contact paid from Platform or Shielded has added on
+    /// top (`ShieldedTransferCoordinator.contactCoreFeeCredits`), so the
+    /// contact receives at least the amount entered. Zero for every other send.
+    var contactCoreFeeCredits: UInt64 {
+        guard paysContact, route == .platformToCore || route == .shieldedToCore else { return 0 }
+        return ShieldedTransferCoordinator.contactCoreFeeCredits
+    }
+
+    /// The network fee a contact payment from Platform or Shielded pays on
+    /// top of what it submits: the fee of a one-input Platform withdrawal
+    /// (`ShieldedTransferCoordinator.platformSingleInputWithdrawalFeeCredits`), or the fee of the
+    /// notes Rust's selector would spend on this Shielded withdrawal — or,
+    /// while those notes aren't ready, the worst-case fee of a full bundle,
+    /// which the selector never exceeds. Nil when not known; the payment can't
+    /// continue without it, since it is part of what the confirmation states
+    /// and the PIN authorizes.
+    var contactNetworkFeeCredits: UInt64? {
+        guard paysContact else { return nil }
+        switch route {
+        case .platformToCore:
+            return ShieldedTransferCoordinator.platformSingleInputWithdrawalFeeCredits
+        case .shieldedToCore:
+            let (submitted, overflow) = creditsPreview.addingReportingOverflow(contactCoreFeeCredits)
+            guard !overflow else { return nil }
+            return ShieldedTransferCoordinator.withdrawalFeeCredits(
+                amountCredits: submitted, noteValues: shieldedWithdrawalNoteValues)
+        default:
+            return nil
+        }
+    }
 
     /// The SDK gave up permanently on this contact's DIP-15 payment channel
     /// (`ContactItem.paymentChannelBroken`), so no amount can be sent on it.
@@ -819,11 +992,17 @@ final class SendViewModel: ObservableObject {
         contactSendError = nil
         contactBalanceMissDuffs = nil
 
+        guard let capturedRecipient = contactPaymentRecipient else {
+            reportContactSendFailure(WalletSendService.contactPaymentUnavailableError())
+            return false
+        }
+
         let prepared: WalletSendService.PreparedContactPayment
         do {
             prepared = try await WalletSendService.shared.prepareContactPayment(
                 contactIdentityId: contact.contactIdentityId,
-                amount: duffs)
+                amount: duffs,
+                recipient: capturedRecipient)
         } catch {
             reportContactSendFailure(error)
             return false
@@ -872,11 +1051,23 @@ final class SendViewModel: ObservableObject {
         return isSendingToContact
     }
 
+    /// `contactUnavailableMessage` read from the contacts service now rather
+    /// than at the last change notification: the withdrawal confirmation's
+    /// Confirm and Try again ask this before they start.
+    func recheckContactAvailability() -> String? {
+        refreshContactRecipient()
+        return contactUnavailableMessage
+    }
+
     /// Why this contact cannot be paid right now, or nil. Shown on the amount
     /// step and in the open review, which disables its Send meanwhile.
     var contactUnavailableMessage: String? {
         if isContactRecipientGone { return Self.contactGoneMessage }
         if isContactPaymentUnavailable { return Self.contactPaymentsUnavailableMessage }
+        // Nothing to bind the payment to: Send would only be refused.
+        if contactRecipient != nil && contactPaymentRecipient == nil {
+            return WalletSendService.contactContextChangedMessage
+        }
         return nil
     }
 
@@ -886,6 +1077,7 @@ final class SendViewModel: ObservableObject {
 
     func contactAmountStepDidAppear() {
         isContactAmountStepVisible = true
+        refreshContactPaymentLock()
     }
 
     /// The amount step left the screen (not merely covered by the PIN prompt
@@ -928,6 +1120,35 @@ final class SendViewModel: ObservableObject {
     /// (`WalletSendService.unknownContactPaymentOutcomes`). The send may have
     /// happened, so it must not be offered again.
     @Published private(set) var contactSendOutcomeIsUnknown = false
+    /// The lock is only an earlier payment past its window, which may still
+    /// be paid out: the user may choose to pay again once told so.
+    @Published private(set) var contactPriorPaymentAwaitsDecision = false
+
+    static let contactPriorPaymentMayArriveMessage = String(
+        localized: "An earlier payment to this contact could not be confirmed and may still arrive. Check with your contact before paying again.",
+        comment: "Send to contact: an earlier payment's outcome is still unknown after the lock window")
+
+    private func refreshContactPaymentLock() {
+        guard let id = contactRecipient?.contactIdentityId else { return }
+        let lock = WalletSendService.shared.contactPaymentLockState(
+            contactIdentityId: id, recipient: contactPaymentRecipient)
+        if contactSendOutcomeIsUnknown != (lock != .none) { contactSendOutcomeIsUnknown = lock != .none }
+        if contactPriorPaymentAwaitsDecision != (lock == .awaitingDecision) {
+            contactPriorPaymentAwaitsDecision = lock == .awaitingDecision
+        }
+    }
+
+    /// The user's informed choice to pay again despite the earlier payment
+    /// whose outcome is unknown.
+    func payAgainDespiteUnconfirmedPayment() {
+        guard contactPriorPaymentAwaitsDecision, let recipient = contactPaymentRecipient else { return }
+        do {
+            _ = try WalletSendService.shared.releaseAgedContactPayments(recipient)
+        } catch {
+            contactSendError = error.localizedDescription
+        }
+        refreshContactPaymentLock()
+    }
 
     static let contactSendUnknownOutcomeMessage = String(
         localized: "We couldn't confirm whether this payment went through. Don't send it again — wait for the wallet to finish synchronizing and check your history.",
@@ -945,7 +1166,9 @@ final class SendViewModel: ObservableObject {
     /// (`prepareContactReview`), so this only sends it: the amount and fee the
     /// review showed are the ones that leave the wallet. It is the only route
     /// the amount step executes itself rather than handing on to the L1
-    /// payment processor or `SendConfirmSheet`.
+    /// payment processor or `SendConfirmSheet`; a Platform- or Shielded-funded
+    /// contact payment is a withdrawal, which `SendConfirmSheet` executes like
+    /// any other.
     ///
     /// Sends once `confirmContactReview` committed the review — never the
     /// entry read again. No balance check here: the payment's inputs were
@@ -1010,6 +1233,7 @@ final class SendViewModel: ObservableObject {
         // with it.
         if WalletSendService.isBroadcastUnknownError(nsError) {
             contactSendOutcomeIsUnknown = true
+            contactPriorPaymentAwaitsDecision = false
         }
     }
     #endif
@@ -1024,7 +1248,7 @@ final class SendViewModel: ObservableObject {
     /// Platform credits (`shieldedShieldToRecipient`).
     var validSources: [ChainNetwork] {
         #if DASHPAY
-        if contactRecipient != nil { return Self.contactValidSources }
+        if contactRecipient != nil { return contactSources }
         #endif
         switch destination {
         case .core: return [.core, .platform, .shielded]
@@ -1036,12 +1260,9 @@ final class SendViewModel: ObservableObject {
 
     var route: Route? {
         #if DASHPAY
-        if contactRecipient != nil {
-            // A contact payment is a transparent L1 spend; `contactValidSources`
-            // admits nothing else, so any other source is not a route this flow
-            // can execute.
-            return source == .core ? .coreToCore : nil
-        }
+        // A source `contactSources` withholds is not a route this flow
+        // can execute; the rest map like any Core destination.
+        if contactRecipient != nil, !validSources.contains(source) { return nil }
         #endif
         guard let destination else { return nil }
         switch (source, destination) {
@@ -1307,7 +1528,14 @@ final class SendViewModel: ObservableObject {
         if isFullShieldedSweep, let shieldedSweepAmountCredits {
             return shieldedSweepAmountCredits
         }
-        return NSDecimalNumber(decimal: Decimal(dashDuffsUnsigned) * 1000).uint64Value
+        return Self.credits(fromDuffs: dashDuffsUnsigned)
+    }
+
+    /// Saturates instead of wrapping: an amount too large to count in credits
+    /// fails every balance and cap check rather than becoming a small one.
+    nonisolated static func credits(fromDuffs duffs: UInt64) -> UInt64 {
+        let (credits, overflow) = duffs.multipliedReportingOverflow(by: 1000)
+        return overflow ? .max : credits
     }
 
     var fiatAmountString: String {
@@ -1413,23 +1641,69 @@ final class SendViewModel: ObservableObject {
 
     /// True when the typed amount is exactly the full-balance net payout —
     /// confirm then runs the AUTO (all-addresses) withdrawal.
+    ///
+    /// Never for a contact: the AUTO withdrawal pays out whatever the
+    /// balances are when it runs, so it can't be held to the amount the user
+    /// authorized. A contact is paid the exact amount, up to
+    /// `partialWithdrawCapCredits`.
     var isFullPlatformWithdrawal: Bool {
         route == .platformToCore
+            && !paysContact
             && platformWithdrawableDuffs != nil
             && dashDuffsUnsigned == platformWithdrawableDuffs
     }
 
-    /// Only Core-funded routes during a restored wallet's first sync block.
+    /// The most one Platform → Core payment can send with its explicit
+    /// input: `partialWithdrawCapCredits`; for a contact, the largest address
+    /// less the single-input fee and the Core fee added on top, and no more
+    /// than one withdrawal may carry (`contactPlatformCapCredits`).
+    private var platformToCoreCapCredits: UInt64 {
+        guard paysContact else { return partialWithdrawCapCredits }
+        return Self.contactPlatformCapCredits(
+            largestAddressCredits: PlatformAddressSyncCoordinator.shared.derivedAddresses.map(\.balance).max() ?? 0)
+    }
+
+    /// What a contact can be paid from a Platform address holding
+    /// `largestAddressCredits`: its one explicit input must keep the
+    /// single-input fee, the Core fee goes on top, and the withdrawal stays
+    /// within the protocol maximum. Needs no whole-account preflight.
+    nonisolated static func contactPlatformCapCredits(largestAddressCredits: UInt64) -> UInt64 {
+        let reserved = ShieldedTransferCoordinator.platformSingleInputWithdrawalFeeCredits
+            + ShieldedTransferCoordinator.contactCoreFeeCredits
+        guard largestAddressCredits > reserved else { return 0 }
+        return min(largestAddressCredits - reserved, ShieldedTransferCoordinator.contactWithdrawalMaximumCredits)
+    }
+
+    /// A contact paid from Platform or Shielded below the withdrawal floor
+    /// (`ShieldedTransferCoordinator.contactWithdrawalMinimumCredits`).
+    private var isBelowContactWithdrawalMinimum: Bool {
+        paysContact
+            && (route == .platformToCore || route == .shieldedToCore)
+            && creditsPreview < ShieldedTransferCoordinator.contactWithdrawalMinimumCredits
+    }
+
+    var paysContact: Bool {
+        #if DASHPAY
+        return contactRecipient != nil
+        #else
+        return false
+        #endif
+    }
+
+    /// Only Core-funded routes during a restored wallet's first sync block,
+    /// and every contact payment: its address is reserved by the payments the
+    /// wallet has found so far.
     var isBlockedBySync: Bool {
         guard let route else { return false }
         switch route {
         case .coreToCore, .coreToShielded:
-            return WalletSendService.isBlockedByInitialRestoreSync(
-                isResyncingWallet: DWGlobalOptions.sharedInstance().isResyncingCurrentNetworkWallet,
-                isChainSynced: isChainSynced)
+            break
         default:
-            return false
+            guard paysContact else { return false }
         }
+        return WalletSendService.isBlockedByInitialRestoreSync(
+            isResyncingWallet: DWGlobalOptions.sharedInstance().isResyncingCurrentNetworkWallet,
+            isChainSynced: isChainSynced)
     }
 
     private var hasUnavailableSourceBalance: Bool {
@@ -1448,7 +1722,10 @@ final class SendViewModel: ObservableObject {
         // changes: an unknown outcome disables this screen for good, so the
         // reason has to outlive the next keystroke or the button reads as
         // dead for no stated reason.
-        if contactSendOutcomeIsUnknown { return Self.contactSendUnknownOutcomeMessage }
+        if contactSendOutcomeIsUnknown {
+            return contactPriorPaymentAwaitsDecision
+                ? Self.contactPriorPaymentMayArriveMessage : Self.contactSendUnknownOutcomeMessage
+        }
         if let contactBalanceMissMessage { return contactBalanceMissMessage }
         if let contactSendError { return contactSendError }
         #endif
@@ -1472,6 +1749,12 @@ final class SendViewModel: ObservableObject {
             return String(localized: "The amount is too large to transfer.", comment: "InternalTransfer")
         }
         guard dashDuffsUnsigned > 0, let route else { return nil }
+        if isBelowContactWithdrawalMinimum {
+            return String.localizedStringWithFormat(
+                String(localized: "Enter at least %@ DASH", comment: "Identity top-up sheet — custom amount below the floor"),
+                (ShieldedTransferCoordinator.contactWithdrawalMinimumCredits / 1000).dashAmount
+                    .formattedDashAmountWithoutCurrencySymbol)
+        }
         if hasUnavailableSourceBalance {
             return String(localized: "Balance unavailable", comment: "Selected source balance not restored")
         }
@@ -1484,7 +1767,14 @@ final class SendViewModel: ObservableObject {
             return Self.feeEstimateUnavailableMessage
         }
 
-        return insufficientBalanceMessage
+        if let message = insufficientBalanceMessage { return message }
+        // A Shielded contact payment can't continue without its fee
+        // (`contactNetworkFeeCredits`); a Platform one waits on the preflight,
+        // which its own messages already cover.
+        if route == .shieldedToCore, contactCoreFeeCredits > 0, contactNetworkFeeCredits == nil {
+            return Self.feeEstimateUnavailableMessage
+        }
+        return nil
     }
 
     /// Why `requestedDuffs` cannot go on the Core → Core route, or nil when it
@@ -1573,11 +1863,15 @@ final class SendViewModel: ObservableObject {
             // A Max sweep is planned against the real note set rather than the
             // amount+reserve envelope, so it is affordable by construction.
             if isFullShieldedSweep { return nil }
+            if exceedsContactShieldedMaximum, creditsPreview <= shieldedBalance {
+                return ShieldedTransferCoordinator.contactShieldedMaximumMessage
+            }
             // The ceiling is priced from the notes that would actually be
             // spent, so it supersedes the flat reserve — which always charges
             // a full-size bundle and would reject amounts a one- or two-note
             // spend can afford.
-            if let ceiling = shieldedSpendCeilingCredits {
+            if let fullCeiling = shieldedSpendCeilingCredits {
+                let ceiling = fullCeiling > contactCoreFeeCredits ? fullCeiling - contactCoreFeeCredits : 0
                 if creditsPreview > shieldedBalance {
                     // Simply more than the wallet holds: name that, rather than
                     // blaming note fragmentation.
@@ -1597,7 +1891,7 @@ final class SendViewModel: ObservableObject {
                 balanceName: balanceName,
                 requestedCredits: creditsPreview,
                 balanceCredits: shieldedBalance,
-                feeReserveCredits: reserve)
+                feeReserveCredits: reserve + contactCoreFeeCredits)
 
         case .platformToCore:
             // The balance envelope first. A request the balance cannot cover
@@ -1614,6 +1908,23 @@ final class SendViewModel: ObservableObject {
                 feeReserveCredits: 0) {
                 return message
             }
+            // A contact pays from one explicit input, capped without the
+            // whole-account preflight the messages below wait on.
+            if paysContact {
+                guard creditsPreview > platformToCoreCapCredits else { return nil }
+                let largest = PlatformAddressSyncCoordinator.shared.derivedAddresses.map(\.balance).max() ?? 0
+                if creditsPreview <= largest {
+                    return String.localizedStringWithFormat(
+                        String(
+                            localized: "You can send up to %@ to a contact from your Platform balance in one payment.",
+                            comment: "DashPay contact payment from Platform: single-payment cap"),
+                        "\((platformToCoreCapCredits / 1000).formattedDashAmountWithoutCurrencySymbol) DASH")
+                }
+                return TransferSpendAmountPolicy.insufficientBalanceMessage(
+                    balanceName: balanceName,
+                    requestedDuffs: dashDuffsUnsigned,
+                    spendableDuffs: platformToCoreCapCredits / 1000)
+            }
             // Stay quiet while the preflight is still RESOLVING: Continue is
             // disabled, but the amount is not yet known to be unaffordable.
             // An attempt that already failed is named instead — the same
@@ -1627,17 +1938,17 @@ final class SendViewModel: ObservableObject {
                 return String(localized: "Your \(balanceName) balance is too low to cover the withdrawal fee.", comment: "Platform withdrawal cannot fund its own fee")
             }
             if isFullPlatformWithdrawal { return nil }
-            guard creditsPreview > partialWithdrawCapCredits else { return nil }
+            guard creditsPreview > platformToCoreCapCredits else { return nil }
 
             let formattedCap =
-                "\((partialWithdrawCapCredits / 1000).formattedDashAmountWithoutCurrencySymbol) DASH"
+                "\((platformToCoreCapCredits / 1000).formattedDashAmountWithoutCurrencySymbol) DASH"
             if let fullDuffs = platformWithdrawableDuffs, dashDuffsUnsigned <= fullDuffs {
                 return String(localized: "A partial withdrawal is limited to \(formattedCap). Tap Max to withdraw the full balance.", comment: "Platform partial withdrawal cap")
             }
             return TransferSpendAmountPolicy.insufficientBalanceMessage(
                 balanceName: balanceName,
                 requestedDuffs: dashDuffsUnsigned,
-                spendableDuffs: platformWithdrawableDuffs ?? partialWithdrawCapCredits / 1000)
+                spendableDuffs: platformWithdrawableDuffs ?? platformToCoreCapCredits / 1000)
         }
     }
 
@@ -1686,9 +1997,11 @@ final class SendViewModel: ObservableObject {
         // An amount that cannot be represented in duffs is not spendable on
         // any route — checked before the routes, because the wrapped value the
         // conversion would otherwise produce is small enough to pass them.
-        guard dashDuffsIfRepresentable != nil else { return false }
+        guard let duffs = dashDuffsIfRepresentable,
+              !duffs.multipliedReportingOverflow(by: 1000).overflow
+        else { return false }
         #if DASHPAY
-        if isPreparingContactPayment || isSendingToContact || isContactPaymentUnavailable { return false }
+        if isPreparingContactPayment || isSendingToContact || contactUnavailableMessage != nil { return false }
         #endif
         if isCoreShieldedDrain {
             // A whole-wallet spend is never authorized without an amount and
@@ -1702,6 +2015,8 @@ final class SendViewModel: ObservableObject {
         }
         if hasUnavailableSourceBalance { return false }
         guard dashDuffsUnsigned > 0, let route, !isBlockedBySync else { return false }
+        if isBelowContactWithdrawalMinimum { return false }
+        if contactCoreFeeCredits > 0, contactNetworkFeeCredits == nil { return false }
         switch route {
         case .coreToCore:
             return dashDuffsUnsigned <= coreToCoreSpendableDuffs
@@ -1728,17 +2043,22 @@ final class SendViewModel: ObservableObject {
                 requestedCredits: creditsPreview,
                 capacity: platformShieldCapacity)
         case .platformToCore:
+            // A contact pays from one explicit input, priced without the
+            // whole-account preflight (`contactPlatformCapCredits`).
+            if paysContact { return creditsPreview <= platformToCoreCapCredits }
             guard withdrawalPreflight?.canWithdraw == true else { return false }
             if isFullPlatformWithdrawal { return true }
-            return creditsPreview <= partialWithdrawCapCredits
+            return creditsPreview <= platformToCoreCapCredits
         case .shieldedToCore, .shieldedToPlatform, .shieldedToShielded:
             if isFullShieldedSweep {
                 return shieldedSweepAmountCredits != nil
             }
+            if exceedsContactShieldedMaximum { return false }
             if let ceiling = shieldedSpendCeilingCredits {
-                return creditsPreview <= ceiling
+                return ceiling >= contactCoreFeeCredits && creditsPreview <= ceiling - contactCoreFeeCredits
             }
-            guard let reserve = feeReserveCredits else { return false }
+            guard let feeReserve = feeReserveCredits else { return false }
+            let reserve = feeReserve + contactCoreFeeCredits
             return shieldedBalance >= reserve
                 && creditsPreview <= shieldedBalance - reserve
         }
@@ -1792,7 +2112,24 @@ final class SendViewModel: ObservableObject {
                     InternalTransferViewModel.platformShieldHeadroomUnavailableMessage
             }
         case .platformToCore:
-            sourceDuffs = platformWithdrawableDuffs ?? 0
+            sourceDuffs = paysContact
+                ? platformToCoreCapCredits / 1000
+                : platformWithdrawableDuffs ?? 0
+        case .shieldedToCore where paysContact:
+            // A contact is paid an exact amount, never a sweep: the most one
+            // transition can send, less the Core fee added on top.
+            switch ShieldedTransferCoordinator.sweepAvailability(feeKind: .withdrawal) {
+            case .ready(let plan):
+                sourceDuffs = contactShieldedRecipientCredits(withinCeiling: plan.amountCredits) / 1000
+            case .waitingForConfirmation(let credits):
+                shieldedMaxNotice = Self.shieldedConfirmingMessage(credits)
+                sourceDuffs = 0
+            case .unavailable:
+                shieldedMaxNotice = String(
+                    localized: "Your Shielded balance is not ready to spend. Sync and try Max again.",
+                    comment: "Shielded Max unavailable")
+                sourceDuffs = 0
+            }
         case .shieldedToCore, .shieldedToPlatform, .shieldedToShielded:
             // All three spend the pool, so all three plan Max against the real
             // note set. A flat reserve here would price a full-size bundle and

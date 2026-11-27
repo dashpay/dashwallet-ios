@@ -121,6 +121,8 @@ final class SwiftDashSDKContactsService: ObservableObject {
         // back-to-back) into one snapshot rebuild.
         saveObserverCancellable = NotificationCenter.default
             .publisher(for: .NSManagedObjectContextDidSave)
+            .merge(with: NotificationCenter.default.publisher(
+                for: DashPayWithdrawalStore.didChangeNotification))
             .debounce(for: .milliseconds(300), scheduler: DispatchQueue.main)
             .sink { [weak self] _ in
                 self?.refresh()
@@ -562,39 +564,77 @@ final class SwiftDashSDKContactsService: ObservableObject {
     /// One row of the payments-between-us history for a contact,
     /// read from the SwiftData rows the DashPay sync reconciles.
     struct ContactPayment: Identifiable {
+        let id: String
         /// Display-order (RPC) txid hex — the Rust `dashpay_payments`
-        /// map key, produced by `dashcore::Txid::to_string()`.
-        let txid: String
+        /// map key, produced by `dashcore::Txid::to_string()`. Absent for a
+        /// withdrawal submission, which has no known Core transaction yet.
+        let txid: String?
         let amountDuffs: UInt64
+        let amountIsEstimate: Bool
         let direction: DashPayPaymentDirection
         let memo: String?
         let date: Date
         /// Current-rate fiat equivalent of `amountDuffs`, formatted for
         /// display (e.g. "$0.35"). Nil only when the amount is zero.
         let fiatString: String?
-        var id: String { txid }
+        /// Shown under the amount when the payment's outcome is not known.
+        let statusNote: String?
 
         /// Wire-order txid (the byte reverse of the display-order hex
         /// key) — the form `SwiftDashSDKWalletSource.fetch(txid:)` and
         /// `TxDetailModel(txidWire:)` expect, matching
         /// `PersistentTransaction.txid`. Nil when the hex won't parse.
         var txidWire: Data? {
-            guard let display = Data(hex: txid) else { return nil }
+            guard let txid, let display = Data(hex: txid) else { return nil }
             return Data(display.reversed())
         }
     }
 
     /// DashPay payment history with one contact, newest first.
+    /// The payments with a contact, and whether some could not be read: an
+    /// incomplete history must not read as a complete one.
+    struct ContactPaymentHistory {
+        var payments: [ContactPayment]
+        var isIncomplete: Bool
+    }
+
     func payments(with contactId: Data) -> [ContactPayment] {
-        guard let ownerId = DWCurrentUserIdentityInfo.shared.identityId,
-              let modelContainer = SwiftDashSDKHost.shared.modelContainer else {
-            return []
+        paymentHistory(with: contactId).payments
+    }
+
+    func paymentHistory(with contactId: Data) -> ContactPaymentHistory {
+        paymentHistory(
+            with: contactId,
+            ownerId: DWCurrentUserIdentityInfo.shared.identityId,
+            modelContainer: SwiftDashSDKHost.shared.modelContainer,
+            walletId: WalletEnvironment.activeWalletId(for: WalletEnvironment.networkKind))
+    }
+
+    /// Incomplete when the identity, store or wallet it is read through is
+    /// unavailable: only a lookup that ran can show there were no payments.
+    func paymentHistory(
+        with contactId: Data,
+        ownerId: Data?,
+        modelContainer: ModelContainer?,
+        walletId: Data?
+    ) -> ContactPaymentHistory {
+        guard let ownerId, let modelContainer else {
+            Self.logger.error("DashPay payment history unavailable: no identity or store")
+            return ContactPaymentHistory(payments: [], isIncomplete: true)
         }
+        var isIncomplete = false
         let descriptor = FetchDescriptor<PersistentDashpayPayment>(
             predicate: PersistentDashpayPayment.predicate(
                 ownerIdentityId: ownerId,
                 counterpartyIdentityId: contactId))
-        let rows = (try? modelContainer.mainContext.fetch(descriptor)) ?? []
+        let rows: [PersistentDashpayPayment]
+        do {
+            rows = try modelContainer.mainContext.fetch(descriptor)
+        } catch {
+            Self.logger.error("DashPay payment history could not be read: \(String(describing: error), privacy: .public)")
+            rows = []
+            isIncomplete = true
+        }
 
         // When the payment happened, from the transaction itself.
         //
@@ -612,7 +652,7 @@ final class SwiftDashSDKContactsService: ObservableObject {
             }
         }
 
-        return rows.map { row in
+        var payments = rows.map { row in
             let dash = Decimal(row.amountDuffs) / Decimal(100_000_000)
             // `PersistentDashpayPayment.txid` is display-order hex; the
             // transaction table is keyed by the wire-order bytes.
@@ -625,8 +665,10 @@ final class SwiftDashSDKContactsService: ObservableObject {
                 .map { Date(timeIntervalSince1970: TimeInterval($0)) }
                 ?? row.createdAt
             return ContactPayment(
+                id: row.txid,
                 txid: row.txid,
                 amountDuffs: row.amountDuffs,
+                amountIsEstimate: false,
                 direction: row.direction,
                 memo: row.memo,
                 date: date,
@@ -636,12 +678,79 @@ final class SwiftDashSDKContactsService: ObservableObject {
                 // rather than throwing when rates aren't up yet.
                 fiatString: row.amountDuffs > 0
                     ? CurrencyExchanger.shared.fiatAmountString(for: dash)
-                    : nil)
+                    : nil,
+                statusNote: nil)
+        }
+        if let walletId {
+            let network = WalletEnvironment.networkKind
+            let scope = DashPayWithdrawalStore.Scope(
+                networkRaw: network.rawValue,
+                walletId: walletId, ownerIdentityId: ownerId,
+                chain: WalletEnvironment.network?.persistenceScope)
+            let withdrawals = Self.withdrawalPayments(
+                reading: { try DashPayWithdrawalStore.shared.entries(scope: scope, contactIdentityId: contactId) },
+                shieldedSpendState: WalletSendService.shieldedSpendState(walletId: walletId, network: network))
+            payments += withdrawals.payments
+            if withdrawals.isIncomplete {
+                Self.logger.error("DashPay withdrawal history could not be read")
+                isIncomplete = true
+            }
+        } else {
+            Self.logger.error("DashPay withdrawal history unavailable: no active wallet")
+            isIncomplete = true
         }
         // Sort on the payment date, not the row's insert order: reconstructed
         // rows are all written within the same second, so insert order says
         // nothing about which payment came first.
-        .sorted { $0.date > $1.date }
+        return ContactPaymentHistory(payments: payments.sorted { $0.date > $1.date }, isIncomplete: isIncomplete)
+    }
+
+    /// The journaled withdrawals as history rows; an unreadable journal is an
+    /// incomplete history, not an empty one.
+    nonisolated static func withdrawalPayments(
+        reading: () throws -> [DashPayWithdrawalStore.Entry],
+        shieldedSpendState: (DashPayWithdrawalStore.Entry) -> DashPayWithdrawalStore.ShieldedSpendState
+    ) -> ContactPaymentHistory {
+        let entries: [DashPayWithdrawalStore.Entry]
+        do {
+            entries = try reading()
+        } catch {
+            return ContactPaymentHistory(payments: [], isIncomplete: true)
+        }
+        let payments = shownWithdrawals(entries, shieldedSpendState: shieldedSpendState).map { entry, statusNote in
+            ContactPayment(
+                id: "withdrawal:\(entry.id.uuidString)",
+                txid: nil,
+                amountDuffs: entry.amountDuffs,
+                amountIsEstimate: entry.amountIsEstimate,
+                direction: .sent,
+                memo: nil,
+                date: entry.createdAt,
+                fiatString: CurrencyExchanger.shared.fiatAmountString(
+                    for: Decimal(entry.amountDuffs) / Decimal(100_000_000)),
+                statusNote: statusNote)
+        }
+        return ContactPaymentHistory(payments: payments, isIncomplete: false)
+    }
+
+    /// The journaled withdrawals the contact's history shows, each with its
+    /// status note. One that never left, or a Shielded one the SDK failed, is
+    /// no money sent and is not shown. One the SDK accepted, or a Shielded one
+    /// it confirmed, reads like any other sent payment: the Platform side is
+    /// done, and the Core payout shows on the contact's side. Only an
+    /// unresolved outcome needs saying.
+    nonisolated static func shownWithdrawals(
+        _ entries: [DashPayWithdrawalStore.Entry],
+        shieldedSpendState: (DashPayWithdrawalStore.Entry) -> DashPayWithdrawalStore.ShieldedSpendState
+    ) -> [(DashPayWithdrawalStore.Entry, String?)] {
+        entries.compactMap { entry in
+            guard entry.mayHaveBeenSubmitted else { return nil }
+            let state: DashPayWithdrawalStore.ShieldedSpendState? =
+                entry.source == .shielded ? shieldedSpendState(entry) : nil
+            if state == .failed { return nil }
+            if entry.status == .submitted || state == .confirmed { return (entry, nil) }
+            return (entry, String(localized: "Status unknown", comment: "DashPay payment history: outcome not confirmed"))
+        }
     }
 
     /// Write the owner-private contact metadata (alias / note / hidden)

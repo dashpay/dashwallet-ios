@@ -29,6 +29,10 @@ struct ContactProfileSheet: View {
     /// Set once the profile has asked to close: a contacts change during the
     /// Pay sheet's exit and that sheet's onDismiss can both ask.
     @State private var isClosing = false
+    /// The wallet and identity this profile opened on, handed to the pay
+    /// sheet so a wallet switch while the profile is open can't rebind it.
+    /// Captured once; nil when either was not ready, and never filled in later.
+    @State private var paymentRecipient: ContactPaymentRecipient?
 
     // Owner-private contact meta, editable for established contacts.
     // Seeded from the immutable snapshot in onAppear; saved through
@@ -37,6 +41,7 @@ struct ContactProfileSheet: View {
     @State private var noteText = ""
     @State private var isHidden = false
     @State private var payments: [SwiftDashSDKContactsService.ContactPayment] = []
+    @State private var historyIsIncomplete = false
     /// Payment txid (display hex) → the resolved wallet `Transaction`,
     /// for the rows whose on-chain tx exists in this wallet's store.
     /// A payment absent here (H1 loss, or a received tx not yet synced)
@@ -61,6 +66,7 @@ struct ContactProfileSheet: View {
 
     init(contact: ContactItem) {
         _contact = State(initialValue: contact)
+        _paymentRecipient = State(initialValue: ContactPaymentRecipient.current(for: contact))
     }
 
     var body: some View {
@@ -118,7 +124,10 @@ struct ContactProfileSheet: View {
                     loadPayments()
                 }
             }) {
-                PayContactSheet(contact: contact, onSent: { paidFromPaySheet = true })
+                PayContactSheet(
+                    contact: contact,
+                    recipient: paymentRecipient,
+                    onSent: { paidFromPaySheet = true })
                     .onAppear { isPayPresented = true }
             }
             .onAppear {
@@ -524,7 +533,15 @@ struct ContactProfileSheet: View {
             Text(String(localized: "Payments made directly to an address aren't retained here.", comment: "DashPay Contacts"))
                 .font(.system(size: 12))
                 .foregroundColor(.dash.tertiaryText)
-            if activityEntries.isEmpty {
+            if historyIsIncomplete {
+                Text(String(
+                    localized: "Some payments with this contact could not be loaded, so this list may be incomplete.",
+                    comment: "DashPay Contacts: the payment history could not be read in full"))
+                    .font(.system(size: 13))
+                    .foregroundColor(.dash.red)
+                    .padding(.top, 2)
+            }
+            if activityEntries.isEmpty, !historyIsIncomplete {
                 Text(String(localized: "No payments with this contact yet", comment: "DashPay Contacts"))
                     .font(.system(size: 14))
                     .foregroundColor(.dash.secondaryText)
@@ -670,12 +687,17 @@ struct ContactProfileSheet: View {
                 ? "arrow.up.circle.fill" : "arrow.down.circle.fill")
                 .foregroundColor(payment.direction == .sent ? .dash.blue : .dashGreen)
             VStack(alignment: .leading, spacing: 2) {
-                Text(verbatim: "\(payment.direction == .sent ? "-" : "+")"
+                Text(verbatim: "\(payment.amountIsEstimate ? "≈ " : "")\(payment.direction == .sent ? "-" : "+")"
                     + "\(Self.dashString(duffs: payment.amountDuffs)) DASH")
                     .font(.system(size: 14, weight: .medium))
                     .foregroundColor(.dash.primaryText)
                 if let fiat = payment.fiatString {
                     Text(fiat)
+                        .font(.system(size: 12))
+                        .foregroundColor(.dash.secondaryText)
+                }
+                if let status = payment.statusNote {
+                    Text(status)
                         .font(.system(size: 12))
                         .foregroundColor(.dash.secondaryText)
                 }
@@ -708,7 +730,9 @@ struct ContactProfileSheet: View {
     /// Fetch the payment history and resolve each row's on-chain tx
     /// (main-thread SwiftData reads; a handful of rows, <10ms each).
     private func loadPayments() {
-        let rows = service.payments(with: contact.contactIdentityId)
+        let history = service.paymentHistory(with: contact.contactIdentityId)
+        let rows = history.payments
+        historyIsIncomplete = history.isIncomplete
         var resolved: [String: Transaction] = [:]
         for payment in rows {
             if let wire = payment.txidWire,
@@ -766,14 +790,19 @@ struct PayContactSheet: View {
     /// The sent payment's details, once it is broadcast.
     @State private var sentDetails: TxDetailModel?
 
-    init(contact: ContactItem, onSent: @escaping () -> Void) {
+    /// - Parameter recipient: the wallet and identity the profile opened on;
+    ///   nil leaves the payment unavailable until the profile is reopened in a
+    ///   ready wallet context.
+    init(contact: ContactItem, recipient: ContactPaymentRecipient?, onSent: @escaping () -> Void) {
         self.contact = contact
         self.onSent = onSent
         // Built inside the autoclosure, so a re-render of the profile does not
         // construct (and subscribe) a view model only to drop it.
         _viewModel = StateObject(wrappedValue: {
             let viewModel = SendViewModel()
-            viewModel.setContactRecipient(contact)
+            // Transparent only: this sheet has no From step and no withdrawal
+            // confirmation; Send → Send to username offers every balance.
+            viewModel.setContactRecipient(contact, paymentRecipient: recipient, transparentOnly: true)
             return viewModel
         }())
     }

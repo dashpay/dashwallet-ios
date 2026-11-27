@@ -28,6 +28,7 @@ import Foundation
 import OSLog
 import SwiftDashSDK
 import SwiftData
+import UIKit
 
 /// The exact transaction used for an in-process Core SPV restart. It is kept
 /// free of SDK types so the stop → start ordering, error propagation and busy
@@ -136,6 +137,13 @@ public enum SPVSyncState {
     case unknown
 
     public func isComplete() -> Bool { self == .synced }
+
+    /// Caught up with the chain: `.synced`, or dash-spv's steady state once
+    /// fully synced, `.waitForEvents` at full progress. `.waitForEvents` is
+    /// also the pre-start default, which the progress tells apart.
+    public func isCaughtUp(progress: Double) -> Bool {
+        self == .synced || (self == .waitForEvents && progress >= 0.999)
+    }
 }
 
 /// Local replacement for the SDK's removed `SPVSyncProgress`.
@@ -193,6 +201,11 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
     @Published public private(set) var state: SPVSyncState = .idle
     @Published public private(set) var tipHeight: UInt32 = 0
     @Published public private(set) var bestPeerHeight: UInt32 = 0
+    /// The header tip from the last progress tick, when that tick found the
+    /// client caught up with a connected peer (`liveSyncedTip`); nil after any
+    /// other tick, once peers drop, and when the app goes to the background.
+    /// Persisted heights, published before any peer answers, never set it.
+    @Published public private(set) var liveSyncedTipHeight: UInt32?
     @Published public private(set) var lastError: String? = nil
     /// English reason for `lastError`, for the exported log: `lastError` is shown on screen, so it is localized.
     /// When a stop records the caller's error, this is `String(describing:)` of that error.
@@ -217,6 +230,8 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
     private var progressCancellable: AnyCancellable?
     private var peersCancellable: AnyCancellable?
     private var balanceRefreshCancellable: AnyCancellable?
+    private var backgroundCancellable: AnyCancellable?
+    private var paymentTipLifetime = ContactPaymentTipLifetime()
 
     /// Network whose CoinJoin gap was widened for a one-time recovery scan
     /// during the current run, so a subsequent full sync can mark recovery
@@ -770,6 +785,8 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
         peersCancellable = nil
         balanceRefreshCancellable?.cancel()
         balanceRefreshCancellable = nil
+        backgroundCancellable?.cancel()
+        backgroundCancellable = nil
     }
 
     /// Drop the outgoing network's balance the moment a network switch is
@@ -1169,14 +1186,19 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
     @MainActor
     private func subscribeToManagerProgress(manager: PlatformWalletManager) {
         subscriptionsDetached = false
+        // The first value is the manager's cached one, replayed on attaching,
+        // and the next may come from a poll already in flight: either can
+        // be a read from before this subscription.
+        paymentTipLifetime.invalidate(at: ProcessInfo.processInfo.systemUptime, refusing: 2)
         progressCancellable = manager.$spvProgress
+            .map { ($0, ProcessInfo.processInfo.systemUptime) }
             .receive(on: RunLoop.main)
-            .sink { [weak self] platformProgress in
+            .sink { [weak self] platformProgress, observedAt in
                 // `.receive(on: RunLoop.main)` puts us on the main thread,
                 // so we can hop into MainActor isolation synchronously to
                 // touch the host's `@MainActor` wallet inside applyProgress.
                 MainActor.assumeIsolated {
-                    self?.applyProgress(platformProgress)
+                    self?.applyProgress(platformProgress, observedAt: observedAt)
                 }
             }
         peersCancellable = manager.$spvPeers
@@ -1184,6 +1206,16 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
             .sink { [weak self] peers in
                 MainActor.assumeIsolated {
                     self?.connectedPeers = peers
+                    if peers.isEmpty { self?.liveSyncedTipHeight = nil }
+                }
+            }
+        backgroundCancellable = NotificationCenter.default
+            .publisher(for: UIApplication.didEnterBackgroundNotification)
+            .merge(with: NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification))
+            .sink { [weak self] _ in
+                MainActor.assumeIsolated {
+                    self?.paymentTipLifetime.invalidate(at: ProcessInfo.processInfo.systemUptime)
+                    self?.liveSyncedTipHeight = nil
                 }
             }
 
@@ -1208,7 +1240,7 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
     }
 
     @MainActor
-    private func applyProgress(_ p: PlatformSpvSyncProgress) {
+    private func applyProgress(_ p: PlatformSpvSyncProgress, observedAt: TimeInterval) {
         // Everything below runs on the main actor, once per progress tick
         // (~1Hz for as long as any sync phase advances), and reaches
         // synchronous FFI and a main-context SwiftData fetch. Nothing here has
@@ -1253,6 +1285,11 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
         state = mappedState
         tipHeight = headersCurrent
         bestPeerHeight = max(headersTarget, headersCurrent)
+        liveSyncedTipHeight = paymentTipLifetime.tip(
+            Self.liveSyncedTip(
+                state: mappedState, progress: p.overallPercentage, hasConnectedPeer: !connectedPeers.isEmpty,
+                headersCurrent: headersCurrent, headersTarget: headersTarget),
+            observedAt: observedAt, isActive: UIApplication.shared.applicationState == .active)
         if mappedState != .error {
             setLastError(nil, log: nil)
         }
@@ -1321,11 +1358,29 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
         }
     }
 
+    /// The header tip from a tick that finds the client caught up, with a
+    /// peer connected and no taller header known; nil from any other tick.
+    /// An earlier tip is not carried over: a payment started while the client
+    /// is behind would be stamped with a height from before it.
+    nonisolated static func liveSyncedTip(
+        state: SPVSyncState,
+        progress: Double,
+        hasConnectedPeer: Bool,
+        headersCurrent: UInt32,
+        headersTarget: UInt32
+    ) -> UInt32? {
+        guard state.isCaughtUp(progress: progress), hasConnectedPeer,
+              headersCurrent > 0, headersCurrent >= headersTarget
+        else { return nil }
+        return headersCurrent
+    }
+
     private func resetPublishedState() {
         progress = 0.0
         state = .idle
         tipHeight = 0
         bestPeerHeight = 0
+        liveSyncedTipHeight = nil
         syncProgress = .default()
         connectedPeers = []
     }
@@ -1564,5 +1619,31 @@ enum SPVChainResyncMarker {
     /// Wallet wipe: same as `clearAll`, named for the wiper's call site.
     static func resetForWipe() {
         clearAll()
+    }
+}
+
+/// Which progress ticks may stamp a contact payment. A tick is timed when the
+/// SDK publishes it, not when its poll read the client, so the first one after
+/// the app leaves or returns to the foreground may carry a read from before:
+/// it is refused. The SDK polls one read at a time, so the next tick was read
+/// after that one was published.
+struct ContactPaymentTipLifetime {
+    private var invalidatedAt: TimeInterval = 0
+    private var ticksToRefuse = 0
+
+    /// - Parameter refusing: how many ticks after `uptime` may still carry a
+    ///   read from before it.
+    mutating func invalidate(at uptime: TimeInterval, refusing: Int = 1) {
+        invalidatedAt = uptime
+        ticksToRefuse = refusing
+    }
+
+    mutating func tip(_ height: UInt32?, observedAt: TimeInterval, isActive: Bool) -> UInt32? {
+        guard observedAt > invalidatedAt else { return nil }
+        guard ticksToRefuse == 0 else {
+            ticksToRefuse -= 1
+            return nil
+        }
+        return isActive ? height : nil
     }
 }

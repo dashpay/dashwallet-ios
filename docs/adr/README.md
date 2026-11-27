@@ -60,6 +60,7 @@ where they disagree, ADR-0001 wins.
 | [0071](0071-rewrite-swift-lookups-with-a-swiftsyntax-codemod-rerun-on-every-baseline.md) | Rewrite Swift lookups with a SwiftSyntax codemod re-run on every Baseline | l10n | Accepted | |
 | [0072](0072-check-releases-through-the-key-map.md) | Check releases through the key map instead of pairing code places | l10n | Accepted | |
 | [0073](0073-make-the-sync-phase-write-the-same-catalog-as-the-xcode-app.md) | Make the sync phase write the same Catalog as the Xcode app, and compile only the shipped locales | l10n | Accepted | |
+| [0074](0074-journal-platform-contact-payments-and-defer-shielded-funding.md) | Journal Platform contact payments and defer Shielded funding | storage | Proposed | |
 
 Areas: `spv`, `platform`, `keys`, `storage`, `coinjoin`, `payments`, `swap`, `ui`, `l10n`, `build`, `process`. Each ADR takes one; a new
 Area is added to this list in the PR that first needs it.

@@ -14255,6 +14255,9 @@
         }
       }
     },
+    "%@ receives it once the network processes the payment — this can take up to 10 minutes." : {
+      "comment" : "Send confirm sheet: DashPay contact payment from Platform or Shielded"
+    },
     "%@ registered" : {
       "comment" : "Username marketplace: registration success",
       "localizations" : {
@@ -15306,6 +15309,9 @@
           }
         }
       }
+    },
+    "%@ will receive it in a few minutes, once the network processes the payment." : {
+      "comment" : "DashPay contact payment sent from Platform or Shielded"
     },
     "%@, spending up to %@ of your identity's credits until %@" : {
       "comment" : "DashConnect App Connect v2: what a key can do, an amount with its unit (0.5 DASH), a date",
@@ -44796,6 +44802,9 @@
         }
       }
     },
+    "A payment to this contact is already in progress." : {
+      "comment" : "DashPay: a second payment to a contact started while one was still being sent"
+    },
     "A previous Dash conversion is still confirming. Please wait for it to confirm (about 2–5 minutes) before starting a new one." : {
       "comment" : "DashSpend/Maya",
       "localizations" : {
@@ -68001,6 +68010,9 @@
           }
         }
       }
+    },
+    "An earlier payment to this contact could not be confirmed and may still arrive. Check with your contact before paying again." : {
+      "comment" : "Send to contact: an earlier payment's outcome is still unknown after the lock window"
     },
     "An earlier top-up of your identity was paid but hasn't reached Platform yet. Topping up again may pay twice. You can finish that transfer from your transaction history first." : {
       "comment" : "Usernames: unfinished identity top-up",
@@ -333636,6 +333648,9 @@
         }
       }
     },
+    "No more payment addresses can be reserved for this contact from Platform or Shielded. If a recent payment's status is unknown, check that your contact received it before paying again." : {
+      "comment" : "DashPay: too many contact addresses were reserved for payments that may not have arrived"
+    },
     "No names are for sale in the recent listing activity. Show more reaches further back." : {
       "comment" : "Username marketplace: price-changes feed found no live listings yet",
       "localizations" : {
@@ -371237,6 +371252,9 @@
     "Pay %@" : {
       "comment" : "DashSpend: pay the Dash amount that follows"
     },
+    "Pay again" : {
+      "comment" : "Send to contact: pay despite an earlier payment whose outcome is unknown"
+    },
     "Pay and get paid instantly with easy to use payment flows" : {
       "localizations" : {
         "ar" : {
@@ -372813,6 +372831,9 @@
           }
         }
       }
+    },
+    "Pay this contact again?" : {
+      "comment" : "Send to contact: confirm paying despite an earlier unconfirmed payment"
     },
     "Pay to usernames" : {
       "localizations" : {
@@ -376757,6 +376778,9 @@
         }
       }
     },
+    "Payment status unknown" : {
+      "comment" : "DashPay contact payment"
+    },
     "Payment URI unavailable" : {
       "comment" : "DashSpend",
       "localizations" : {
@@ -377285,6 +377309,7 @@
     },
     "Payments are private: the addresses you exchange with a contact travel inside an encrypted payload only the two of you can read, and are never published — so your payments aren't trivially linkable to your username. They are still regular transparent-chain payments, though: sophisticated chain analysis might leak information. Shielded DashPay (coming soon) will close that gap. Contact requests themselves are currently NOT private: anyone can see that two identities are connected. Private contact requests are a feature coming soon. Your username and profile are also public on Dash Platform." : {
       "comment" : "DashPay FAQ",
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -377545,6 +377570,9 @@
           }
         }
       }
+    },
+    "Payments are private: the addresses you exchange with a contact travel inside an encrypted payload only the two of you can read. A payment still shows its address on the chain like any other, but nothing published links that address to your username. You can pay from your Transparent or Platform balance. Shielded payments to contacts are not available yet. However you pay, your contact receives it as a regular transparent-chain payment, so the payment itself is public. Contact requests themselves are currently NOT private: anyone can see that two identities are connected. Private contact requests are a feature coming soon. Your username and profile are also public on Dash Platform." : {
+      "comment" : "DashPay FAQ"
     },
     "Payments confirm in seconds with InstantSend" : {
       "comment" : "Balance info sheet",
@@ -401991,8 +402019,12 @@
         }
       }
     },
+    "Private contact requests (so who you connect with stays private), payments that remain Shielded for the recipient, and paying users who aren't in your contacts yet are all coming soon." : {
+      "comment" : "DashPay FAQ"
+    },
     "Private contact requests (so who you connect with stays private), Shielded DashPay — contact payments from your private Shielded balance — and paying users who aren't in your contacts yet are all coming soon." : {
       "comment" : "DashPay FAQ",
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -480063,6 +480095,9 @@
         }
       }
     },
+    "Shielded payments to contacts are not available yet. Use your Transparent or Platform balance." : {
+      "comment" : "Send to contact: Shielded funding is deferred"
+    },
     "Shielded received" : {
       "comment" : "Transaction filter",
       "localizations" : {
@@ -490845,6 +490880,9 @@
         }
       }
     },
+    "Some payments with this contact could not be loaded, so this list may be incomplete." : {
+      "comment" : "DashPay Contacts: the payment history could not be read in full"
+    },
     "Some usernames can be blocked" : {
       "comment" : "Usernames",
       "localizations" : {
@@ -497155,6 +497193,9 @@
           }
         }
       }
+    },
+    "Status unknown" : {
+      "comment" : "DashPay payment history: outcome not confirmed"
     },
     "Stay in the wallet" : {
       "comment" : "DashConnect: do not return to an app the wallet does not know",
@@ -529233,6 +529274,9 @@
         }
       }
     },
+    "The DashPay payment record is unavailable." : {
+      "comment" : "DashPay: the payment record to update is missing"
+    },
     "The destination address isn’t valid for %@ (%@). Go back and enter a %@ address." : {
       "comment" : "Swap",
       "localizations" : {
@@ -531337,6 +531381,9 @@
         }
       }
     },
+    "The earlier payment may still arrive, and your contact could be paid twice." : {
+      "comment" : "Send to contact: risk of paying again despite an earlier unconfirmed payment"
+    },
     "The evonode didn't answer in time." : {
       "comment" : "Evonode status",
       "localizations" : {
@@ -531865,6 +531912,9 @@
     },
     "The exchange rate is unavailable, so this payment could not be checked. Nothing was sent. Please try again in a moment." : {
       "comment" : "DashSpend"
+    },
+    "The fee for this payment could not be worked out. Go back and try again." : {
+      "comment" : "DashPay contact payment from Platform or Shielded: its network fee was unknown at confirmation"
     },
     "The final amount you receive may differ from this estimate by up to %lld%% due to price slippage." : {
       "comment" : "Dash DEX",
@@ -538968,6 +539018,9 @@
           }
         }
       }
+    },
+    "The network fee for this payment changed. Close this confirmation and review it again." : {
+      "comment" : "DashPay contact payment from Platform or Shielded: priced again, it would now cost more than the confirmed fee"
     },
     "The network has not caught up with your identity's keys yet. Try again in a moment." : {
       "comment" : "DashConnect App Connect v2",
@@ -621872,6 +621925,9 @@
         }
       }
     },
+    "Unable to save this DashPay payment." : {
+      "comment" : "DashPay: the payment record could not be written, so nothing was sent"
+    },
     "Unable to send contact request" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -666802,6 +666858,9 @@
         }
       }
     },
+    "We couldn't confirm whether this payment went through. Don't send it again — check your balance and this contact's activity first." : {
+      "comment" : "DashPay contact payment"
+    },
     "We couldn't confirm whether this payment went through. Don't send it again — wait for the wallet to finish synchronizing and check your history." : {
       "comment" : "Send to contact: the broadcast outcome is unknown",
       "localizations" : {
@@ -684941,6 +685000,12 @@
           }
         }
       }
+    },
+    "You can send up to %@ to a contact from your Platform balance in one payment." : {
+      "comment" : "DashPay contact payment from Platform: single-payment cap"
+    },
+    "You can send up to %@ to a contact from your Shielded balance in one payment." : {
+      "comment" : "DashPay contact payment from Shielded: the protocol's single-withdrawal maximum"
     },
     "You can specify any URL which is publicly available on the internet so other users can see it on the Dash network." : {
       "localizations" : {
@@ -711531,6 +711596,9 @@
         }
       }
     },
+    "Your Platform balance changed. Close this confirmation and tap Max again." : {
+      "comment" : "Full-balance Platform payment: the balance grew after it was authorized"
+    },
     "Your previous payment was found. Continue to finish creating the identity and username without paying again." : {
       "comment" : "DashPay registration recovery",
       "localizations" : {
@@ -713897,6 +713965,9 @@
           }
         }
       }
+    },
+    "Your restored wallet is completing its initial sync. Paying contacts will be available once it finishes." : {
+      "comment" : "Contact payment blocked during a restored wallet's initial sync"
     },
     "Your restored wallet is completing its initial sync. Sending from your Transparent balance will be available once it finishes." : {
       "comment" : "Core send blocked during a restored wallet's initial sync",
@@ -722837,6 +722908,9 @@
           }
         }
       }
+    },
+    "Your wallet or DashPay identity changed. Reopen the payment and try again." : {
+      "comment" : "DashPay: the wallet or identity changed while a contact payment was open"
     },
     "ZenLedger" : {
       "localizations" : {
