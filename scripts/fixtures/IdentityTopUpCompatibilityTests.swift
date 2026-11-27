@@ -13,7 +13,8 @@ import XCTest
     func topUp() async throws -> UInt64 {
         try await IdentityTopUpViewModel().topUpFromShielded(
             identityId: Data([2]), amountDuffs: 100,
-            wallet: host.wallet!, modelContainer: ModelContainer())
+            wallet: host.wallet!, modelContainer: ModelContainer(),
+            proofTiming: ShieldedProverWarmup.shared.beginProofOperation(.shieldedToIdentity))
     }
 
     func testAmbiguousSecondLegRetainsUnknownOutcome() async {
