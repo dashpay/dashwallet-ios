@@ -178,7 +178,7 @@ class MerchantDAO: PointOfUseDAO {
     }
 
     /// Builds the shared WHERE clause for merchant queries: name search, merchant types,
-    /// payment/provider filters, redeemType/PiggyCards exclusions, denomination type and
+    /// payment/provider filters, PiggyCards exclusions, denomination type and
     /// the territory-or-bounds region filter.
     private func merchantQueryFilter(query: String?,
                                      bounds: ExploreMapBounds?,
@@ -237,10 +237,6 @@ class MerchantDAO: PointOfUseDAO {
                 queryFilter = queryFilter && Expression<Bool>(literal: "merchantId IN (SELECT DISTINCT merchantId FROM gift_card_providers WHERE provider IN (\(providerString)))")
             }
         }
-
-        // Filter out URL-based redemption merchants (not supported)
-        // Using literal expression to handle cases where redeemType column might not exist
-        queryFilter = queryFilter && Expression<Bool>(literal: "(redeemType IS NULL OR redeemType != 'url')")
 
         // Filter out PiggyCards-only merchants when:
         // 1. PIGGYCARDS_ENABLED is not defined, OR
