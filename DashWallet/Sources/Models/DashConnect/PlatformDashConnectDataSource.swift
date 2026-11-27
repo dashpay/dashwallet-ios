@@ -19,7 +19,7 @@
 
 import Combine
 import Foundation
-import OSLog
+import os
 import Security
 import SwiftData
 import SwiftDashSDK
@@ -371,9 +371,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         }
     }
 
-    private static let logger = Logger(
-        subsystem: "org.dashfoundation.dash",
-        category: "dashconnect.platform-data-source")
+    private static let logger = AppLogger(category: "dashconnect.platform-data-source")
 
     static let loginKeyExchangeDocumentType = "loginKeyResponse"
 
@@ -2700,7 +2698,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             let contract = try await sdk.dataContractGetOffMain(id: id)
             guard let tokens = contract["tokens"] as? [String: Any],
                   let tokenDict = tokens[String(position)] as? [String: Any] else {
-                logger.info("🔗 DASHCONNECT :: token purchase: contract \(id, privacy: .public) has no token at position \(position, privacy: .public); quantity shown as base units")
+                logger.info("🔗 DASHCONNECT :: token purchase: the contract has no token at the requested position; quantity shown as base units")
                 return nil
             }
             // `conventions.decimals` wins where both are present — the same
@@ -2708,7 +2706,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             // when it writes the persisted row.
             let conventions = tokenDict["conventions"] as? [String: Any]
             guard let decimals = (conventions?["decimals"] as? Int) ?? (tokenDict["decimals"] as? Int) else {
-                logger.info("🔗 DASHCONNECT :: token purchase: contract \(id, privacy: .public) declares no decimals; quantity shown as base units")
+                logger.info("🔗 DASHCONNECT :: token purchase: the token declares no decimals; quantity shown as base units")
                 return nil
             }
             let name = (tokenDict["name"] as? String)
@@ -2717,7 +2715,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             return (decimals, name)
         } catch {
             let reason = AppConnectWriteExecutor.logDescription(of: error)
-            logger.error("🔗 DASHCONNECT :: token purchase: contract fetch failed for \(id, privacy: .public): \(reason, privacy: .public); quantity shown as base units")
+            logger.error("🔗 DASHCONNECT :: token purchase: contract fetch failed: \(reason, privacy: .public); quantity shown as base units")
             return nil
         }
     }
@@ -3809,7 +3807,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                 return label
             }
         } catch {
-            Self.logger.error("🔗 DASHCONNECT :: app metadata resolution failed for \(contractId, privacy: .public): \(AppConnectWriteExecutor.logDescription(of: error), privacy: .public)")
+            Self.logger.error("🔗 DASHCONNECT :: app metadata resolution failed: \(AppConnectWriteExecutor.logDescription(of: error), privacy: .public)")
         }
 
         return nil

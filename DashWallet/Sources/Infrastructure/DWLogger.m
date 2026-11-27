@@ -140,6 +140,18 @@ NSString *DWCurrentThreadName(void) {
     DWLogInfo(className, @"%@", message);
 }
 
++ (void)logDebug:(NSString *)message className:(NSString *)className {
+    DWLogDebug(className, @"%@", message);
+}
+
++ (void)logWarning:(NSString *)message className:(NSString *)className {
+    DWLogWarn(className, @"%@", message);
+}
+
++ (void)logError:(NSString *)message className:(NSString *)className {
+    DWLogError(className, @"%@", message);
+}
+
 + (void)logVersionInfo {
     // Get host app version info
     NSBundle *mainBundle = [NSBundle mainBundle];

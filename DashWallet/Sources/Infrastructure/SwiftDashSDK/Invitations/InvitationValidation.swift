@@ -13,7 +13,6 @@
 //
 
 import Foundation
-import OSLog
 import SwiftDashSDK
 
 enum InvitationTier: Equatable {
@@ -374,9 +373,7 @@ enum InvitationNotReadyPolicy {
 @MainActor
 enum InvitationValidator {
 
-    private static let logger = Logger(
-        subsystem: "org.dashfoundation.dash",
-        category: "swift-sdk-migration.invitations")
+    private static let logger = AppLogger(category: "swift-sdk-migration.invitations")
 
     /// nil when the wallet is not ready to be asked (not hydrated yet), or
     /// when the active wallet or network is no longer the invitation's — the
@@ -406,10 +403,10 @@ enum InvitationValidator {
                 do {
                     let status = try await wallet.invitationClaimStatus(uri: uri)
                     logger.info(
-                        "🎟️ INVITE :: status amount=\(status.amountDuffs, privacy: .public) claimed=\(status.alreadyClaimed, privacy: .public)")
+                        "🎟️ INVITE :: status amount=\(status.amountDuffs, privacy: .private) claimed=\(status.alreadyClaimed, privacy: .public)")
                     return status
                 } catch {
-                    logger.info("🎟️ INVITE :: status failed: \(String(describing: error), privacy: .public)")
+                    logger.info("🎟️ INVITE :: status failed: \(error)")
                     throw error
                 }
             })

@@ -281,7 +281,7 @@ struct DashSpendPayScreen: View {
             errorMessage = error.localizedDescription
             showErrorDialog = true
 
-            DWLogger.log("Gift card purchase failed with error: \(error)")
+            DWLogger.log("Gift card purchase failed with error: \(AppLogMessage.errorSummary(error))")
         }
     }
 
