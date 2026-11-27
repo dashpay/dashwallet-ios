@@ -431,6 +431,12 @@ final class CreditSendActivityDAO {
     func delete(walletId: Data) {}
     func deleteAll() {}
 }
+final class IdentityCreditActivityDAO {
+    static let shared = IdentityCreditActivityDAO()
+    func delete(walletId: Data) throws {}
+    func deleteAll() throws {}
+}
+enum DWLogger { static func log(_ message: String) {} }
 @MainActor enum SwiftDashSDKWalletWiper {
     static let logger = Logger(subsystem: "core-drain-tests", category: "deletion")
 ''' + deletion + "\n}\n")

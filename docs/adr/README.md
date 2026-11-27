@@ -71,6 +71,7 @@ where they disagree, ADR-0001 wins.
 | [0072](0072-check-releases-through-the-key-map.md) | Check releases through the key map instead of pairing code places | l10n | Accepted | |
 | [0073](0073-make-the-sync-phase-write-the-same-catalog-as-the-xcode-app.md) | Make the sync phase write the same Catalog as the Xcode app, and compile only the shipped locales | l10n | Accepted | |
 | [0076](0076-build-external-send-as-a-new-module-over-the-existing-spend-seams.md) | Build external send as a new module over the existing spend seams | payments | Proposed | |
+| [0077](0077-detect-credits-received-by-the-current-identity-from-its-balance.md) | Detect credits received by the Current identity from its balance | payments | Proposed | |
 
 Areas: `spv`, `platform`, `keys`, `storage`, `coinjoin`, `payments`, `swap`, `ui`, `l10n`, `build`, `process`. Each ADR takes one; a new
 Area is added to this list in the PR that first needs it.

@@ -387114,6 +387114,9 @@
         }
       }
     },
+    "Platform doesn't identify who sent identity credits. They were recorded when the wallet noticed the balance change — they may have arrived earlier." : {
+      "comment" : "Identity credits received detail"
+    },
     "Platform fee" : {
       "comment" : "Evonode withdrawal",
       "localizations" : {

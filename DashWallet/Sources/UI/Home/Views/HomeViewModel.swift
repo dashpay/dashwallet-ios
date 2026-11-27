@@ -499,6 +499,14 @@ class HomeViewModel: ObservableObject {
             }
             .store(in: &cancellableBag)
 
+        // And for credits someone else sent to the Current identity.
+        NotificationCenter.default.publisher(for: .identityCreditActivityRecorded)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.txReloadRequests.send()
+            }
+            .store(in: &cancellableBag)
+
         // Balance changes can precede or arrive without a SwiftData save (for
         // example seed/clear transitions), so retain an independent trigger.
         // Equal snapshots are filtered and the initial current-value emission
@@ -1026,6 +1034,17 @@ class HomeViewModel: ObservableObject {
                 hasMasternodes: hasMasternodes)
             else { continue }
             items.append(.platformActivity(platform))
+        }
+
+        for identityCredit in SwiftDashSDKWalletSource.fetchIdentityCreditActivity() {
+            guard windowCovers(date: identityCredit.date) else { continue }
+            guard self.passesCategoryFilter(
+                categories: [.received],
+                selected: selectedFilters,
+                hasRewards: hasRewards,
+                hasMasternodes: hasMasternodes)
+            else { continue }
+            items.append(.identityCredit(identityCredit))
         }
 
         // Platform and identity sends: a send is Sent; an own transfer, like a Core `.moved` one, has no category.
@@ -2556,6 +2575,30 @@ class SwiftDashSDKWalletSource: TransactionSource {
         return PlatformAddressActivityDAO.shared
             .activities(walletId: handles.walletId, networkRaw: handles.networkRaw)
             .map { PlatformAddressActivityItem(record: $0) }
+    }
+
+    /// Credits someone else sent to the active wallet's Current identity (`IdentityCreditActivityStore`), named
+    /// by the identity's username, or its shortened id when it has none.
+    static func fetchIdentityCreditActivity() -> [IdentityCreditActivityItem] {
+        #if DASHPAY
+        let scope: (walletId: Data, networkRaw: Int64, currentId: Data?, username: String?)? = onMain {
+            guard let walletId = SwiftDashSDKHost.shared.wallet?.walletId,
+                  let network = SwiftDashSDKHost.shared.runningNetwork else { return nil }
+            let info = DWCurrentUserIdentityInfo.shared
+            return (walletId, Int64(network.rawValue), info.identityId, info.username)
+        }
+        guard let scope else { return [] }
+        return IdentityCreditActivityDAO.shared
+            .activities(walletId: scope.walletId, networkRaw: scope.networkRaw)
+            .map { record in
+                let name = record.identityId == scope.currentId ? scope.username : nil
+                return IdentityCreditActivityItem(
+                    record: record,
+                    identityName: name ?? ShieldedActivityItem.shortAddress(record.identityId.toBase58String()))
+            }
+        #else
+        return []
+        #endif
     }
 
     /// The active wallet's recorded Platform and identity sends (`CreditSendActivityStore`), each decided own or

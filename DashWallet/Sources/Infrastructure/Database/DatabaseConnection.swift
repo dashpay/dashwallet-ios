@@ -102,7 +102,8 @@ extension DatabaseConnection {
             AddBuyTrackingColumnsToSwapOrders(),
             AddPayoutIdentityColumnsToSwapOrders(),
             MarkRetiredNotificationTopicsSeen(),
-            AddCreditSendActivityTable()
+            AddCreditSendActivityTable(),
+            AddIdentityCreditActivityTables()
         ]
     }
 
