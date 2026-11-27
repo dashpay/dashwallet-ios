@@ -38,6 +38,15 @@ final class GiftCardRedeemWebViewModel: NSObject, ObservableObject {
     private var observations = Set<AnyCancellable>()
     private var scriptDialog: (alert: UIAlertController, reply: ScriptDialogReply)?
 
+    /// WebKit lets an app refuse a page's file upload panel only from iOS 18.4; before that the link
+    /// opens in the system browser.
+    static var canRefuseUploads: Bool {
+        if #available(iOS 18.4, *) {
+            return true
+        }
+        return false
+    }
+
     init(link: String, ctxBaseURL: String) {
         self.link = link
         self.ctxBaseURL = ctxBaseURL

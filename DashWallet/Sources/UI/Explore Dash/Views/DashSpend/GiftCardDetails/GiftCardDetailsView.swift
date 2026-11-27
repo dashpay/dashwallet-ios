@@ -204,7 +204,10 @@ struct GiftCardDetailsView: View {
     private func redeem(_ link: String) {
         let ctxBaseURL = CTXConstants.baseURI
 
-        if RedeemLinkPolicy.canOpenInApp(link, ctxBaseURL: ctxBaseURL) {
+        let opensInApp = GiftCardRedeemWebViewModel.canRefuseUploads
+            && RedeemLinkPolicy.canOpenInApp(link, ctxBaseURL: ctxBaseURL)
+
+        if opensInApp {
             setMaxBrightness(false)
             redeemRoute = RedeemLinkRoute(link: link, challenge: selectedCard?.challengeCode)
         } else if let url = RedeemLinkPolicy.externalURL(link, ctxBaseURL: ctxBaseURL) {
