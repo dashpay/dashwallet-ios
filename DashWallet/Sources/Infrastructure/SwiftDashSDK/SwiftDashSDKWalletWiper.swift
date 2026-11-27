@@ -332,6 +332,8 @@ final class SwiftDashSDKWalletWiper: NSObject {
         resetUserDefaultsStoresForWipe()
         // History's record of the wallets' Platform and identity sends (SQLite).
         CreditSendActivityDAO.shared.deleteAll()
+        // History's record of credits the wallets' identities received (SQLite).
+        IdentityCreditActivityDAO.shared.deleteAll()
         // Marker files behind their own lock; safe on this queue too.
         SPVChainStoreRebuild.clearAll()
         // Without this a contested submission outlived the wallet that made it:
@@ -1015,6 +1017,7 @@ final class SwiftDashSDKWalletWiper: NSObject {
             CoinJoinWithdrawalStore.shared.clearForWallet(walletIdHex: walletIdHex)
             ShieldedWithdrawalStore.shared.clearForWallet(walletIdHex: walletIdHex)
             CreditSendActivityDAO.shared.delete(walletId: walletId)
+            IdentityCreditActivityDAO.shared.delete(walletId: walletId)
             // The full wipe can continue after another scope's deletion fails.
             // Clear only this successfully deleted scope, regardless of order.
             // A failure does not fail the removal: the SDK deletion above has
