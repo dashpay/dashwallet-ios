@@ -17,6 +17,7 @@
 
 @testable import dashpay
 import SwiftDashSDK
+import SwiftData
 import XCTest
 
 /// Every asset lock that records whom it pays reads by whose the recipient is, as a Core → Shielded send already
@@ -166,5 +167,51 @@ final class ExternalAssetLockSendHistoryTests: XCTestCase {
                 XCTAssertEqual(tx.defaultTaxCategory, .internalTransfer)
             }
         }
+    }
+
+    // MARK: - The lookup reads a lock from its own save
+
+    /// The pair run's order: the SDK saves the lock row with its recipient before it broadcasts, the funding
+    /// transaction's History row appears at the broadcast, and the next shielded sync, until now the only refresh
+    /// that read the new lock, comes up to a minute later. The lock's own save must make the lookup read it.
+    @MainActor
+    func testEachExternalLockReadsAsASendFromItsOwnSave() async throws {
+        let schema = DashModelContainer.schema
+        let container = try ModelContainer(
+            for: schema,
+            configurations: [ModelConfiguration(schema: schema, isStoredInMemoryOnly: true, cloudKitDatabase: .none)])
+        let storage = Self.platformStorage
+        let lookup = ShieldedTxLookup(source: .init(
+            activeContainer: { container },
+            buildSnapshot: ShieldedTxLookup.RefreshSource.live.buildSnapshot,
+            isMainnet: { false },
+            isOwnIdentity: { _, _ in false },
+            platformRecipients: { _, _ in [storage] },
+            isOwnPlatformAddress: { _, _ in false }))
+        lookup.refreshOnAssetLockSaves()
+        defer { lookup.stopRefreshingOnAssetLockSaves() }
+        await lookup.refresh(reason: "test-start")
+
+        let platformTxid = String(repeating: "a1", count: 32)
+        let identityTxid = String(repeating: "b2", count: 32)
+        for (txid, row) in [
+            (platformTxid, PersistentAssetLock(
+                outPointHex: "\(platformTxid):0", walletId: walletId, transactionBytes: Data(), fundingTypeRaw: 4,
+                identityIndexRaw: 0, amountDuffs: Int64(amount), statusRaw: 1, platformAddressRecipients: Data([1]))),
+            (identityTxid, PersistentAssetLock(
+                outPointHex: "\(identityTxid):0", walletId: walletId, transactionBytes: Data(), fundingTypeRaw: 2,
+                identityIndexRaw: 0, amountDuffs: Int64(amount), statusRaw: 1, identityRecipient: identityId)),
+        ] {
+            XCTAssertNil(lookup.allEntries().first { $0.txidHex == txid }, "not tracked before its save")
+            let published = expectation(forNotification: .shieldedTxLookupDidChange, object: lookup)
+            container.mainContext.insert(row)
+            try container.mainContext.save()
+            await fulfillment(of: [published], timeout: 2)
+        }
+
+        XCTAssertEqual(lookup.platformFundingInfo(forTxidHex: platformTxid)?.recipient,
+                       .external(address: platformAddress))
+        XCTAssertEqual(lookup.identityFundingInfo(forTxidHex: identityTxid)?.recipient,
+                       .external(address: identityAddress))
     }
 }
