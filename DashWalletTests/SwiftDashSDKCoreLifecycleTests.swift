@@ -678,7 +678,7 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
         }
         while release == nil { await Task.yield() }
 
-        let second = PlatformAddressSyncCoordinator.chainedRecovery(after: first, cancellingIt: false) {
+        let second = IdentityRecoveryRuns.chained(after: first, cancellingIt: false) {
             events.append("second ran")
         }
         for _ in 0..<20 { await Task.yield() }
@@ -701,7 +701,7 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
         }
         while release == nil { await Task.yield() }
 
-        let start = PlatformAddressSyncCoordinator.chainedRecovery(after: retry, cancellingIt: true) {
+        let start = IdentityRecoveryRuns.chained(after: retry, cancellingIt: true) {
             events.append("start ran")
         }
         for _ in 0..<20 { await Task.yield() }
@@ -709,6 +709,63 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
         release?.resume()
         await start.value
         XCTAssertEqual(events, ["retry ended cancelled=true", "start ran"])
+    }
+
+    /// A start's awaited run sits in the slot like a background one: the
+    /// wiper's and a stop's cancel reaches it and waits for it.
+    func testTheWipersCancelReachesTheStartsAwaitedRun() async {
+        let runs = IdentityRecoveryRuns()
+        var events: [String] = []
+        var started = false
+        let start = runs.startRun {
+            started = true
+            // Stands for the discovery: it checks for cancellation between steps.
+            while !Task.isCancelled { await Task.yield() }
+            events.append("start's run saw the cancel")
+        }
+        let awaitingStart = Task { @MainActor in
+            await withTaskCancellationHandler { await start.value } onCancel: { start.cancel() }
+            events.append("start went on")
+        }
+        while !started { await Task.yield() }
+
+        await runs.cancelAndAwait()
+        XCTAssertEqual(events, ["start's run saw the cancel"], "nothing writes for the wallet after the wipe's wait")
+        XCTAssertNil(runs.task)
+        await awaitingStart.value
+    }
+
+    /// After a stop's, a wipe's or a network switch's cancel, a retry is
+    /// refused, and one queued before it does not run; a new binding allows
+    /// them again.
+    func testARetryDoesNotRunAfterAStopOrWipeOrSwitch() async {
+        let runs = IdentityRecoveryRuns()
+        var ran = 0
+        var release: CheckedContinuation<Void, Never>?
+        runs.startRun { await withCheckedContinuation { release = $0 } }
+        while release == nil { await Task.yield() }
+        XCTAssertTrue(runs.retry(stillCurrent: { true }) { ran += 1 }, "queued behind the start's run")
+
+        runs.cancel()  // `prepareForNetworkSwitch`
+        release?.resume()
+        await runs.cancelAndAwait()  // `performStop` / the wiper
+        XCTAssertEqual(ran, 0, "the queued retry does not scan the wallet being torn down")
+        XCTAssertFalse(runs.retry(stillCurrent: { true }) { ran += 1 })
+
+        runs.allowRetries()
+        XCTAssertTrue(runs.retry(stillCurrent: { true }) { ran += 1 })
+        await runs.task?.value
+        XCTAssertEqual(ran, 1)
+    }
+
+    /// A retry whose lifecycle generation is gone by the time it may run
+    /// does not run.
+    func testARetryForAnOldGenerationDoesNotRun() async {
+        let runs = IdentityRecoveryRuns()
+        var ran = false
+        XCTAssertTrue(runs.retry(stillCurrent: { false }) { ran = true })
+        await runs.task?.value
+        XCTAssertFalse(ran)
     }
 
     // MARK: - StartupIdentityRecoveryPolicy

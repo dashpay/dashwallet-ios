@@ -1236,15 +1236,18 @@ struct IdentityRecoveryLedger {
             && askedRetries[context, default: 0] < Self.maxAskedRetries
     }
 
-    /// Counts the run when one may go; false otherwise.
-    mutating func claimRetry(_ context: String) -> Bool {
-        guard mayRetry(context) else { return false }
-        askedRetries[context, default: 0] += 1
+    /// The run starts: open until it settles it. An asked retry is counted
+    /// here, when it actually runs, not when it was asked for, so one a stop
+    /// cancels before it starts costs nothing; false when it may not run.
+    @discardableResult
+    mutating func runStarted(_ context: String, askedRetry: Bool = false) -> Bool {
+        if askedRetry {
+            guard mayRetry(context) else { return false }
+            askedRetries[context, default: 0] += 1
+        }
+        open.insert(context)
         return true
     }
-
-    /// Open until the run settles it.
-    mutating func runStarted(_ context: String) { open.insert(context) }
 
     /// `answered` is false only for the retry cap's settle without a
     /// confirmed identity row.
@@ -1318,12 +1321,13 @@ final class DWSameSeedIdentityRecoveryCoordinator {
         ledger.hasAnswer(Self.contextKey(walletId: walletId, network: network))
     }
 
-    /// A reader still waiting for the identity asks for another run: true,
-    /// and counted, when the last run for `walletId` on `network` ended
-    /// without settling, none is running, and the asked runs are not used up.
-    func claimRetry(walletId: Data, network: Network) -> Bool {
+    /// Whether a reader still waiting for the identity may ask for another
+    /// run: the last run for `walletId` on `network` ended without settling,
+    /// none is running, and the asked runs are not used up. Not counted
+    /// here: `recoverIfNeeded(askedRetry: true)` counts it once it runs.
+    func mayRetry(walletId: Data, network: Network) -> Bool {
         let contextKey = Self.contextKey(walletId: walletId, network: network)
-        return !activeContexts.contains(contextKey) && ledger.claimRetry(contextKey)
+        return !activeContexts.contains(contextKey) && ledger.mayRetry(contextKey)
     }
 
     /// Drop everything remembered about `walletId` on every network. Called
@@ -1351,7 +1355,8 @@ final class DWSameSeedIdentityRecoveryCoordinator {
     func recoverIfNeeded(
         wallet: ManagedPlatformWallet,
         modelContainer: ModelContainer,
-        network: Network
+        network: Network,
+        askedRetry: Bool = false
     ) async {
         let walletId = wallet.walletId
         let contextKey = Self.contextKey(walletId: walletId, network: network)
@@ -1416,8 +1421,11 @@ final class DWSameSeedIdentityRecoveryCoordinator {
             }
         }
 
+        guard ledger.runStarted(contextKey, askedRetry: askedRetry) else {
+            restoreVerdict()
+            return
+        }
         activeContexts.insert(contextKey)
-        ledger.runStarted(contextKey)
         defer {
             activeContexts.remove(contextKey)
             NotificationCenter.default.post(name: Self.didSettleNotification, object: nil)
@@ -1517,7 +1525,7 @@ final class DWSameSeedIdentityRecoveryCoordinator {
 
     /// Per chain: two devnets share `Network.devnet` and, for one seed, the
     /// wallet id, yet an identity on one is no answer for the other.
-    private static func contextKey(walletId: Data, network: Network) -> String {
+    static func contextKey(walletId: Data, network: Network) -> String {
         "\(network.persistenceScope):" + walletId.hexEncodedString()
     }
 

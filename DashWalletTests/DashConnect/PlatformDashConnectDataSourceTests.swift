@@ -7386,10 +7386,44 @@ final class IdentityRecoveryLedgerTests: XCTestCase {
         var ledger = IdentityRecoveryLedger()
         ledger.runStarted(context)
         for _ in 0..<IdentityRecoveryLedger.maxAskedRetries {
-            XCTAssertTrue(ledger.claimRetry(context))
-            ledger.runStarted(context)
+            XCTAssertTrue(ledger.runStarted(context, askedRetry: true))
         }
-        XCTAssertFalse(ledger.claimRetry(context), "each asked run may scan the seed without a budget")
+        XCTAssertFalse(ledger.mayRetry(context))
+        XCTAssertFalse(ledger.runStarted(context, askedRetry: true), "each asked run may scan the seed without a budget")
+    }
+
+    /// An asked retry counts only once it runs: one a stop, a wipe or a
+    /// start's own run cancels before it starts never reaches `runStarted`,
+    /// and asking alone costs nothing.
+    func testARetryCancelledBeforeItRunsCostsNothing() {
+        var ledger = IdentityRecoveryLedger()
+        ledger.runStarted(context)
+        for _ in 0..<5 { XCTAssertTrue(ledger.mayRetry(context), "asked, then cancelled before it ran") }
+        for _ in 0..<IdentityRecoveryLedger.maxAskedRetries {
+            XCTAssertTrue(ledger.runStarted(context, askedRetry: true))
+        }
+        XCTAssertFalse(ledger.mayRetry(context))
+    }
+
+    /// Two devnets are two chains: one seed's wallet id is the same on both,
+    /// and neither the held login's scope nor recovery's answers may carry
+    /// over.
+    @MainActor
+    func testTwoDevnetsAreTwoChains() {
+        let key = DevnetConfiguration.devnetNameKey
+        let saved = UserDefaults.standard.object(forKey: key)
+        defer {
+            if let saved { UserDefaults.standard.set(saved, forKey: key) } else { UserDefaults.standard.removeObject(forKey: key) }
+        }
+        let walletId = Data(repeating: 0xAB, count: 32)
+        DevnetConfiguration.setDevnetName("chain-a")
+        let a = (SwiftDashSDK.Network.devnet.persistenceScope,
+                 DWSameSeedIdentityRecoveryCoordinator.contextKey(walletId: walletId, network: .devnet))
+        DevnetConfiguration.setDevnetName("chain-b")
+        let b = (SwiftDashSDK.Network.devnet.persistenceScope,
+                 DWSameSeedIdentityRecoveryCoordinator.contextKey(walletId: walletId, network: .devnet))
+        XCTAssertNotEqual(a.0, b.0)
+        XCTAssertNotEqual(a.1, b.1)
     }
 
     func testASettledAnswerEndsTheRetries() {

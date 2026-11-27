@@ -190,10 +190,11 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
     private var shieldedEventCancellable: AnyCancellable?
     private var shieldedFreshnessTask: Task<Void, Never>?
     /// Same-seed identity recovery left running by a start that did not await
-    /// it (`identityRecoveryInBackground`). `performStop` and the wallet wipe
-    /// cancel it and wait for it (`cancelAndAwaitIdentityRecovery`) before
-    /// tearing anything down or deleting wallet data.
-    private var identityRecoveryTask: Task<Void, Never>?
+    /// it (`identityRecoveryInBackground`), an awaited start's run, and asked
+    /// retries. `performStop` and the wallet wipe cancel them and wait for
+    /// them (`cancelAndAwaitIdentityRecovery`) before tearing anything down or
+    /// deleting wallet data.
+    private let identityRecoveryRuns = IdentityRecoveryRuns()
     /// Shielded-sync stops `performStop` started without waiting for them
     /// (`startShieldedStop(on:)`). The slot holds the latest one, and each
     /// stop task also waits for the one it replaced, so waiting on the slot
@@ -547,23 +548,12 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         modelContainer = nil
     }
 
-    /// Cancel the background identity recovery (see `performStart`) and wait
-    /// until it has returned; on return no recovery task is left. The slot is
-    /// cleared only after the task returns, so a concurrent caller finds the
-    /// same task and waits for it too, and the loop also waits for a recovery
-    /// a start put in the slot meanwhile.
-    ///
-    /// The recovery checks for cancellation between its steps; a step already
-    /// running finishes first. Discovery is a single FFI call covering the
-    /// whole gap-limit scan, so this can wait for that entire scan.
+    /// Cancel every identity recovery run (a start's, awaited or in the
+    /// background, and asked retries) and wait until each has returned; see
+    /// `IdentityRecoveryRuns.cancelAndAwait`. Asked retries are refused from
+    /// now until a start binds a manager again.
     public func cancelAndAwaitIdentityRecovery() async {
-        while let recovery = identityRecoveryTask {
-            recovery.cancel()
-            await recovery.value
-            if identityRecoveryTask == recovery {
-                identityRecoveryTask = nil
-            }
-        }
+        await identityRecoveryRuns.cancelAndAwait()
     }
 
 #if DASHPAY
@@ -579,36 +569,20 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
               let wallet, let network = runningNetwork,
               let container = SwiftDashSDKHost.shared.modelContainer,
               isSelectedWalletScope(walletId: wallet.walletId, network: network),
-              DWSameSeedIdentityRecoveryCoordinator.shared.claimRetry(walletId: wallet.walletId, network: network)
+              DWSameSeedIdentityRecoveryCoordinator.shared.mayRetry(walletId: wallet.walletId, network: network)
         else { return }
-        DWLogger.log("🪪 IDENT-RECOVERY [\(wallet.walletId.hexEncodedString().prefix(8))] retry asked by a waiting login")
-        identityRecoveryTask = Self.chainedRecovery(after: identityRecoveryTask, cancellingIt: false) {
+        let generation = lifecycleGeneration
+        let asked = identityRecoveryRuns.retry(stillCurrent: { [weak self] in
+            guard let self else { return false }
+            return lifecycleGeneration == generation && walletManager === manager
+                && isSelectedWalletScope(walletId: wallet.walletId, network: network)
+        }) {
             await DWSameSeedIdentityRecoveryCoordinator.shared.recoverIfNeeded(
-                wallet: wallet, modelContainer: container, network: network)
+                wallet: wallet, modelContainer: container, network: network, askedRetry: true)
         }
+        DWLogger.log("🪪 IDENT-RECOVERY [\(wallet.walletId.hexEncodedString().prefix(8))] retry asked by a waiting login: \(asked ? "queued" : "refused, a stop or wipe is pending")")
     }
 #endif
-
-    /// The one way a recovery run replaces the one in `identityRecoveryTask`:
-    /// the new run starts only once `previous` has returned, and cancelling
-    /// it cancels `previous` too, so the slot always reaches every run still
-    /// going and `cancelAndAwaitIdentityRecovery` waits for all of them.
-    /// `cancellingIt`: a start's own run stops the one it replaces first.
-    static func chainedRecovery(
-        after previous: Task<Void, Never>?,
-        cancellingIt: Bool,
-        _ run: @escaping @MainActor () async -> Void
-    ) -> Task<Void, Never> {
-        if cancellingIt { previous?.cancel() }
-        return Task { @MainActor in
-            await withTaskCancellationHandler {
-                await previous?.value
-            } onCancel: {
-                previous?.cancel()
-            }
-            await run()
-        }
-    }
 
     /// Wait until every shielded-sync stop `performStop` started has
     /// returned. The SDK's async stop cancels the loop at once, then waits up
@@ -1170,7 +1144,7 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         lifecycleGeneration &+= 1
         // Stop the background identity recovery at its next network step; the
         // switch's teardown (`performStop`) waits for it to finish.
-        identityRecoveryTask?.cancel()
+        identityRecoveryRuns.cancel()
         isShieldedRunning = false
         stopShieldedRecoveryMonitoring()
         detachSyncSubscriptions()
@@ -1383,6 +1357,8 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         self.sdk = SwiftDashSDKHost.shared.sdk
         self.modelContainer = SwiftDashSDKHost.shared.modelContainer
         self.walletManager = manager
+        // A new binding: retries refused while the last one stopped may run.
+        identityRecoveryRuns.allowRetries()
         self.wallet = resolvedWallet
         self.platformAddressWallet = addressWallet
         self.platformAccountAvailability = accountAvailability
@@ -1427,22 +1403,17 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         // it; `performStop` cancels the task and waits for it, so it never
         // outlives the manager it runs against.
         if let container = SwiftDashSDKHost.shared.modelContainer {
-            if identityRecoveryInBackground {
-                identityRecoveryTask = Self.chainedRecovery(after: identityRecoveryTask, cancellingIt: true) {
-                    await DWSameSeedIdentityRecoveryCoordinator.shared.recoverIfNeeded(
-                        wallet: resolvedWallet,
-                        modelContainer: container,
-                        network: network)
-                }
-            } else {
-                // A retry a waiting login started while this start was
-                // suspended runs against the same context: it ends first.
-                await cancelAndAwaitIdentityRecovery()
-                guard lifecycleGeneration == generation, walletManager === manager else { return }
+            // Both run in `identityRecoveryRuns`, the awaited one too: a stop,
+            // a wipe or a network switch cancels and waits for it, and a
+            // retry a waiting login queued meanwhile ends first.
+            let run = identityRecoveryRuns.startRun {
                 await DWSameSeedIdentityRecoveryCoordinator.shared.recoverIfNeeded(
                     wallet: resolvedWallet,
                     modelContainer: container,
                     network: network)
+            }
+            if !identityRecoveryInBackground {
+                await withTaskCancellationHandler { await run.value } onCancel: { run.cancel() }
             }
         }
 #endif
@@ -2443,5 +2414,78 @@ extension Array where Element == DerivedPlatformAddress {
             return unused
         }
         return self.min(by: { ($0.accountIndex, $0.addressIndex) < ($1.accountIndex, $1.addressIndex) })
+    }
+}
+
+/// The identity-recovery runs of the bound runtime: the one owner of the
+/// task slot. A run that replaces another starts only once that one
+/// returned, and cancelling it cancels the one it replaced, so
+/// `cancelAndAwait` reaches every run still going. A stop, a wipe or a
+/// network switch refuses asked retries until a start binds a new manager.
+@MainActor
+final class IdentityRecoveryRuns {
+    private(set) var task: Task<Void, Never>?
+    private(set) var refusesRetries = false
+
+    /// A start's own run: stops the run it replaces, waits for it, then runs.
+    @discardableResult
+    func startRun(_ run: @escaping @MainActor () async -> Void) -> Task<Void, Never> {
+        let next = Self.chained(after: task, cancellingIt: true, run)
+        task = next
+        return next
+    }
+
+    /// A retry a waiting reader asked for. Waits for the run in the slot
+    /// without stopping it, then runs only if retries are still allowed and
+    /// `stillCurrent` holds. False when refused now.
+    @discardableResult
+    func retry(stillCurrent: @escaping @MainActor () -> Bool, _ run: @escaping @MainActor () async -> Void) -> Bool {
+        guard !refusesRetries else { return false }
+        task = Self.chained(after: task, cancellingIt: false) { [weak self] in
+            guard let self, !self.refusesRetries, !Task.isCancelled, stillCurrent() else { return }
+            await run()
+        }
+        return true
+    }
+
+    /// Stops the runs at their next step, without waiting.
+    func cancel() {
+        refusesRetries = true
+        task?.cancel()
+    }
+
+    /// Cancels every run and waits until each has returned; on return the
+    /// slot is empty. The slot is cleared only after its task returns, so a
+    /// concurrent caller waits for the same one, and a run put in the slot
+    /// meanwhile is waited for too.
+    ///
+    /// A run checks for cancellation between its steps; a step already
+    /// running finishes first. Discovery is a single FFI call covering the
+    /// whole gap-limit scan, so this can wait for that entire scan.
+    func cancelAndAwait() async {
+        refusesRetries = true
+        while let recovery = task {
+            recovery.cancel()
+            await recovery.value
+            if task == recovery { task = nil }
+        }
+    }
+
+    func allowRetries() { refusesRetries = false }
+
+    static func chained(
+        after previous: Task<Void, Never>?,
+        cancellingIt: Bool,
+        _ run: @escaping @MainActor () async -> Void
+    ) -> Task<Void, Never> {
+        if cancellingIt { previous?.cancel() }
+        return Task { @MainActor in
+            await withTaskCancellationHandler {
+                await previous?.value
+            } onCancel: {
+                previous?.cancel()
+            }
+            await run()
+        }
     }
 }
