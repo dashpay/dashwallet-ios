@@ -1786,6 +1786,15 @@ final class BIP70PaymentServiceTests: XCTestCase {
         XCTAssertEqual(BIP70URI("dash:X?r=https://[&r=https://a.b/c")?.paymentRequestCount, 2)
     }
 
+    /// `é` composed and `é` decomposed are equal Strings but different URL paths: two requests, parsed or not.
+    func testURICountsCanonicallyEqualRequestsWithDifferentBytesAsTwo() {
+        XCTAssertEqual(BIP70URI("dash:X?r=https://a.b/caf%C3%A9&req-r=https://a.b/cafe%CC%81")?.paymentRequestCount, 2)
+        XCTAssertEqual(BIP70URI("dash:X?r=https://[%C3%A9&r=https://[e%CC%81")?.paymentRequestCount, 2)
+        let repeated = BIP70URI("dash:X?r=https://a.b/caf%C3%A9&req-r=https://a.b/caf%C3%A9")
+        XCTAssertEqual(repeated?.paymentRequestCount, 1)
+        XCTAssertNotNil(repeated?.fetchableRequestURL)
+    }
+
     func testURIAmountExponent() {
         XCTAssertEqual(BIP70URI("dash:X?amount=1e2")?.amount, 10_000_000_000)
     }

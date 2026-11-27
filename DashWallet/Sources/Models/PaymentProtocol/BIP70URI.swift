@@ -152,7 +152,9 @@ struct BIP70URI {
         var label: String?
         var message: String?
         var r: URL?
-        var paymentRequestValues: Set<String> = []
+        // Counted by their bytes: String equality treats composed and decomposed spellings as one, while the URL
+        // keeps their bytes, so two such spellings are two different requests.
+        var paymentRequestValues: Set<Data> = []
         var callbackValue: String?
         // The first callback's spelling for the comparison, made once: a repeat is compared with it, never the first
         // value normalized again, and nothing is compared after the first conflict.
@@ -196,7 +198,7 @@ struct BIP70URI {
                 if name == "label" { label = value } else { message = value }
             case "r", "req-r":
                 r = URL(string: value)
-                paymentRequestValues.insert(value)
+                paymentRequestValues.insert(Data(value.utf8))
             case "sender", "req-sender":
                 guard !hasConflictingCallback else { break }
                 if let normalizedCallback {
