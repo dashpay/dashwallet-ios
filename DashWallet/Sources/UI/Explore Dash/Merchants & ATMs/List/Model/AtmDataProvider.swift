@@ -26,14 +26,13 @@ class BaseAtmsDataProvider: PointOfUseDataProvider {
     override func items(query: String?, in bounds: ExploreMapBounds?, userPoint: CLLocationCoordinate2D?,
                         with filters: PointOfUseListFilters?,
                         completion: @escaping (Swift.Result<[ExplorePointOfUse], Error>) -> Void) {
+        let request = beginRequest()
         var bounds = bounds
         var userPoint = userPoint
 
         if DWLocationManager.shared
             .needsAuthorization || (DWLocationManager.shared.isAuthorized && (bounds == nil || userPoint == nil)) {
-            items = []
-            currentPage = nil
-            completion(.success(items))
+            answerEmpty(request: request, completion: completion)
             return
         } else if DWLocationManager.shared.isPermissionDenied {
             bounds = nil
@@ -41,24 +40,21 @@ class BaseAtmsDataProvider: PointOfUseDataProvider {
         }
 
         if lastQuery == query && !items.isEmpty && lastBounds == bounds && lastFilters == filters {
-            completion(.success(items))
+            answerFromCache(request: request, completion: completion)
             return
         }
 
-        lastQuery = query
-        lastUserPoint = userPoint
-        lastBounds = bounds
-        lastFilters = filters
-
         fetch(by: query, in: bounds, userPoint: userPoint, with: filters, offset: 0) { [weak self] result in
-            self?.handle(result: result, completion: completion)
+            self?.handleFirstPage(request: request, result: result, query: query, bounds: bounds, userPoint: userPoint, filters: filters,
+                                  completion: completion)
         }
     }
 
     override func nextPage(completion: @escaping (Swift.Result<[ExplorePointOfUse], Error>) -> Void) {
+        let request = beginRequest()
         fetch(by: lastQuery, in: lastBounds, userPoint: lastUserPoint, with: lastFilters,
               offset: nextOffset) { [weak self] result in
-            self?.handle(result: result, appending: true, completion: completion)
+            self?.handle(request: request, result: result, appending: true, completion: completion)
         }
     }
 

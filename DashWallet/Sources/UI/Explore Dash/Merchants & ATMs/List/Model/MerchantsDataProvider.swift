@@ -29,24 +29,22 @@ class AllMerchantsDataProvider: NearbyMerchantsDataProvider {
     override func items(query: String?, in bounds: ExploreMapBounds?, userPoint: CLLocationCoordinate2D?,
                         with filters: PointOfUseListFilters?,
                         completion: @escaping (Result<[ExplorePointOfUse], Error>) -> Void) {
+        let request = beginRequest()
         // Guarding on !items.isEmpty (like the sibling providers) keeps the cache honest:
         // callers that invalidate by emptying `items` force a refetch, and an empty
         // result is never sticky.
         if lastQuery == query && !items.isEmpty && lastFilters == filters &&
             !Self.movedSignificantly(from: lastUserPoint, to: userPoint) {
-            completion(.success(items))
+            answerFromCache(request: request, completion: completion)
             return
         }
-
-        lastQuery = query
-        lastUserPoint = userPoint
-        lastBounds = bounds
-        lastFilters = filters
 
         // ALL TAB: Never filter by bounds - show ALL merchants regardless of location.
         // userPoint is still passed so each merchant is represented by its closest location.
         fetch(by: query, in: nil, userPoint: userPoint, with: filters, offset: 0) { [weak self] result in
-            self?.handle(result: result, completion: completion)
+            // The All rows ignore the map, so no bounds are recorded.
+            self?.handleFirstPage(request: request, result: result, query: query, bounds: nil, userPoint: userPoint, filters: filters,
+                                  completion: completion)
         }
     }
 
@@ -63,10 +61,11 @@ class AllMerchantsDataProvider: NearbyMerchantsDataProvider {
     }
 
     override func nextPage(completion: @escaping (Result<[ExplorePointOfUse], Error>) -> Void) {
+        let request = beginRequest()
         // ALL TAB: Never filter by bounds - show ALL merchants regardless of location.
         // userPoint is still passed so each merchant is represented by its closest location.
         fetch(by: lastQuery, in: nil, userPoint: lastUserPoint, with: lastFilters, offset: nextOffset) { [weak self] result in
-            self?.handle(result: result, appending: true, completion: completion)
+            self?.handle(request: request, result: result, appending: true, completion: completion)
         }
     }
 
@@ -87,33 +86,29 @@ class NearbyMerchantsDataProvider: PointOfUseDataProvider {
     override func items(query: String?, in bounds: ExploreMapBounds?, userPoint: CLLocationCoordinate2D?,
                         with filters: PointOfUseListFilters?,
                         completion: @escaping (Swift.Result<[ExplorePointOfUse], Error>) -> Void) {
+        let request = beginRequest()
         guard let bounds, let userLocation = userPoint, DWLocationManager.shared.isAuthorized else {
-            items = []
-            currentPage = nil
-            completion(.success(items))
+            answerEmpty(request: request, completion: completion)
             return
         }
 
 
         if lastBounds == bounds && lastQuery == query && !items.isEmpty && lastFilters == filters {
-            completion(.success(items))
+            answerFromCache(request: request, completion: completion)
             return
         }
 
-        lastQuery = query
-        lastUserPoint = userPoint
-        lastBounds = bounds
-        lastFilters = filters
-
         fetch(by: query, in: bounds, userPoint: userLocation, with: filters, offset: 0) { [weak self] result in
-            self?.handle(result: result, completion: completion)
+            self?.handleFirstPage(request: request, result: result, query: query, bounds: bounds, userPoint: userPoint, filters: filters,
+                                  completion: completion)
         }
     }
 
     override func nextPage(completion: @escaping (Swift.Result<[ExplorePointOfUse], Error>) -> Void) {
+        let request = beginRequest()
         fetch(by: lastQuery, in: lastBounds!, userPoint: lastUserPoint, with: lastFilters,
               offset: nextOffset) { [weak self] result in
-            self?.handle(result: result, appending: true, completion: completion)
+            self?.handle(request: request, result: result, appending: true, completion: completion)
         }
     }
 
@@ -132,24 +127,24 @@ class OnlineMerchantsDataProvider: PointOfUseDataProvider {
     override func items(query: String?, in bounds: ExploreMapBounds?, userPoint: CLLocationCoordinate2D?,
                         with filters: PointOfUseListFilters?,
                         completion: @escaping (Swift.Result<[ExplorePointOfUse], Error>) -> Void) {
+        let request = beginRequest()
         if lastQuery == query && !items.isEmpty && lastFilters == filters {
-            completion(.success(items))
+            answerFromCache(request: request, completion: completion)
             return
         }
 
-        lastQuery = query
-        lastUserPoint = userPoint
-        lastFilters = filters
-
         fetch(by: query, onlineOnly: true, userPoint: userPoint, with: filters, offset: 0) { [weak self] result in
-            self?.handle(result: result, completion: completion)
+            // Online rows ignore the map, so no bounds are recorded.
+            self?.handleFirstPage(request: request, result: result, query: query, bounds: nil, userPoint: userPoint, filters: filters,
+                                  completion: completion)
         }
     }
 
     override func nextPage(completion: @escaping (Swift.Result<[ExplorePointOfUse], Error>) -> Void) {
+        let request = beginRequest()
         fetch(by: lastQuery, onlineOnly: true, userPoint: lastUserPoint, with: lastFilters,
               offset: nextOffset) { [weak self] result in
-            self?.handle(result: result, appending: true, completion: completion)
+            self?.handle(request: request, result: result, appending: true, completion: completion)
         }
     }
 

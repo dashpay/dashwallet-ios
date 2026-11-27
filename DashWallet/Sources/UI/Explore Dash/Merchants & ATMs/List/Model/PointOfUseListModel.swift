@@ -50,7 +50,28 @@ class PointOfUseDataProvider {
     internal var lastBounds: ExploreMapBounds?
     internal var lastFilters: PointOfUseListFilters?
 
+    /// Numbers the requests this provider starts; see `beginRequest()`.
+    private var requestGeneration = 0
+
+    /// Starts a request and supersedes every request in flight: only the
+    /// latest one's response is written to `items`, `currentPage` and the
+    /// recorded parameters, so a page fetched next is never built on a
+    /// superseded request. Call it first in every `items(...)` and
+    /// `nextPage(...)`, before any early return.
+    internal func beginRequest() -> Int {
+        requestGeneration += 1
+        return requestGeneration
+    }
+
+    /// Supersedes every request in flight and keeps the rows already taken,
+    /// so a page that lands after the list has moved to another segment
+    /// writes nothing; coming back answers from the rows the list last showed.
+    func cancelRequests() {
+        requestGeneration += 1
+    }
+
     func clearCache() {
+        requestGeneration += 1
         items = []
         currentPage = nil
         lastQuery = nil
@@ -63,6 +84,8 @@ class PointOfUseDataProvider {
         dataSource = ExploreDash.shared
     }
 
+    /// Answers on the main queue in a later turn, never from inside the call:
+    /// through `handleFirstPage`, `answerFromCache` or `answerEmpty`.
     func items(query: String?, in bounds: ExploreMapBounds?, userPoint: CLLocationCoordinate2D?,
                with filters: PointOfUseListFilters?, completion: @escaping (Swift.Result<[ExplorePointOfUse], Error>) -> Void) {
         // NOTE: must be overriden
@@ -73,8 +96,71 @@ class PointOfUseDataProvider {
         // NOTE: must be overriden
     }
 
-    internal func handle(result: Swift.Result<PaginationResult<ExplorePointOfUse>, Error>, appending: Bool = false,
-                         completion: (Result<[ExplorePointOfUse], Error>) -> Void) {
+    /// Handles a first page and records the parameters it answered together
+    /// with its rows. Recording them only when the rows land keeps the cache
+    /// check and paging from pairing one request's parameters with an earlier
+    /// request's rows while it is still in flight.
+    ///
+    /// `alsoCommit` runs with the commit, for state a provider keeps beside its
+    /// rows (a total count).
+    internal func handleFirstPage(request: Int, result: Swift.Result<PaginationResult<ExplorePointOfUse>, Error>,
+                                  query: String?, bounds: ExploreMapBounds?, userPoint: CLLocationCoordinate2D?,
+                                  filters: PointOfUseListFilters?, alsoCommit: (() -> Void)? = nil,
+                                  completion: @escaping (Result<[ExplorePointOfUse], Error>) -> Void) {
+        commit(request) { [weak self] in
+            guard let self else { return }
+            if case .success = result {
+                self.lastQuery = query
+                self.lastUserPoint = userPoint
+                self.lastBounds = bounds
+                self.lastFilters = filters
+                alsoCommit?()
+            }
+            self.apply(result: result, appending: false, completion: completion)
+        }
+    }
+
+    internal func handle(request: Int, result: Swift.Result<PaginationResult<ExplorePointOfUse>, Error>,
+                         appending: Bool = false,
+                         completion: @escaping (Result<[ExplorePointOfUse], Error>) -> Void) {
+        commit(request) { [weak self] in
+            self?.apply(result: result, appending: appending, completion: completion)
+        }
+    }
+
+    /// Answers `request` with the rows already held, when they match it.
+    /// Like every answer, it arrives through `commit`, so the caller always
+    /// gets it on the main queue in a turn of its own.
+    internal func answerFromCache(request: Int, completion: @escaping (Result<[ExplorePointOfUse], Error>) -> Void) {
+        commit(request) { [weak self] in
+            completion(.success(self?.items ?? []))
+        }
+    }
+
+    /// Answers `request` with no rows (no location to search around) and
+    /// drops the rows held, both only if `request` is still the latest.
+    internal func answerEmpty(request: Int, completion: @escaping (Result<[ExplorePointOfUse], Error>) -> Void) {
+        commit(request) { [weak self] in
+            self?.items = []
+            self?.currentPage = nil
+            completion(.success([]))
+        }
+    }
+
+    /// Runs `work` on the main queue if `request` is still the latest, so the
+    /// provider's state is written on one queue (the DAOs answer on their
+    /// own) and a superseded response writes nothing and calls no completion.
+    /// `PointOfUseListModel` applies the answer in the same main-queue turn,
+    /// so the provider and the list never disagree on which rows are shown.
+    private func commit(_ request: Int, _ work: @escaping () -> Void) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self, request == self.requestGeneration else { return }
+            work()
+        }
+    }
+
+    private func apply(result: Swift.Result<PaginationResult<ExplorePointOfUse>, Error>, appending: Bool,
+                       completion: (Result<[ExplorePointOfUse], Error>) -> Void) {
         switch result {
         case .success(let page):
             currentPage = page
@@ -119,6 +205,8 @@ struct PointOfUseListSegment: Hashable {
 final class PointOfUseListModel {
     internal var lastQuery: String?
     internal var isFetching = false
+    /// Numbers each request; see `beginRequest()`.
+    private var requestGeneration = 0
 
     var items: [ExplorePointOfUse] = []
     var itemsDidChange: (() -> Void)?
@@ -251,62 +339,81 @@ extension PointOfUseListModel {
     }
 
     internal func _fetch(query: String?) {
-        let segment = currentSegment
-        isFetching = true
-        DispatchQueue.main.async { [weak self] in
-            self?.fetchingStateDidChange?()
-        }
+        let request = beginRequest()
         currentDataProvider?
             .items(query: query, in: currentMapBounds, userPoint: userCoordinates, with: filters) { [weak self] result in
-                guard self?.currentSegment == segment else { return }
+                Self.onMain {
+                    guard let self, self.isLatest(request) else { return }
 
-                switch result {
-                case .success(let items):
-                    DispatchQueue.main.async {
-                        self?.items = items
-                        self?.isFetching = false
-                        self?.fetchingStateDidChange?()
-                        self?.itemsDidChange?()
+                    switch result {
+                    case .success(let items):
+                        self.items = items
+                        self.endRequest()
+                        self.itemsDidChange?()
+                    case .failure:
+                        // TODO(explore-errors): a failed fetch keeps the previous rows and shows no error.
+                        self.endRequest()
                     }
-                    break
-                case .failure:
-                    DispatchQueue.main.async {
-                        self?.isFetching = false
-                        self?.fetchingStateDidChange?()
-                    }
-                    break // TODO: handler failure
                 }
             }
     }
 
     public func fetchNextPage() {
-        let segment = currentSegment
+        let request = beginRequest()
+        currentDataProvider?.nextPage { [weak self] result in
+            Self.onMain {
+                guard let self, self.isLatest(request) else { return }
+
+                switch result {
+                case .success(let items):
+                    let offset = self.items.count
+                    self.items += items
+                    self.endRequest()
+                    self.nextPageDidLoaded?(offset, items.count)
+                case .failure:
+                    // TODO(explore-errors): a failed page shows no error.
+                    self.endRequest()
+                }
+            }
+        }
+    }
+
+    /// Starts a request that supersedes every one still in flight: a segment
+    /// switch, a new search, a map move or a page. Only the latest request's
+    /// response is applied, so an earlier one that lands late can neither
+    /// overwrite newer rows nor end the loading state early.
+    private func beginRequest() -> Int {
+        requestGeneration += 1
+        // The segment left behind may still have a request in flight; it must
+        // not commit rows or a paging offset the list will never show.
+        for provider in dataProviders.values where provider !== currentDataProvider {
+            provider.cancelRequests()
+        }
         isFetching = true
         DispatchQueue.main.async { [weak self] in
             self?.fetchingStateDidChange?()
         }
-        currentDataProvider?.nextPage { [weak self] result in
-            guard self?.currentSegment == segment else { return }
+        return requestGeneration
+    }
 
-            switch result {
-            case .success(let items):
-                let offset = self?.items.count ?? 0
-                let count = items.count
+    private func endRequest() {
+        isFetching = false
+        fetchingStateDidChange?()
+    }
 
-                DispatchQueue.main.async {
-                    self?.items += items
-                    self?.isFetching = false
-                    self?.fetchingStateDidChange?()
-                    self?.nextPageDidLoaded?(offset, count)
-                }
-                break
-            case .failure:
-                DispatchQueue.main.async {
-                    self?.isFetching = false
-                    self?.fetchingStateDidChange?()
-                }
-                break // TODO: handler failure
-            }
+    private func isLatest(_ request: Int) -> Bool {
+        request == requestGeneration
+    }
+
+    /// Applies a provider's answer in the turn it arrives in when that is on
+    /// the main queue. Providers write their own state in that same turn
+    /// (`PointOfUseDataProvider.commit`), so a request started in between
+    /// cannot leave the provider holding rows the list dropped.
+    private static func onMain(_ work: @escaping () -> Void) {
+        if Thread.isMainThread {
+            work()
+        } else {
+            DispatchQueue.main.async(execute: work)
         }
     }
 }
