@@ -1879,13 +1879,19 @@ final class ShieldedTransferCoordinator: ObservableObject {
         phase = .broadcasting
 
         do {
-            if fullBalance {
-                try await PlatformAddressSyncCoordinator.shared.withdrawAllToCore(address: coreAddress)
-            } else {
-                try await PlatformAddressSyncCoordinator.shared.withdrawToCore(
-                    amountCredits: amountCredits,
-                    address: coreAddress,
-                    feeHeadroomCredits: feeHeadroomCredits)
+            // History's one row for the withdrawal (`CreditSendLedger`); its Core payout to an own address replaces it.
+            let send = CreditSend(
+                source: .platform, destinationKind: .core, destination: coreAddress,
+                amountDuffs: amountCredits / PlatformAddressActivityUnitPolicy.creditsPerDuff)
+            try await CreditSendLedger.recording(send) {
+                if fullBalance {
+                    try await PlatformAddressSyncCoordinator.shared.withdrawAllToCore(address: coreAddress)
+                } else {
+                    try await PlatformAddressSyncCoordinator.shared.withdrawToCore(
+                        amountCredits: amountCredits,
+                        address: coreAddress,
+                        feeHeadroomCredits: feeHeadroomCredits)
+                }
             }
         } catch {
             handlePlatformSpendError(error)
@@ -1972,9 +1978,14 @@ final class ShieldedTransferCoordinator: ObservableObject {
         phase = .broadcasting
 
         do {
-            try await PlatformSendExecutor.shared.transfer(
-                destination: destination,
-                amount: amountCredits)
+            let send = CreditSend(
+                source: .platform, destinationKind: .platform, destination: destination,
+                amountDuffs: amountCredits / PlatformAddressActivityUnitPolicy.creditsPerDuff)
+            try await CreditSendLedger.recording(send) {
+                try await PlatformSendExecutor.shared.transfer(
+                    destination: destination,
+                    amount: amountCredits)
+            }
         } catch {
             handlePlatformSpendError(error)
             return

@@ -33,10 +33,12 @@
 //    that lands while the app is closed is recorded at next launch.
 //  - Increases caused by the wallet's own internal moves are
 //    suppressed so they don't double-show next to their existing
-//    history rows (shielded-unshield row / core top-up row). The
-//    unshield match is exact (destination address + net amount); the
-//    asset-lock top-up match is by recipient address hash. Anything
-//    not attributable to an own operation records as received.
+//    history rows (shielded-unshield row / core top-up row / the
+//    credit send's row in `CreditSendActivityStore`). The unshield
+//    match is exact (destination address + net amount); the asset-lock
+//    top-up match is by recipient address hash; a credit send claims
+//    an increase on its destination address that its amount covers.
+//    Anything not attributable to an own operation records as received.
 //
 
 import Foundation
@@ -354,7 +356,8 @@ enum PlatformAddressActivityRecorder {
         addresses: [DerivedPlatformAddress],
         walletId: Data,
         network: Network,
-        container: ModelContainer
+        container: ModelContainer,
+        creditSends: CreditSendActivityDAO = .shared
     ) {
         guard !addresses.isEmpty else { return }
         let networkRaw = Int64(network.rawValue)
@@ -410,6 +413,10 @@ enum PlatformAddressActivityRecorder {
                 || matchesOwnAssetLockTopUp(
                     address: increase.address, deltaDuffs: increase.delta,
                     walletId: walletId, container: container)
+                // A Platform or identity send to this own address: History shows it as the send's row.
+                || creditSends.claimIncrease(
+                    walletId: walletId, networkRaw: networkRaw, address: increase.address,
+                    deltaDuffs: increase.delta, since: Date().addingTimeInterval(-ownOperationWindow))
             if !internallyExplained {
                 dao.insertActivity(
                     walletId: walletId, networkRaw: networkRaw,

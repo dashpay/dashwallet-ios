@@ -66709,6 +66709,9 @@
         }
       }
     },
+    "Amount locked" : {
+      "comment" : "Transaction details: the Core asset lock of a send to a Shielded address, pool fee included"
+    },
     "Amount received" : {
       "localizations" : {
         "ar" : {
@@ -481753,6 +481756,9 @@
           }
         }
       }
+    },
+    "Shielded transfer" : {
+      "comment" : "Transaction to a Shielded address whose owner the wallet cannot tell now"
     },
     "Shielded wallet starting…" : {
       "localizations" : {

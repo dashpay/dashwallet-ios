@@ -225,6 +225,10 @@ class Transaction: TransactionDataItem, Identifiable {
         if let payment = dashPayPayment {
             return payment.isOutgoing ? .sent : .received
         }
+        // The net-change view reads an asset lock as a move of own funds; one
+        // whose recipient is not provably the wallet's own is money leaving
+        // the Transparent balance.
+        if shieldedRecipientAddress != nil { return .sent }
         return _direction
     }
     private lazy var _direction: TransactionDirection = {
@@ -299,8 +303,29 @@ class Transaction: TransactionDataItem, Identifiable {
 
     private var shieldedTransferAmountDuffs: UInt64? { shieldedLockInfo?.amountDuffs }
 
-    /// True when this is the funding tx of a "to Shielded" transfer.
+    /// True when this is the funding tx of a "to Shielded" asset lock: a
+    /// transfer to the wallet's own Shielded balance, or a send to a Shielded
+    /// address that is not provably the wallet's own (`shieldedRecipientAddress`).
     var isShieldedTransfer: Bool { shieldedLockInfo != nil }
+
+    /// The recorded recipient of a "to Shielded" asset lock, in its display
+    /// form, when it is not provably the wallet's own: someone else's address,
+    /// or one whose owner cannot be told now. Nil for an own recipient, a lock
+    /// that recorded none, and every other transaction. The one read that
+    /// takes such a lock out of the Internal Transfer reading
+    /// (`ShieldedTxLookup.resolvingRecipients`).
+    var shieldedRecipientAddress: String? {
+        switch shieldedLockInfo?.recipient {
+        case .external(let address)?, .undecided(let address)?: return address
+        case .own?, nil: return nil
+        }
+    }
+
+    /// The lock pays someone else's Shielded address, proven.
+    var isExternalShieldedSend: Bool {
+        if case .external? = shieldedLockInfo?.recipient { return true }
+        return false
+    }
 
     /// Live info for this tx as a Core → Platform address funding (a Type-8
     /// asset lock with funding type 4). Same live-read rationale as
@@ -355,6 +380,20 @@ class Transaction: TransactionDataItem, Identifiable {
             && snapshot.outputAddresses.contains { ShieldedWithdrawalStore.shared.contains($0) }
     }
 
+    /// The source of the Platform or identity withdrawal this incoming tx is the Core payout of: it pays an address
+    /// the app recorded a withdrawal to (`CreditSendActivityDAO`; the SDK's withdrawal returns no txid). Nil for
+    /// every other tx. A withdrawal to someone else's address never pays this wallet, so a payout is an own transfer.
+    var creditWithdrawalSource: CreditSendSource? {
+        guard direction == .received,
+              let walletId = WalletEnvironment.activeWalletId(for: WalletEnvironment.networkKind) else { return nil }
+        for address in snapshot.outputAddresses {
+            if let source = CreditSendActivityDAO.shared.withdrawalSource(toCoreAddress: address, walletId: walletId) {
+                return source
+            }
+        }
+        return nil
+    }
+
     /// The balance-to-balance route of an internal transfer, driving the
     /// route-specific icon pair on the tx row (source icon + destination
     /// badge). `nil` for anything that isn't a transfer of own funds.
@@ -371,13 +410,22 @@ class Transaction: TransactionDataItem, Identifiable {
         case coreToPlatform
         /// Identity registration / top-up / invitation asset lock.
         case coreToIdentity
+        /// L1 payout of a Platform-address withdrawal (Platform → Core).
+        case platformToCore
+        /// L1 payout of an identity credit withdrawal (Identity → Core).
+        case identityToCore
         /// Self-send within the transparent wallet.
         case coreToCore
     }
 
     var internalTransferRoute: InternalTransferRoute? {
-        if isShieldedTransfer { return .coreToShielded }
+        if isShieldedTransfer { return shieldedRecipientAddress != nil ? nil : .coreToShielded }
         if isShieldedWithdrawalReceipt { return .shieldedToCore }
+        switch creditWithdrawalSource {
+        case .platform?: return .platformToCore
+        case .identity?: return .identityToCore
+        case nil: break
+        }
         if isPlatformFundingTransfer { return .coreToPlatform }
         if isIdentityFundingTransfer { return .coreToIdentity }
         if direction == .moved { return .coreToCore }
@@ -646,6 +694,20 @@ class Transaction: TransactionDataItem, Identifiable {
         // Covers the asset-lock fundings (which the generic .moved logic
         // would also label "Internal Transfer", but with a 0 amount) and the
         // Shielded → Transparent payout (which would read "Received").
+        // A lock paying a Shielded address that is not provably the wallet's
+        // own: Core confirms the lock before Platform credits the recipient, so
+        // "Sent" waits for Platform to consume the lock. An undecided owner is
+        // named neither a payment nor an own transfer.
+        switch shieldedLockInfo?.recipient {
+        case .external?:
+            return shieldedLockInfo?.statusRaw == AssetLockRecoveryService.consumedStatus
+                ? String(localized: "Sent", comment: "")
+                : String(localized: "Sending", comment: "")
+        case .undecided?:
+            return String(localized: "Shielded transfer", comment: "Transaction to a Shielded address whose owner the wallet cannot tell now")
+        case .own?, nil:
+            break
+        }
         if let route = internalTransferRoute, route != .coreToCore {
             return String(localized: "Internal Transfer", comment: "Transaction within the wallet, transfer of own funds")
         }

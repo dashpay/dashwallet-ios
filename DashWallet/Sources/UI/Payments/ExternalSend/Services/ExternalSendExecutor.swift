@@ -1294,8 +1294,8 @@ struct LiveIdentityTopUpFromCredits: IdentityTopUpFromCreditsSending {
     }
 }
 
-/// The Current identity's credit spends the app already makes: `withdrawCredits` as
-/// `IdentityWithdrawViewModel.withdraw`, `transferCreditsToAddresses` and `transferCredits`, signed by
+/// The Current identity's credit spends the app already makes (`IdentityCreditSpend`: `withdrawCredits` as
+/// `IdentityWithdrawViewModel.withdraw`, `transferCreditsToAddresses` and `transferCredits`), signed by
 /// `KeychainSigner`. None of these calls reports a handed-over transition or a Max flag:
 /// a failure is `handedOver: false` and `SendOutcome(error:)` decides.
 struct LiveIdentityCreditsSend: IdentityCreditsSending {
@@ -1323,21 +1323,24 @@ struct LiveIdentityCreditsSend: IdentityCreditsSending {
                 guard amountCredits >= minimum else {
                     return .failed(MinimumAmountRefusal(minimumCredits: minimum), handedOver: false)
                 }
-                try await wallet.withdrawCredits(
-                    identityId: identityId, amount: amountCredits, toAddress: destination.text, signer: signer)
+                try await IdentityCreditSpend.withdraw(
+                    wallet: wallet, identityId: identityId, amountCredits: amountCredits,
+                    toCoreAddress: destination.text, signer: signer)
             case .identityToPlatform:
                 guard let recipient = PlatformAddressCreditOutput(
                     bech32mAddress: destination.text, credits: amountCredits, onMainnet: WalletEnvironment.isMainnet)
                 else { return .failed(PlatformAddressSyncCoordinator.SendError.invalidDestination, handedOver: false) }
-                _ = try await wallet.transferCreditsToAddresses(
-                    fromIdentityId: identityId, recipients: [recipient], signer: signer)
+                try await IdentityCreditSpend.transfer(
+                    wallet: wallet, identityId: identityId, to: recipient, platformAddress: destination.text,
+                    signer: signer)
             case .identityToIdentity:
                 guard let toIdentityId = ScriptAddressCodec.base58Decode(destination.text),
                       toIdentityId.count == 32 else {
                     return .failed(PlatformAddressSyncCoordinator.SendError.invalidDestination, handedOver: false)
                 }
-                try await wallet.transferCredits(
-                    fromIdentityId: identityId, toIdentityId: toIdentityId, amount: amountCredits, signer: signer)
+                try await IdentityCreditSpend.transfer(
+                    wallet: wallet, identityId: identityId, toIdentityId: toIdentityId, amountCredits: amountCredits,
+                    signer: signer)
             default:
                 preconditionFailure("\(route) is not an Identity-source route")
             }
