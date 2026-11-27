@@ -106,9 +106,37 @@ enum CTXGiftCardDelivery: Equatable {
         return hasOrderReference || storedNumber != nil
     }
 
+    /// Whether there is an order to ask the provider about. A PiggyCards row needs its order reference.
+    /// A CTX row without one is asked for by transaction id only when its number was written blank and
+    /// it holds nothing else: a row with a PIN or a barcode is a card as it stands.
+    static func hasOrderToFetch(provider: String?,
+                                hasOrderReference: Bool,
+                                number: String?,
+                                pin: String?,
+                                barcodeValue: String?) -> Bool {
+        if hasOrderReference {
+            return true
+        }
+        return provider != "PiggyCards"
+            && number != nil
+            && !GiftCardDetailsCardItem.hasStoredDetails(number: number, pin: pin, barcodeValue: barcodeValue)
+    }
+
+    /// The count of fulfilled answers without a number or a link in a row, after one more answer.
+    /// An answer that the order is still pending ends the run. A failed poll is no answer and is not
+    /// passed here; the failure streak counts those.
+    static func fulfilledAnswersWithoutDetails(after count: Int, isFulfilled: Bool) -> Int {
+        isFulfilled ? count + 1 : 0
+    }
+
     /// Whether to stop asking: CTX keeps reporting the order fulfilled without a number or a link.
     static func isUnavailable(afterFulfilledAnswersWithoutDetails count: Int) -> Bool {
         count >= maxFulfilledAnswersWithoutDetails
+    }
+
+    /// A delivered PIN, or else the stored one, so an answer without a PIN does not erase it.
+    static func pinToStore(delivered: String?, stored: String?) -> String? {
+        GiftCardDetailsCardItem.nonBlank(delivered) ?? GiftCardDetailsCardItem.nonBlank(stored)
     }
 }
 
@@ -286,15 +314,18 @@ class GiftCardDetailsViewModel: ObservableObject {
             return !hasDisplayCards
         }
 
-        return CTXGiftCardDelivery.isAwaited(storedNumber: card.number, hasOrderReference: card.note != nil)
+        return hasOrderToFetch(card)
+            && CTXGiftCardDelivery.isAwaited(storedNumber: card.number, hasOrderReference: card.note != nil)
     }
 
     private func hasOrderToFetch(_ card: GiftCard) -> Bool {
-        if card.note != nil {
-            return true
-        }
-        return card.provider != "PiggyCards"
-            && CTXGiftCardDelivery.isAwaited(storedNumber: card.number, hasOrderReference: false)
+        CTXGiftCardDelivery.hasOrderToFetch(
+            provider: card.provider,
+            hasOrderReference: card.note != nil,
+            number: card.number,
+            pin: card.pin,
+            barcodeValue: card.barcodeValue
+        )
     }
 
     private func startTicker() {
@@ -416,12 +447,13 @@ class GiftCardDetailsViewModel: ObservableObject {
                     await giftCardsDAO.updateCardDetails(
                         txId: txId,
                         number: cardNumber,
-                        pin: pin
+                        pin: CTXGiftCardDelivery.pinToStore(delivered: pin, stored: giftCard.pin)
                     )
 
-                    if !cardNumber.isEmpty {
-                        let cleanNumber = cardNumber.replacingOccurrences(of: " ", with: "")
-                            .replacingOccurrences(of: "-", with: "")
+                    let cleanNumber = cardNumber.replacingOccurrences(of: " ", with: "")
+                        .replacingOccurrences(of: "-", with: "")
+
+                    if !cleanNumber.isEmpty {
                         await giftCardsDAO.updateBarcode(
                             txId: txId,
                             value: cleanNumber,
@@ -439,7 +471,10 @@ class GiftCardDetailsViewModel: ObservableObject {
                     stopTicker()
                     DWLogger.log("DashSpend: Gift card redeem URL fetched successfully")
                 case .nothingYet:
-                    fulfilledAnswersWithoutDetails += 1
+                    fulfilledAnswersWithoutDetails = CTXGiftCardDelivery.fulfilledAnswersWithoutDetails(
+                        after: fulfilledAnswersWithoutDetails,
+                        isFulfilled: true
+                    )
 
                     if CTXGiftCardDelivery.isUnavailable(
                         afterFulfilledAnswersWithoutDetails: fulfilledAnswersWithoutDetails
@@ -463,7 +498,10 @@ class GiftCardDetailsViewModel: ObservableObject {
                 stopTicker()
 
             default:
-                break
+                fulfilledAnswersWithoutDetails = CTXGiftCardDelivery.fulfilledAnswersWithoutDetails(
+                    after: fulfilledAnswersWithoutDetails,
+                    isFulfilled: false
+                )
             }
         } catch {
             errorStreak += 1

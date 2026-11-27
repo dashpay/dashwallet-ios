@@ -194,6 +194,55 @@ final class GiftCardLinkRulesTests: XCTestCase {
         XCTAssertFalse(CTXGiftCardDelivery.isAwaited(storedNumber: "6006491234567890", hasOrderReference: false))
     }
 
+    private func hasOrderToFetch(provider: String? = "CTX",
+                                 hasOrderReference: Bool = false,
+                                 number: String?,
+                                 pin: String? = nil,
+                                 barcodeValue: String? = nil) -> Bool {
+        CTXGiftCardDelivery.hasOrderToFetch(
+            provider: provider,
+            hasOrderReference: hasOrderReference,
+            number: number,
+            pin: pin,
+            barcodeValue: barcodeValue
+        )
+    }
+
+    func testRowWithAnOrderReferenceHasAnOrderToFetch() {
+        XCTAssertTrue(hasOrderToFetch(hasOrderReference: true, number: nil))
+        XCTAssertTrue(hasOrderToFetch(provider: nil, hasOrderReference: true, number: "  ", pin: "1234"))
+        XCTAssertTrue(hasOrderToFetch(provider: "PiggyCards", hasOrderReference: true, number: nil))
+    }
+
+    func testBlankRowWithoutAnOrderReferenceIsFetchedOnlyWhenItHoldsNothing() {
+        XCTAssertTrue(hasOrderToFetch(number: "  "))
+        XCTAssertTrue(hasOrderToFetch(provider: nil, number: "", barcodeValue: ""))
+        XCTAssertFalse(hasOrderToFetch(number: "  ", pin: "1234"))
+        XCTAssertFalse(hasOrderToFetch(number: "  ", barcodeValue: "6006491234567890"))
+        XCTAssertFalse(hasOrderToFetch(number: nil))
+        XCTAssertFalse(hasOrderToFetch(number: "6006491234567890"))
+    }
+
+    func testPiggyCardsRowWithoutAnOrderReferenceIsNeverFetched() {
+        XCTAssertFalse(hasOrderToFetch(provider: "PiggyCards", number: "  "))
+        XCTAssertFalse(hasOrderToFetch(provider: "PiggyCards", number: nil))
+    }
+
+    func testFulfilledAnswersWithoutDetailsCountOnlyInARow() {
+        XCTAssertEqual(CTXGiftCardDelivery.fulfilledAnswersWithoutDetails(after: 0, isFulfilled: true), 1)
+        XCTAssertEqual(CTXGiftCardDelivery.fulfilledAnswersWithoutDetails(after: 59, isFulfilled: true), 60)
+        XCTAssertEqual(CTXGiftCardDelivery.fulfilledAnswersWithoutDetails(after: 59, isFulfilled: false), 0)
+        XCTAssertEqual(CTXGiftCardDelivery.fulfilledAnswersWithoutDetails(after: 0, isFulfilled: false), 0)
+    }
+
+    func testAnAnswerWithoutAPinKeepsTheStoredOne() {
+        XCTAssertEqual(CTXGiftCardDelivery.pinToStore(delivered: "0042", stored: "1234"), "0042")
+        XCTAssertEqual(CTXGiftCardDelivery.pinToStore(delivered: nil, stored: "1234"), "1234")
+        XCTAssertEqual(CTXGiftCardDelivery.pinToStore(delivered: " ", stored: " 12 34 "), " 12 34 ")
+        XCTAssertNil(CTXGiftCardDelivery.pinToStore(delivered: nil, stored: "  "))
+        XCTAssertNil(CTXGiftCardDelivery.pinToStore(delivered: nil, stored: nil))
+    }
+
     func testFulfilledAnswersWithoutDetailsAreBounded() {
         let limit = CTXGiftCardDelivery.maxFulfilledAnswersWithoutDetails
 
