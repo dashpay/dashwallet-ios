@@ -60,6 +60,9 @@ typedef NS_ENUM(NSUInteger, QRCodeObjectType) {
 @property (readonly, class, getter=isTorchAvailable) BOOL torchAvailable;
 
 @property (nullable, weak, nonatomic) id<DWQRScanModelDelegate> delegate;
+/// YES on the lock screen: while the wallet is locked no merchant is contacted, so a code's payment request is
+/// handed on unfetched and Send fetches it after the unlock.
+@property (nonatomic, assign) BOOL defersPaymentRequests;
 @property (nullable, nonatomic, weak) id<DWCaptureSessionFrameDelegate> frameDelegate;
 
 @property (readonly, strong, nonatomic) AVCaptureSession *captureSession;

@@ -526,6 +526,9 @@
         }
       }
     },
+    "—" : {
+
+    },
     "“%@” could not be read as a Dash username." : {
       "comment" : "Voting",
       "localizations" : {
@@ -15303,6 +15306,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ wants to connect. Accept to pay each other directly by username."
+          }
+        }
+      }
+    },
+    "%@, so the source was changed to %@." : {
+      "comment" : "External send",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@, so the source was changed to %2$@."
           }
         }
       }
@@ -47205,6 +47219,9 @@
         }
       }
     },
+    "about %@" : {
+      "comment" : "External send"
+    },
     "About DashPay" : {
       "comment" : "DashPay FAQ title",
       "localizations" : {
@@ -58009,7 +58026,7 @@
       }
     },
     "Address" : {
-      "comment" : "Explore Dash\nTranslate it as short as possible! (24 symbols max)",
+      "comment" : "Explore Dash\nExternal send\nTranslate it as short as possible! (24 symbols max)",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -71424,6 +71441,9 @@
           }
         }
       }
+    },
+    "Any unused part of the Platform fee goes to the identity." : {
+      "comment" : "External send"
     },
     "Any username that has a number 2–9 or 20 or more characters will be automatically approved" : {
       "comment" : "Usernames",
@@ -87719,6 +87739,9 @@
         }
       }
     },
+    "Balance not enough" : {
+      "comment" : "External send"
+    },
     "Balance unavailable" : {
       "comment" : "Balance not restored\nMax requires a known source balance\nSelected source balance not restored",
       "localizations" : {
@@ -103230,6 +103253,9 @@
         }
       }
     },
+    "Calculating…" : {
+      "comment" : "External send"
+    },
     "Camera is required to scan QR codes." : {
       "localizations" : {
         "ar" : {
@@ -105070,7 +105096,7 @@
       }
     },
     "Cancel" : {
-      "comment" : "Coinbase\nDashSpend\nPayment confirmation\nPayments\nUsernames",
+      "comment" : "Coinbase\nDashSpend\nExternal send\nPayment confirmation\nPayments\nUsernames",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -112697,6 +112723,9 @@
         }
       }
     },
+    "Check your connection and try again." : {
+      "comment" : "External send"
+    },
     "Check your email and enter the verification code." : {
       "comment" : "DashSpend",
       "localizations" : {
@@ -114276,7 +114305,7 @@
       }
     },
     "Checking…" : {
-      "comment" : "Usernames\nVoting",
+      "comment" : "External send\nUsernames\nVoting",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -117169,7 +117198,7 @@
       }
     },
     "Close" : {
-      "comment" : "Accessibility\nAction Button\nDash DEX\nZenLedger",
+      "comment" : "Accessibility\nAction Button\nDash DEX\nExternal send\nZenLedger",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -124795,7 +124824,7 @@
       }
     },
     "Confirm" : {
-      "comment" : "Coinbase\nCoinbase/Buy Dash/Confirm Order\nDash DEX\nDashSpend\nPayment confirmation\nPayments",
+      "comment" : "Coinbase\nCoinbase/Buy Dash/Confirm Order\nDash DEX\nDashSpend\nExternal send\nPayment confirmation\nPayments",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -127685,6 +127714,9 @@
           }
         }
       }
+    },
+    "Confirming this send can take a few minutes. You can close this screen. Don't send it again." : {
+      "comment" : "External send"
     },
     "Connect an app" : {
       "comment" : "DashConnect",
@@ -135579,7 +135611,7 @@
       }
     },
     "Continue" : {
-      "comment" : "Buy Dash\nContinue\nDashPay registration recovery\nDashSpend",
+      "comment" : "Buy Dash\nContinue\nDashPay registration recovery\nDashSpend\nExternal send",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -140879,7 +140911,7 @@
       }
     },
     "Core" : {
-      "comment" : "Dash Core chain",
+      "comment" : "Dash Core chain\nExternal send",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -141140,6 +141172,9 @@
           }
         }
       }
+    },
+    "Core address" : {
+      "comment" : "External send"
     },
     "Core can't pay a Platform address yet" : {
       "comment" : "External send"
@@ -149573,6 +149608,9 @@
         }
       }
     },
+    "Couldn't calculate the network fee" : {
+      "comment" : "External send"
+    },
     "Couldn't check for a link" : {
       "comment" : "Voting",
       "localizations" : {
@@ -149835,6 +149873,9 @@
           }
         }
       }
+    },
+    "Couldn't check the identity. Check your connection and try again." : {
+      "comment" : "External send"
     },
     "Couldn't check which keys of this evonode are in the wallet." : {
       "comment" : "Evonode withdrawal",
@@ -152466,6 +152507,7 @@
       }
     },
     "Couldn't make payment" : {
+      "comment" : "External send",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -164556,6 +164598,9 @@
           }
         }
       }
+    },
+    "DASH address" : {
+      "comment" : "External send"
     },
     "Dash balance" : {
       "comment" : "Usernames",
@@ -187167,6 +187212,9 @@
         }
       }
     },
+    "Don't send it again. It can take a few minutes to finish." : {
+      "comment" : "External send"
+    },
     "Done" : {
       "comment" : "Receive receipt action",
       "localizations" : {
@@ -198510,7 +198558,7 @@
       }
     },
     "Enter address" : {
-      "comment" : "Dash DEX",
+      "comment" : "Dash DEX\nExternal send",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -204814,6 +204862,9 @@
           }
         }
       }
+    },
+    "Everything above the DashPay reserve is already spent, so Max is off. You can still type an amount." : {
+      "comment" : "External send"
     },
     "Evonode" : {
       "comment" : "Identities\nSPV sync peer type\nVoting",
@@ -226116,7 +226167,7 @@
       }
     },
     "From" : {
-      "comment" : "Dash DEX\nDashSpend",
+      "comment" : "Dash DEX\nDashSpend\nExternal send",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -247411,7 +247462,7 @@
       }
     },
     "Identity" : {
-      "comment" : "DashConnect\nDashConnect connection sheet\nPayments\nSettings: advanced mode\nUsernames\nVoting",
+      "comment" : "DashConnect\nDashConnect connection sheet\nExternal send\nPayments\nSettings: advanced mode\nUsernames\nVoting",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -250045,6 +250096,9 @@
           }
         }
       }
+    },
+    "Identity not found" : {
+      "comment" : "External send"
     },
     "Identity registration" : {
       "comment" : "Asset lock funding a DashPay identity registration",
@@ -288688,6 +288742,9 @@
         }
       }
     },
+    "Loading" : {
+      "comment" : "External send"
+    },
     "Loading activity…" : {
       "comment" : "Username marketplace: browse feed loading",
       "localizations" : {
@@ -321298,7 +321355,7 @@
       }
     },
     "Network fee" : {
-      "comment" : "Masternode unban\nPayment confirmation",
+      "comment" : "External send\nMasternode unban\nPayment confirmation",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -326027,6 +326084,9 @@
           }
         }
       }
+    },
+    "No address, Identity ID or dash: link on the clipboard" : {
+      "comment" : "External send"
     },
     "No addresses derived yet" : {
       "comment" : "Sync diagnostics",
@@ -346538,6 +346598,9 @@
         }
       }
     },
+    "Not a valid address for this network" : {
+      "comment" : "External send"
+    },
     "Not a valid Dash address" : {
       "localizations" : {
         "ar" : {
@@ -347852,7 +347915,7 @@
       }
     },
     "Not available" : {
-      "comment" : "Dash DEX\nFiat amount",
+      "comment" : "Dash DEX\nExternal send\nFiat amount",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -356528,6 +356591,9 @@
           }
         }
       }
+    },
+    "Nothing was sent. Your money is still in your %@ balance." : {
+      "comment" : "External send"
     },
     "Notifications" : {
       "comment" : "DashPay Notifications\nHome nav bar",
@@ -369937,6 +370003,9 @@
         }
       }
     },
+    "Paste %@" : {
+      "comment" : "External send"
+    },
     "Paste address from" : {
       "comment" : "Dash DEX",
       "localizations" : {
@@ -376773,6 +376842,9 @@
           }
         }
       }
+    },
+    "Payment request" : {
+      "comment" : "External send"
     },
     "Payment URI unavailable" : {
       "comment" : "DashSpend",
@@ -384135,7 +384207,7 @@
       }
     },
     "Platform" : {
-      "comment" : "Dash Platform chain\nIdentity top-up sheet — the DIP-17 Platform address balance\nSettings: advanced mode",
+      "comment" : "Dash Platform chain\nExternal send\nIdentity top-up sheet — the DIP-17 Platform address balance\nSettings: advanced mode",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -384661,7 +384733,7 @@
       }
     },
     "Platform address" : {
-      "comment" : "Send screen destination type",
+      "comment" : "External send\nSend screen destination type",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -446442,7 +446514,7 @@
       }
     },
     "Retry" : {
-      "comment" : "Coinbase\nDash DEX\nDashSpend\nUsernames",
+      "comment" : "Coinbase\nDash DEX\nDashSpend\nExternal send\nUsernames",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -464049,6 +464121,9 @@
         }
       }
     },
+    "Select source" : {
+      "comment" : "External send"
+    },
     "Select the coin" : {
       "comment" : "Coinbase",
       "localizations" : {
@@ -465891,7 +465966,7 @@
       }
     },
     "Send" : {
-      "comment" : "Send Dash\nSend Screen\nTranslate it as short as possible! (24 symbols max)",
+      "comment" : "External send\nSend Dash\nSend Screen\nTranslate it as short as possible! (24 symbols max)",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -466941,6 +467016,12 @@
           }
         }
       }
+    },
+    "Send failed" : {
+      "comment" : "External send"
+    },
+    "Send in progress" : {
+      "comment" : "External send"
     },
     "Send this name to another identity for free. The transfer also removes any sale listing. This can't be undone — the new owner would have to transfer it back." : {
       "comment" : "Username marketplace: transfer sheet body",
@@ -470623,6 +470704,9 @@
         }
       }
     },
+    "Sending from Shielded to an address that is not Shielded makes the amount and the destination public." : {
+      "comment" : "External send"
+    },
     "Sending to:" : {
       "comment" : "Buy Dash",
       "localizations" : {
@@ -471676,7 +471760,7 @@
       }
     },
     "Sending…" : {
-      "comment" : "Voting",
+      "comment" : "External send\nVoting",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -472202,7 +472286,7 @@
       }
     },
     "Sent" : {
-      "comment" : "Send confirm sheet\nSent transaction",
+      "comment" : "External send\nSend confirm sheet\nSent transaction",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -478246,7 +478330,7 @@
       }
     },
     "Shielded" : {
-      "comment" : "Settings: advanced mode\nShielded activity: funds moved into the private shielded balance",
+      "comment" : "External send\nSettings: advanced mode\nShielded activity: funds moved into the private shielded balance",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -479035,7 +479119,7 @@
       }
     },
     "Shielded address" : {
-      "comment" : "Send screen destination type",
+      "comment" : "External send\nSend screen destination type",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -479561,7 +479645,7 @@
       }
     },
     "Shielded balance" : {
-      "comment" : "CoinJoin\nUsernames",
+      "comment" : "CoinJoin\nExternal send\nUsernames",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -483240,6 +483324,9 @@
           }
         }
       }
+    },
+    "Show clipboard" : {
+      "comment" : "External send"
     },
     "Show content in the clipboard" : {
       "comment" : "Dash DEX",
@@ -513744,7 +513831,7 @@
       }
     },
     "Tap the address from the clipboard to paste it" : {
-      "extractionState" : "stale",
+      "comment" : "External send",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -519788,6 +519875,9 @@
           }
         }
       }
+    },
+    "The amount is set by the payment request." : {
+      "comment" : "External send"
     },
     "The amount is too large to transfer." : {
       "comment" : "InternalTransfer",
@@ -536892,7 +536982,7 @@
       "comment" : "BIP70 payment error: the merchant acknowledged the payment, the wallet did not finish it"
     },
     "The minimum amount you can send is %@" : {
-      "comment" : "Coinbase",
+      "comment" : "Coinbase\nExternal send",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -576169,6 +576259,9 @@
         }
       }
     },
+    "This leaves less than the DashPay reserve. DashPay actions, like contact requests and profile updates, may stop working." : {
+      "comment" : "External send"
+    },
     "This limit cannot be shared between the app's keys." : {
       "comment" : "DashConnect funding limit keypad",
       "localizations" : {
@@ -584588,6 +584681,9 @@
           }
         }
       }
+    },
+    "This tops up your own Identity credits." : {
+      "comment" : "External send"
     },
     "This transaction is confirmed and can't be removed." : {
       "comment" : "Remove never-accepted transaction: local state says it's on-chain",
@@ -597212,7 +597308,7 @@
       }
     },
     "To" : {
-      "comment" : "Dash DEX\nDashSpend\nPayment confirmation",
+      "comment" : "Dash DEX\nDashSpend\nExternal send\nPayment confirmation",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -602207,7 +602303,7 @@
       }
     },
     "Total" : {
-      "comment" : "Coinbase/Buy Dash\nDash DEX\nWallet accounts",
+      "comment" : "Coinbase/Buy Dash\nDash DEX\nExternal send\nWallet accounts",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -616138,7 +616234,7 @@
       }
     },
     "Try again" : {
-      "comment" : "Retry drain preview\nUsernames\nVoting",
+      "comment" : "External send\nRetry drain preview\nUsernames\nVoting",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -658702,6 +658798,9 @@
         }
       }
     },
+    "Waiting for the network" : {
+      "comment" : "External send"
+    },
     "Waiting for the provider" : {
       "comment" : "Dash DEX",
       "localizations" : {
@@ -672368,6 +672467,12 @@
           }
         }
       }
+    },
+    "When sending from Shielded balance to Core the amount and destination becomes public" : {
+      "comment" : "External send"
+    },
+    "When sending from Shielded balance, the transaction is not instant and takes some time" : {
+      "comment" : "External send"
     },
     "When will contact requests become private?" : {
       "comment" : "DashPay FAQ",
@@ -705012,6 +705117,9 @@
           }
         }
       }
+    },
+    "Your identity" : {
+      "comment" : "External send"
     },
     "Your Identity balance can't cover this amount plus the network fee. Enter a smaller amount and try again." : {
       "comment" : "Identity withdrawal — Platform refused the amount as more than the balance can cover",

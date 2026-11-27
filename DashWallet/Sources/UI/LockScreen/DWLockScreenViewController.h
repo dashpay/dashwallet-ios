@@ -33,6 +33,10 @@ typedef NS_ENUM(NSUInteger, DWLockScreenViewControllerUnlockMode) {
 @protocol DWLockScreenViewControllerDelegate <NSObject>
 
 - (void)lockScreenViewControllerDidUnlock:(DWLockScreenViewController *)controller;
+/// A code scanned on the lock screen, held until this lock screen unlocks: Send opens for it once, over the unlocked
+/// app, whichever of the lock screen's own unlocks (its keypad or biometrics) the holder uses.
+- (void)lockScreenViewController:(DWLockScreenViewController *)controller
+    didHoldScannedInputForUnlock:(DWPaymentInput *)paymentInput;
 /// The support-assisted global wipe has already completed successfully.
 - (void)lockScreenViewControllerDidWipe:(DWLockScreenViewController *)controller;
 
