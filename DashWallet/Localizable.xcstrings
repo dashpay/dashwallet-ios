@@ -10028,6 +10028,269 @@
         }
       }
     },
+    "%@ DASH is still confirming." : {
+      "comment" : "Send amount fits the balance once incoming funds confirm",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ DASH is still confirming."
+          }
+        },
+        "bg" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ DASH is still confirming."
+          }
+        },
+        "ca" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ DASH is still confirming."
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ DASH is still confirming."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ DASH is still confirming."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ DASH is still confirming."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ DASH is still confirming."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ DASH is still confirming."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ DASH is still confirming."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ DASH is still confirming."
+          }
+        },
+        "et" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ DASH is still confirming."
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ DASH is still confirming."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ DASH is still confirming."
+          }
+        },
+        "fil" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ DASH is still confirming."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ DASH is still confirming."
+          }
+        },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ DASH is still confirming."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ DASH is still confirming."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ DASH is still confirming."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ DASH is still confirming."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ DASH is still confirming."
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ DASH is still confirming."
+          }
+        },
+        "mk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ DASH is still confirming."
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ DASH is still confirming."
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ DASH is still confirming."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ DASH is still confirming."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ DASH is still confirming."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ DASH is still confirming."
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ DASH is still confirming."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ DASH is still confirming."
+          }
+        },
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ DASH is still confirming."
+          }
+        },
+        "sl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ DASH is still confirming."
+          }
+        },
+        "sl_SI" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ DASH is still confirming."
+          }
+        },
+        "sq" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ DASH is still confirming."
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ DASH is still confirming."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ DASH is still confirming."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ DASH is still confirming."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ DASH is still confirming."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ DASH is still confirming."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ DASH is still confirming."
+          }
+        },
+        "zh" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ DASH is still confirming."
+          }
+        },
+        "zh_TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ DASH is still confirming."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ DASH is still confirming."
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ DASH is still confirming."
+          }
+        }
+      }
+    },
     "%@ DASH is still confirming. Try again once it settles." : {
       "comment" : "Shielded sweep pending change",
       "localizations" : {
@@ -10550,269 +10813,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ DASH is still confirming. Use Max again once it settles."
-          }
-        }
-      }
-    },
-    "%@ DASH is still confirming. Wait a few minutes or enter a smaller amount." : {
-      "comment" : "Send amount fits the balance once incoming funds confirm",
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ DASH is still confirming. Wait a few minutes or enter a smaller amount."
-          }
-        },
-        "bg" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ DASH is still confirming. Wait a few minutes or enter a smaller amount."
-          }
-        },
-        "ca" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ DASH is still confirming. Wait a few minutes or enter a smaller amount."
-          }
-        },
-        "cs" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ DASH is still confirming. Wait a few minutes or enter a smaller amount."
-          }
-        },
-        "da" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ DASH is still confirming. Wait a few minutes or enter a smaller amount."
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ DASH is still confirming. Wait a few minutes or enter a smaller amount."
-          }
-        },
-        "el" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ DASH is still confirming. Wait a few minutes or enter a smaller amount."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ DASH is still confirming. Wait a few minutes or enter a smaller amount."
-          }
-        },
-        "eo" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ DASH is still confirming. Wait a few minutes or enter a smaller amount."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ DASH is still confirming. Wait a few minutes or enter a smaller amount."
-          }
-        },
-        "et" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ DASH is still confirming. Wait a few minutes or enter a smaller amount."
-          }
-        },
-        "fa" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ DASH is still confirming. Wait a few minutes or enter a smaller amount."
-          }
-        },
-        "fi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ DASH is still confirming. Wait a few minutes or enter a smaller amount."
-          }
-        },
-        "fil" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ DASH is still confirming. Wait a few minutes or enter a smaller amount."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ DASH is still confirming. Wait a few minutes or enter a smaller amount."
-          }
-        },
-        "hr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ DASH is still confirming. Wait a few minutes or enter a smaller amount."
-          }
-        },
-        "hu" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ DASH is still confirming. Wait a few minutes or enter a smaller amount."
-          }
-        },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ DASH is still confirming. Wait a few minutes or enter a smaller amount."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ DASH is still confirming. Wait a few minutes or enter a smaller amount."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ DASH is still confirming. Wait a few minutes or enter a smaller amount."
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ DASH is still confirming. Wait a few minutes or enter a smaller amount."
-          }
-        },
-        "mk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ DASH is still confirming. Wait a few minutes or enter a smaller amount."
-          }
-        },
-        "ms" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ DASH is still confirming. Wait a few minutes or enter a smaller amount."
-          }
-        },
-        "nb" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ DASH is still confirming. Wait a few minutes or enter a smaller amount."
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ DASH is still confirming. Wait a few minutes or enter a smaller amount."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ DASH is still confirming. Wait a few minutes or enter a smaller amount."
-          }
-        },
-        "pt" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ DASH is still confirming. Wait a few minutes or enter a smaller amount."
-          }
-        },
-        "ro" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ DASH is still confirming. Wait a few minutes or enter a smaller amount."
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ DASH is still confirming. Wait a few minutes or enter a smaller amount."
-          }
-        },
-        "sk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ DASH is still confirming. Wait a few minutes or enter a smaller amount."
-          }
-        },
-        "sl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ DASH is still confirming. Wait a few minutes or enter a smaller amount."
-          }
-        },
-        "sl_SI" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ DASH is still confirming. Wait a few minutes or enter a smaller amount."
-          }
-        },
-        "sq" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ DASH is still confirming. Wait a few minutes or enter a smaller amount."
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ DASH is still confirming. Wait a few minutes or enter a smaller amount."
-          }
-        },
-        "sv" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ DASH is still confirming. Wait a few minutes or enter a smaller amount."
-          }
-        },
-        "th" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ DASH is still confirming. Wait a few minutes or enter a smaller amount."
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ DASH is still confirming. Wait a few minutes or enter a smaller amount."
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ DASH is still confirming. Wait a few minutes or enter a smaller amount."
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ DASH is still confirming. Wait a few minutes or enter a smaller amount."
-          }
-        },
-        "zh" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ DASH is still confirming. Wait a few minutes or enter a smaller amount."
-          }
-        },
-        "zh_TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ DASH is still confirming. Wait a few minutes or enter a smaller amount."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ DASH is still confirming. Wait a few minutes or enter a smaller amount."
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ DASH is still confirming. Wait a few minutes or enter a smaller amount."
           }
         }
       }
@@ -355982,6 +355982,269 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Notes Synced"
+          }
+        }
+      }
+    },
+    "Nothing can be sent yet — %@ DASH is still confirming. Wait a few minutes." : {
+      "comment" : "Send amount fits the balance once incoming funds confirm; nothing can be sent before then",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nothing can be sent yet — %@ DASH is still confirming. Wait a few minutes."
+          }
+        },
+        "bg" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nothing can be sent yet — %@ DASH is still confirming. Wait a few minutes."
+          }
+        },
+        "ca" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nothing can be sent yet — %@ DASH is still confirming. Wait a few minutes."
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nothing can be sent yet — %@ DASH is still confirming. Wait a few minutes."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nothing can be sent yet — %@ DASH is still confirming. Wait a few minutes."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nothing can be sent yet — %@ DASH is still confirming. Wait a few minutes."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nothing can be sent yet — %@ DASH is still confirming. Wait a few minutes."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nothing can be sent yet — %@ DASH is still confirming. Wait a few minutes."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nothing can be sent yet — %@ DASH is still confirming. Wait a few minutes."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nothing can be sent yet — %@ DASH is still confirming. Wait a few minutes."
+          }
+        },
+        "et" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nothing can be sent yet — %@ DASH is still confirming. Wait a few minutes."
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nothing can be sent yet — %@ DASH is still confirming. Wait a few minutes."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nothing can be sent yet — %@ DASH is still confirming. Wait a few minutes."
+          }
+        },
+        "fil" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nothing can be sent yet — %@ DASH is still confirming. Wait a few minutes."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nothing can be sent yet — %@ DASH is still confirming. Wait a few minutes."
+          }
+        },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nothing can be sent yet — %@ DASH is still confirming. Wait a few minutes."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nothing can be sent yet — %@ DASH is still confirming. Wait a few minutes."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nothing can be sent yet — %@ DASH is still confirming. Wait a few minutes."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nothing can be sent yet — %@ DASH is still confirming. Wait a few minutes."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nothing can be sent yet — %@ DASH is still confirming. Wait a few minutes."
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nothing can be sent yet — %@ DASH is still confirming. Wait a few minutes."
+          }
+        },
+        "mk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nothing can be sent yet — %@ DASH is still confirming. Wait a few minutes."
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nothing can be sent yet — %@ DASH is still confirming. Wait a few minutes."
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nothing can be sent yet — %@ DASH is still confirming. Wait a few minutes."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nothing can be sent yet — %@ DASH is still confirming. Wait a few minutes."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nothing can be sent yet — %@ DASH is still confirming. Wait a few minutes."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nothing can be sent yet — %@ DASH is still confirming. Wait a few minutes."
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nothing can be sent yet — %@ DASH is still confirming. Wait a few minutes."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nothing can be sent yet — %@ DASH is still confirming. Wait a few minutes."
+          }
+        },
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nothing can be sent yet — %@ DASH is still confirming. Wait a few minutes."
+          }
+        },
+        "sl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nothing can be sent yet — %@ DASH is still confirming. Wait a few minutes."
+          }
+        },
+        "sl_SI" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nothing can be sent yet — %@ DASH is still confirming. Wait a few minutes."
+          }
+        },
+        "sq" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nothing can be sent yet — %@ DASH is still confirming. Wait a few minutes."
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nothing can be sent yet — %@ DASH is still confirming. Wait a few minutes."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nothing can be sent yet — %@ DASH is still confirming. Wait a few minutes."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nothing can be sent yet — %@ DASH is still confirming. Wait a few minutes."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nothing can be sent yet — %@ DASH is still confirming. Wait a few minutes."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nothing can be sent yet — %@ DASH is still confirming. Wait a few minutes."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nothing can be sent yet — %@ DASH is still confirming. Wait a few minutes."
+          }
+        },
+        "zh" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nothing can be sent yet — %@ DASH is still confirming. Wait a few minutes."
+          }
+        },
+        "zh_TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nothing can be sent yet — %@ DASH is still confirming. Wait a few minutes."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nothing can be sent yet — %@ DASH is still confirming. Wait a few minutes."
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nothing can be sent yet — %@ DASH is still confirming. Wait a few minutes."
           }
         }
       }

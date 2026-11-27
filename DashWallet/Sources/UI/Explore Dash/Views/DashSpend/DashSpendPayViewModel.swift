@@ -739,7 +739,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
         // The screen shows the whole balance, the gate counts confirmed coins
         // only — so right after a receive the shortfall is often just time,
         // and must not read as "Insufficient funds".
-        if let refusal = SendAmountError(refusing: state.sendVerdict(
+        if let refusal = Self.fundsRefusal(state.sendVerdict(
             requestedDuffs: requestedDashDuffs,
             ceilingDuffs: ceilingDuffs,
             reserveDuffs: reserveDuffs)) {
@@ -766,6 +766,13 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
         WalletSendService.isBlockedByInitialRestoreSync(
             isResyncingWallet: DWGlobalOptions.sharedInstance().isResyncingCurrentNetworkWallet,
             isChainSynced: SyncingActivityMonitor.shared.state == .syncDone)
+    }
+
+    /// The refusal a wallet verdict gives here. It never says nothing can be
+    /// sent yet: whether a card can be bought also turns on stock, merchant
+    /// limits and the amount, which confirmation does not change.
+    nonisolated static func fundsRefusal(_ verdict: SendFundsVerdict) -> SendAmountError? {
+        SendAmountError(refusing: verdict, ceilingDuffs: nil)
     }
 
     private var requestedDashDuffs: UInt64 {
