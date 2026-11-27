@@ -1,4 +1,4 @@
-# 0074 — Judge request age by the wallet's clock and key expiry by block time
+# 0079 — Judge request age by the wallet's clock and key expiry by block time
 
 - **Status:** Proposed
 - **Date:** 2026-11-24
