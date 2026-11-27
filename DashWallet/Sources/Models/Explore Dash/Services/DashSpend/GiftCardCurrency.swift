@@ -142,12 +142,24 @@ enum GiftCardCurrency {
         normalize(stored) ?? usd
     }
 
-    /// The first currency a provider's answer names that is not the one ordered, or nil when
-    /// every currency it names is. The Dash amount in the answer is paid as it stands, so it
-    /// must be for the card that was ordered.
-    static func mismatch(ordered: String, reported: [String?]) -> String? {
-        reported
+    /// Whether a provider's answer is for the currency ordered. The Dash amount in the answer
+    /// is paid as it stands, so every currency it names must be the one ordered. An answer
+    /// that names none is accepted for USD only, the currency of every order before answers
+    /// named one.
+    static func answerConfirms(ordered: String, reported: [String?]) -> Bool {
+        let named = reported
             .compactMap { $0?.trimmingCharacters(in: .whitespacesAndNewlines) }
-            .first { !$0.isEmpty && $0.caseInsensitiveCompare(ordered) != .orderedSame }
+            .filter { !$0.isEmpty }
+        guard !named.isEmpty else { return ordered == usd }
+        return named.allSatisfy { $0.caseInsensitiveCompare(ordered) == .orderedSame }
+    }
+
+    /// What the buyer pays for `amount` after `discount` (a fraction of it), rounded up once
+    /// to the currency's decimals.
+    static func discounted(_ amount: Decimal, by discount: Decimal, currency: String) -> Decimal {
+        var exact = amount * (1 - discount)
+        var rounded = Decimal()
+        NSDecimalRound(&rounded, &exact, fractionDigits(currency), .up)
+        return rounded
     }
 }

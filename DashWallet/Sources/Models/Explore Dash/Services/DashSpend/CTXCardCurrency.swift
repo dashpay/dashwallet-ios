@@ -9,6 +9,7 @@ import Foundation
 
 /// What is known about the currency a CTX merchant sells its cards in.
 enum CardCurrencyState: Equatable {
+    /// The first load of the merchant has not ended.
     case loading
     case known(String)
     /// The merchant could not be fetched, or its answer names no usable currency.
@@ -25,8 +26,9 @@ struct CTXMerchantTerms: Equatable {
     let minimum: Decimal?
     let maximum: Decimal?
 
-    /// Nil when the answer cannot be used: it names no usable currency, or one of its amounts
-    /// is not a plain number the currency can hold.
+    /// Nil when the answer cannot be used: it names no usable currency, one of its amounts
+    /// is not a plain number the currency can hold, or a range it states has no room (a
+    /// maximum of zero, or one below the minimum).
     init?(currency: String?, isRange: Bool, denominations: [String]) {
         guard let currency = GiftCardCurrency.normalize(currency) else { return nil }
 
@@ -37,6 +39,9 @@ struct CTXMerchantTerms: Equatable {
                 return nil
             }
             amounts.append(amount)
+        }
+        if isRange, amounts.count >= 2, amounts[1] <= 0 || amounts[1] < amounts[0] {
+            return nil
         }
 
         self.currency = currency
@@ -94,9 +99,9 @@ struct CardCurrencyLoads {
         }
     }
 
-    /// Starts a load and returns its number. A confirmed currency stays while it runs.
+    /// Starts a load and returns its number. The state stays while it runs: a confirmed
+    /// currency, and also an unknown one, so a retry never shows the first load's USD.
     mutating func begin() -> Int {
-        if state == .unknown { state = .loading }
         latest += 1
         return latest
     }
@@ -161,6 +166,16 @@ struct CTXGiftCardOrder: Equatable {
         }
         fiatCurrency = currency
         fiatAmount = amount
+    }
+
+    /// Whether a confirmation for `price` and `quantities` still shows what is selected on
+    /// screen: the amount, and the cards when the screen has a cart. Confirm orders what
+    /// the confirmation shows, so one that no longer does is closed.
+    static func confirmationShows(price: Decimal, quantities: [Decimal: Int],
+                                  amount: Decimal, cart: [Decimal: Int]?) -> Bool {
+        guard price == amount else { return false }
+        guard let cart else { return true }
+        return quantities.filter { $0.value > 0 } == cart.filter { $0.value > 0 }
     }
 
     /// A change to a selection of fixed cards, held to the one card an order carries: the

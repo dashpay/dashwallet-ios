@@ -391,6 +391,7 @@ final class DashSpendPurchaseTests: XCTestCase {
         XCTAssertEqual(viewModel.amountFractionDigits, 0)
 
         let snapshot = try confirmation(of: 5000, quantities: [5000: 1], on: viewModel)
+        ctx.answeredCurrencies = (payment: "JPY", card: "JPY")
         payments.requestedByURL = snapshot.approval.amount
         _ = try await finish(startPurchase(snapshot, on: viewModel), on: viewModel)
 
@@ -406,6 +407,7 @@ final class DashSpendPurchaseTests: XCTestCase {
         XCTAssertEqual(viewModel.amountFractionDigits, 3)
 
         let snapshot = try confirmation(of: decimal("1.125"), quantities: [decimal("1.125"): 1], on: viewModel)
+        ctx.answeredCurrencies = (payment: nil, card: "KWD")
         payments.requestedByURL = snapshot.approval.amount
         _ = try await finish(startPurchase(snapshot, on: viewModel), on: viewModel)
 
@@ -475,7 +477,12 @@ final class DashSpendPurchaseTests: XCTestCase {
     }
 
     func testAnOrderAnsweredInAnotherCurrencyIsNotPaid() async throws {
-        for answered in [(payment: "USD", card: "GBP"), (payment: "GBP", card: "USD"), (payment: nil, card: "EUR")] {
+        // The last answer names no currency at all, which only a USD order accepts.
+        let answers: [(payment: String?, card: String?)] = [
+            (payment: "USD", card: "GBP"), (payment: "GBP", card: "USD"), (payment: nil, card: "EUR"),
+            (payment: nil, card: nil),
+        ]
+        for answered in answers {
             let viewModel = await ctxViewModel(loading: StubCTXRepository.merchantJSON(currency: "GBP"))
             let snapshot = try confirmation(of: 25, on: viewModel)
             ctx.answeredCurrencies = answered
@@ -490,6 +497,88 @@ final class DashSpendPurchaseTests: XCTestCase {
             XCTAssertTrue(recorder.records.isEmpty, "\(answered)")
             XCTAssertNil(viewModel.purchaseSheet, "\(answered)")
         }
+    }
+
+    func testAUSDOrderAnsweredWithoutACurrencyIsPaid() async throws {
+        let viewModel = await ctxViewModel(loading: StubCTXRepository.merchantJSON(currency: "USD"))
+        let snapshot = try confirmation(of: 25, on: viewModel)
+        payments.requestedByURL = snapshot.approval.amount
+
+        _ = try await finish(startPurchase(snapshot, on: viewModel), on: viewModel)
+
+        XCTAssertEqual(ctx.orders.map(\.fiatCurrency), ["USD"])
+        XCTAssertEqual(payments.urlPayments.count, 1)
+    }
+
+    /// "10.50" typed while the first load still showed dollars is not an amount of yen, and
+    /// yen has no decimal key to edit it with.
+    func testAnotherCurrencyResetsTheTextTypedSoFar() async {
+        let viewModel = ctxViewModel()
+        let separator = Locale.current.decimalSeparator ?? "."
+        viewModel.input = "10\(separator)50"
+        XCTAssertEqual(viewModel.amount, decimal("10.5"))
+
+        ctx.merchantAnswer = .success(StubCTXRepository.merchantJSON(currency: "JPY"))
+        await viewModel.updateMerchantInfo()
+
+        XCTAssertEqual(viewModel.input, "0")
+        XCTAssertEqual(viewModel.amount, 0)
+        viewModel.input = "05"
+        XCTAssertEqual(viewModel.input, "5")
+        viewModel.input = "5\(separator)5"
+        XCTAssertEqual(viewModel.input, "5")
+    }
+
+    /// The first load shows the explore database's dollars. A retry after a failed load
+    /// shows no currency, and typing during it does not clear the message.
+    func testARetryShowsNoCurrencyAndKeepsItsMessage() async {
+        let viewModel = ctxViewModel()
+        XCTAssertEqual(viewModel.currencySymbol, "$")
+        await viewModel.updateMerchantInfo()
+        XCTAssertNotNil(viewModel.error)
+
+        ctx.holdsMerchantCalls = true
+        let retry = Task { await viewModel.updateMerchantInfo() }
+        await waitForHeldMerchantCalls(1)
+        guard ctx.heldMerchantCalls.count == 1 else { return XCTFail("the retry did not start") }
+
+        XCTAssertNil(viewModel.cardCurrency)
+        XCTAssertEqual(viewModel.currencySymbol, "")
+        viewModel.input = "7"
+        XCTAssertNotNil(viewModel.error)
+        XCTAssertThrowsError(try viewModel.beginPurchase(price: 7))
+
+        ctx.answerMerchantCall(0, with: StubCTXRepository.merchantJSON(currency: "USD"))
+        await retry.value
+        XCTAssertEqual(viewModel.cardCurrency, "USD")
+        XCTAssertEqual(viewModel.currencySymbol, "$")
+    }
+
+    /// Confirm orders what the sheet shows. A selection that changes behind an open
+    /// confirmation closes it, and the old confirmation orders nothing.
+    func testAChangedAmountClosesTheConfirmationAndItOrdersNothing() async throws {
+        let viewModel = await ctxViewModel(loading: StubCTXRepository.merchantJSON(currency: "USD"))
+        viewModel.updateTotalAmount(25)
+        let snapshot = try confirmation(of: 25, on: viewModel)
+
+        viewModel.updateTotalAmount(25)
+        XCTAssertEqual(viewModel.purchaseSheet, .confirm(snapshot))
+
+        viewModel.updateTotalAmount(30)
+        XCTAssertNil(viewModel.purchaseSheet)
+        await assertCancelled(startPurchase(snapshot, on: viewModel), on: viewModel)
+        assertNothingOrdered()
+    }
+
+    func testAMerchantWhoseRangeHasNoRoomBlocksThePurchase() async {
+        for denominations in [["5", "0"], ["100", "5"], ["5", "-1"], ["5", "NaN"]] {
+            let viewModel = await ctxViewModel(loading: StubCTXRepository.merchantJSON(
+                currency: "USD", denominations: denominations))
+
+            XCTAssertNil(viewModel.cardCurrency, "\(denominations)")
+            XCTAssertThrowsError(try viewModel.beginPurchase(price: 25), "\(denominations)")
+        }
+        assertNothingOrdered()
     }
 
     func testARefreshWithoutAnAnswerKeepsTheConfirmedCurrency() async throws {
@@ -569,6 +658,29 @@ final class DashSpendPurchaseTests: XCTestCase {
         XCTAssertEqual(viewModel.denominations, [20, 40])
         XCTAssertEqual(viewModel.minimumAmount, 0)
         XCTAssertEqual(viewModel.maximumAmount, 0)
+    }
+
+    /// The older of two overlapping loads ends first. The screen keeps loading for the newer.
+    func testAnOlderLoadThatEndsFirstLeavesTheScreenLoading() async {
+        let viewModel = ctxViewModel()
+        ctx.holdsMerchantCalls = true
+
+        let older = Task { await viewModel.updateMerchantInfo() }
+        await waitForHeldMerchantCalls(1)
+        let newer = Task { await viewModel.updateMerchantInfo() }
+        await waitForHeldMerchantCalls(2)
+        guard ctx.heldMerchantCalls.count == 2 else { return XCTFail("the two loads did not start") }
+
+        ctx.answerMerchantCall(0, with: StubCTXRepository.merchantJSON(currency: "GBP"))
+        await older.value
+        XCTAssertTrue(viewModel.isLoading)
+        XCTAssertEqual(viewModel.cardCurrency, "USD")
+        XCTAssertEqual(viewModel.selectionResets, 0)
+
+        ctx.answerMerchantCall(1, with: StubCTXRepository.merchantJSON(currency: "USD"))
+        await newer.value
+        XCTAssertFalse(viewModel.isLoading)
+        XCTAssertEqual(viewModel.cardCurrency, "USD")
     }
 
     private func waitForHeldMerchantCalls(_ count: Int) async {

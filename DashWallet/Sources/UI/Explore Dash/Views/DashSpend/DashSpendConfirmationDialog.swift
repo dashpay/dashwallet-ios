@@ -43,7 +43,9 @@ struct DashSpendConfirmationDialog: View {
     let onConfirm: () -> Void
     let onCancel: () -> Void
 
-    private var youPayAmount: Decimal { originalPrice * (1 - discount) }
+    private var youPayAmount: Decimal {
+        GiftCardCurrency.discounted(originalPrice, by: discount, currency: currency)
+    }
     private var currencySymbol: String { GiftCardCurrency.symbol(for: currency) }
 
     private func fiat(_ amount: Decimal) -> String {

@@ -33,6 +33,8 @@ struct DashSpendMultiplePanel: View {
     let onReset: () -> Void
     /// Loads the merchant again; set when the error on screen is one a new load may clear.
     var onRetry: (() -> Void)? = nil
+    /// The provider sells one card per order: rows are chosen, with no quantity steppers.
+    var singleCard = false
 
     private var inventoryWarning: String? {
         for (denomination, count) in quantities where count > 0 {
@@ -51,7 +53,8 @@ struct DashSpendMultiplePanel: View {
                     cardValueLabel: cardValueLabel,
                     quantities: $quantities,
                     inventoryLimits: inventoryLimits,
-                    onReset: onReset
+                    onReset: onReset,
+                    singleCard: singleCard
                 )
 
                 if let warning = inventoryWarning {
@@ -109,6 +112,7 @@ private struct DenominationCard: View {
     @Binding var quantities: [Decimal: Int]
     let inventoryLimits: [Decimal: Int]
     let onReset: () -> Void
+    let singleCard: Bool
 
     var body: some View {
         VStack(spacing: 10) {
@@ -125,7 +129,8 @@ private struct DenominationCard: View {
                             }
                         }
                     ),
-                    inventoryLimit: inventoryLimits[denomination]
+                    inventoryLimit: inventoryLimits[denomination],
+                    singleCard: singleCard
                 )
             }
 

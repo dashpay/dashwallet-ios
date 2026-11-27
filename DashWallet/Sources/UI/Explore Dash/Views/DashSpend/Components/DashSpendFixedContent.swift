@@ -74,7 +74,8 @@ struct DashSpendFixedContent: View {
                 inventoryLimits: viewModel.denominationInventory.reduce(into: [:]) { $0[Decimal($1.key)] = $1.value },
                 onContinue: onAction,
                 onReset: { quantities.removeAll() },
-                onRetry: viewModel.canRetryMerchantLoad ? { viewModel.retryMerchantLoad() } : nil
+                onRetry: viewModel.canRetryMerchantLoad ? { viewModel.retryMerchantLoad() } : nil,
+                singleCard: !viewModel.supportsMultipleMode
             )
             .onChange(of: quantities) { newQuantities in
                 let total = newQuantities.reduce(Decimal(0)) { $0 + $1.key * Decimal($1.value) }

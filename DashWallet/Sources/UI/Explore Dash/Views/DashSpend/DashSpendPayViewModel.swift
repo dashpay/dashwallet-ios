@@ -205,6 +205,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
 
     func updateTotalAmount(_ total: Decimal, quantities: [Decimal: Int]? = nil) {
         amount = total
+        closeConfirmationUnlessItShows(cart: quantities)
         basketSavingsFraction = basketDiscountFraction(from: quantities)
         checkAmountForErrors()
     }
@@ -232,8 +233,17 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
             }
             
             amount = PastedAmountParser.parse(input, locale: .current)?.decimalValue ?? input.decimal(locale: .current) ?? 0
+            closeConfirmationUnlessItShows(cart: nil)
             checkAmountForErrors()
         }
+    }
+
+    /// Closes a confirmation that shows another amount or other cards than the screen now has.
+    private func closeConfirmationUnlessItShows(cart: [Decimal: Int]?) {
+        guard case .confirm(let shown) = purchaseSheet,
+              !CTXGiftCardOrder.confirmationShows(price: shown.price, quantities: shown.quantities,
+                                                  amount: amount, cart: cart) else { return }
+        purchaseSheet = nil
     }
 
     func pasteFromClipboard() {
@@ -249,8 +259,9 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
     var costMessage: String {
         let originalPrice = fiat(amount)
         let savingsToDisplay = displaySavingsFraction
-        let discountedPrice = amount * (1 - savingsToDisplay)
-        let formattedDiscountedPrice = fiat(discountedPrice)
+        let formattedDiscountedPrice = cardCurrency.map {
+            fiat(GiftCardCurrency.discounted(amount, by: savingsToDisplay, currency: $0))
+        } ?? ""
 
         let discountPercent = NSDecimalNumber(decimal: savingsToDisplay * 100).doubleValue
         let discountText = PercentageFormatter.format(percent: discountPercent, includePercent: false)
@@ -654,9 +665,9 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
             let order = try ctxOrder(price: confirmedPrice, quantities: snapshot.quantities, currency: snapshot.currency)
             let response = try await purchaseGiftCardAPI(order)
 
-            if GiftCardCurrency.mismatch(ordered: order.fiatCurrency,
-                                         reported: [response.fiatCurrency, response.cardFiatCurrency]) != nil {
-                DWLogger.log("Gift card order stopped: the provider answered in another currency than the one ordered. Nothing was sent")
+            guard GiftCardCurrency.answerConfirms(ordered: order.fiatCurrency,
+                                                  reported: [response.fiatCurrency, response.cardFiatCurrency]) else {
+                DWLogger.log("Gift card order stopped: the provider did not answer in the currency ordered. Nothing was sent")
                 throw Self.currencyMismatchError
             }
 
@@ -932,7 +943,8 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
         do {
             switch provider {
             case .ctx:
-                try await loadCTXMerchant()
+                // A load that a later one superseded applies nothing, the loading state included.
+                guard try await loadCTXMerchant() else { return }
 
             #if PIGGYCARDS_ENABLED
             case .piggyCards:
@@ -1095,7 +1107,8 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
     /// Throws when CTX was not reached for a merchant whose currency is confirmed: everything
     /// stays as it was. A merchant left without a confirmed currency is not an error here; it
     /// blocks the purchase until a load confirms one.
-    private func loadCTXMerchant() async throws {
+    /// - Returns: `false` for a load that a later one superseded.
+    private func loadCTXMerchant() async throws -> Bool {
         let load = currencyLoads.begin()
         var answer: (terms: CTXMerchantTerms, savings: Decimal)?
         var finding = CardCurrencyLoads.Finding.unusable
@@ -1118,7 +1131,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
 
         switch currencyLoads.finish(load, finding) {
         case .superseded:
-            return
+            return false
         case .kept:
             throw failure
         case .applied(let clearsSelection):
@@ -1148,13 +1161,15 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
                 clearSelection()
             }
         }
+        return true
     }
 
     /// Drops the amount and the cards chosen on screen, and a confirmation that showed them:
     /// they were chosen in another currency or for another kind of merchant.
     private func clearSelection() {
         selectedDenomination = nil
-        amount = 0
+        // The text typed so far may not be an amount of the new currency: "10.50" for yen.
+        input = "0"
         basketSavingsFraction = nil
         selectionResets += 1
         if case .confirm = purchaseSheet {
