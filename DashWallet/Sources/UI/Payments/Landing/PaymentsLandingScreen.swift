@@ -384,7 +384,6 @@ private func landingSample(
         onViewTransaction: { _ in },
         onScanQR: {},
         embeddedTransferViewModel: .makeForPreview(receiveInto: transferReceiveInto, amountText: transferAmount),
-        transferSendFrom: transferSendFrom,
         transferReceivePinned: transferReceivePinned,
         showsHeader: showsHeader)
 }

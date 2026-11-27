@@ -2222,7 +2222,8 @@ class SwiftDashSDKWalletSource: TransactionSource {
 
         let unmatchedRecipients = Set(byEntry.values.lazy
             .filter {
-                $0.kindTag == ShieldedActivityItem.Kind.sent.rawValue
+                ($0.kindTag == ShieldedActivityItem.Kind.sent.rawValue
+                    || $0.kindTag == ShieldedActivityItem.Kind.shieldFromIdentity.rawValue)
                     && !receivedEntryIds.contains($0.entryId)
                     && $0.counterparty.count == 43
             }
@@ -2387,7 +2388,8 @@ class SwiftDashSDKWalletSource: TransactionSource {
                 // someone else's Shielded address (the counterparty) a send, as a Shielded → Shielded one reads.
                 let address = shieldedDestinationAddress(counterparty: row.counterparty)
                 let isOwnDestination = receivedEntryIds.contains(row.entryId)
-                    || (ownShieldedRaw43 != nil && row.counterparty == ownShieldedRaw43)
+                    || ownRecipients.contains(
+                        ShieldedRecipient(account: row.accountIndex, raw43: row.counterparty))
                 items.append(ShieldedActivityItem(
                     row: row,
                     amountCreditsOverride: reconstructedAmountCredits,
