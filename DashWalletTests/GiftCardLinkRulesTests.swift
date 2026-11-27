@@ -178,11 +178,30 @@ final class GiftCardLinkRulesTests: XCTestCase {
     }
 
     func testStoredRowWithABlankNumberIsStillAwaited() {
-        XCTAssertTrue(CTXGiftCardDelivery.isAwaited(storedNumber: nil))
-        XCTAssertTrue(CTXGiftCardDelivery.isAwaited(storedNumber: ""))
-        XCTAssertTrue(CTXGiftCardDelivery.isAwaited(storedNumber: " \n"))
-        XCTAssertFalse(CTXGiftCardDelivery.isAwaited(storedNumber: "6006491234567890"))
-        XCTAssertFalse(CTXGiftCardDelivery.isAwaited(storedNumber: " https://spend.ctx.com/gift-cards/abc/redeem "))
+        let link = " https://spend.ctx.com/gift-cards/abc/redeem "
+
+        XCTAssertTrue(CTXGiftCardDelivery.isAwaited(storedNumber: nil, hasOrderReference: true))
+        XCTAssertTrue(CTXGiftCardDelivery.isAwaited(storedNumber: "", hasOrderReference: true))
+        XCTAssertTrue(CTXGiftCardDelivery.isAwaited(storedNumber: " \n", hasOrderReference: true))
+        XCTAssertFalse(CTXGiftCardDelivery.isAwaited(storedNumber: "6006491234567890", hasOrderReference: true))
+        XCTAssertFalse(CTXGiftCardDelivery.isAwaited(storedNumber: link, hasOrderReference: true))
+    }
+
+    func testRowWithoutAnOrderReferenceIsAwaitedOnlyWhenItsNumberWasWrittenBlank() {
+        XCTAssertTrue(CTXGiftCardDelivery.isAwaited(storedNumber: "", hasOrderReference: false))
+        XCTAssertTrue(CTXGiftCardDelivery.isAwaited(storedNumber: "  ", hasOrderReference: false))
+        XCTAssertFalse(CTXGiftCardDelivery.isAwaited(storedNumber: nil, hasOrderReference: false))
+        XCTAssertFalse(CTXGiftCardDelivery.isAwaited(storedNumber: "6006491234567890", hasOrderReference: false))
+    }
+
+    func testFulfilledAnswersWithoutDetailsAreBounded() {
+        let limit = CTXGiftCardDelivery.maxFulfilledAnswersWithoutDetails
+
+        XCTAssertEqual(limit, 60)
+        XCTAssertFalse(CTXGiftCardDelivery.isUnavailable(afterFulfilledAnswersWithoutDetails: 1))
+        XCTAssertFalse(CTXGiftCardDelivery.isUnavailable(afterFulfilledAnswersWithoutDetails: limit - 1))
+        XCTAssertTrue(CTXGiftCardDelivery.isUnavailable(afterFulfilledAnswersWithoutDetails: limit))
+        XCTAssertTrue(CTXGiftCardDelivery.isUnavailable(afterFulfilledAnswersWithoutDetails: limit + 1))
     }
 
     func testBlankLinkKeepsWaiting() {

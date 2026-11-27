@@ -96,9 +96,19 @@ enum CTXGiftCardDelivery: Equatable {
         }
     }
 
-    /// Whether a stored CTX row still waits for what its order delivers.
-    static func isAwaited(storedNumber: String?) -> Bool {
-        GiftCardDetailsCardItem.nonBlank(storedNumber) == nil
+    static let maxFulfilledAnswersWithoutDetails = 60
+
+    /// Whether a stored CTX row still waits for what its order delivers. A row without an order
+    /// reference waits only when its number was written blank: that write removed the reference, and
+    /// the order is then looked up by transaction id.
+    static func isAwaited(storedNumber: String?, hasOrderReference: Bool) -> Bool {
+        guard GiftCardDetailsCardItem.nonBlank(storedNumber) == nil else { return false }
+        return hasOrderReference || storedNumber != nil
+    }
+
+    /// Whether to stop asking: CTX keeps reporting the order fulfilled without a number or a link.
+    static func isUnavailable(afterFulfilledAnswersWithoutDetails count: Int) -> Bool {
+        count >= maxFulfilledAnswersWithoutDetails
     }
 }
 
@@ -154,6 +164,7 @@ class GiftCardDetailsViewModel: ObservableObject {
     private var pollCount = 0
     /// Consecutive failed polls. Reset by any answered poll; drives the backoff and the give-up.
     private var errorStreak = 0
+    private var fulfilledAnswersWithoutDetails = 0
     /// Give up after this many consecutive failures. With the backoff below that is ~2 minutes
     /// of a CTX outage before the retry affordance is offered, instead of hammering it.
     private let maxErrorStreak = 8
@@ -266,16 +277,24 @@ class GiftCardDetailsViewModel: ObservableObject {
     }
 
     private func shouldStartPolling(for card: GiftCard, hasDisplayCards: Bool) -> Bool {
-        guard card.note != nil else { return false }
-
         if card.provider == "PiggyCards" {
-            if let note = card.note, decodeOrderMetadata(from: note).cards?.isEmpty == false {
+            guard let note = card.note else { return false }
+
+            if decodeOrderMetadata(from: note).cards?.isEmpty == false {
                 return false
             }
             return !hasDisplayCards
         }
 
-        return CTXGiftCardDelivery.isAwaited(storedNumber: card.number)
+        return CTXGiftCardDelivery.isAwaited(storedNumber: card.number, hasOrderReference: card.note != nil)
+    }
+
+    private func hasOrderToFetch(_ card: GiftCard) -> Bool {
+        if card.note != nil {
+            return true
+        }
+        return card.provider != "PiggyCards"
+            && CTXGiftCardDelivery.isAwaited(storedNumber: card.number, hasOrderReference: false)
     }
 
     private func startTicker() {
@@ -329,13 +348,14 @@ class GiftCardDetailsViewModel: ObservableObject {
         uiState.isLoadingCardDetails = false
         uiState.hasBeenPollingForLongTime = false
         pollCount = 0
+        fulfilledAnswersWithoutDetails = 0
         errorStreak = 0
         pollInterval = basePollInterval
     }
 
     private func fetchGiftCardInfo() async {
         guard let giftCard = await giftCardsDAO.get(byTxId: txId),
-              giftCard.note != nil else {
+              hasOrderToFetch(giftCard) else {
             stopTicker()
             return
         }
@@ -419,7 +439,19 @@ class GiftCardDetailsViewModel: ObservableObject {
                     stopTicker()
                     DWLogger.log("DashSpend: Gift card redeem URL fetched successfully")
                 case .nothingYet:
-                    break
+                    fulfilledAnswersWithoutDetails += 1
+
+                    if CTXGiftCardDelivery.isUnavailable(
+                        afterFulfilledAnswersWithoutDetails: fulfilledAnswersWithoutDetails
+                    ) {
+                        await MainActor.run {
+                            self.uiState.loadingError = DashSpendError.customError(
+                                String(localized: "Gift card details are unavailable. Please contact support.", comment: "")
+                            )
+                            self.uiState.canRetryLoading = true
+                        }
+                        stopTicker()
+                    }
                 }
 
             case "rejected":
