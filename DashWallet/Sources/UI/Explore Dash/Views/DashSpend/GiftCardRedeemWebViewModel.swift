@@ -32,7 +32,7 @@ final class GiftCardRedeemWebViewModel: NSObject, ObservableObject {
     private let ctxBaseURL: String
     private var isAwaitingFirstRequest = false
     private var hasCommittedPage = false
-    private var hasFinishedPage = false
+    private var firstNavigation: WKNavigation?
     private var scriptDialogCount = 0
     private var blockedNoticeShown = false
     private var observations = Set<AnyCancellable>()
@@ -63,7 +63,6 @@ final class GiftCardRedeemWebViewModel: NSObject, ObservableObject {
         discardWebView()
         host = nil
         hasCommittedPage = false
-        hasFinishedPage = false
         scriptDialogCount = 0
         blockedNoticeShown = false
         progress = 0
@@ -87,7 +86,7 @@ final class GiftCardRedeemWebViewModel: NSObject, ObservableObject {
                 self?.canGoBack = canGoBack
             }
             .store(in: &observations)
-        view.load(URLRequest(url: url))
+        firstNavigation = view.load(URLRequest(url: url))
     }
 
     func tearDown() {
@@ -164,6 +163,7 @@ final class GiftCardRedeemWebViewModel: NSObject, ObservableObject {
         dismissScriptDialog()
         observations.removeAll()
         canGoBack = false
+        firstNavigation = nil
 
         if let webView {
             webView.stopLoading()
@@ -228,10 +228,12 @@ final class GiftCardRedeemWebViewModel: NSObject, ObservableObject {
         showBlockedNotice()
     }
 
-    private func failIfNoUsablePage(_ error: Error) {
+    private func failIfNoUsablePage(_ error: Error, in navigation: WKNavigation?) {
+        let isFirstNavigation = navigation != nil && navigation === firstNavigation
+
         if RedeemLinkPolicy.isFatalLoadFailure(error,
-                                               hasCommittedPage: hasCommittedPage,
-                                               hasFinishedPage: hasFinishedPage) {
+                                               isFirstNavigation: isFirstNavigation,
+                                               hasCommittedPage: hasCommittedPage) {
             fail()
         }
     }
@@ -326,23 +328,18 @@ extension GiftCardRedeemWebViewModel: WKNavigationDelegate {
         }
     }
 
-    func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
-        guard webView === self.webView, hasCommittedPage else { return }
-        hasFinishedPage = true
-    }
-
     // Before the first commit any failure would leave a blank view, whatever its cause: a navigation this
     // class cancels there has already discarded the web view, so what arrives here came from WebKit.
     func webView(_ webView: WKWebView,
                  didFailProvisionalNavigation navigation: WKNavigation!,
                  withError error: Error) {
         guard webView === self.webView else { return }
-        failIfNoUsablePage(error)
+        failIfNoUsablePage(error, in: navigation)
     }
 
     func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
         guard webView === self.webView else { return }
-        failIfNoUsablePage(error)
+        failIfNoUsablePage(error, in: navigation)
     }
 
     func webViewWebContentProcessDidTerminate(_ webView: WKWebView) {

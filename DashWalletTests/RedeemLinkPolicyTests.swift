@@ -313,30 +313,31 @@ final class RedeemLinkPolicyTests: XCTestCase {
     private let cancelled = NSError(domain: NSURLErrorDomain, code: NSURLErrorCancelled)
     private let stoppedByPolicy = NSError(domain: "WebKitErrorDomain", code: 102)
 
-    private func isFatal(_ error: NSError, committed: Bool, finished: Bool) -> Bool {
-        RedeemLinkPolicy.isFatalLoadFailure(error, hasCommittedPage: committed, hasFinishedPage: finished)
+    private func isFatal(_ error: NSError, first: Bool, committed: Bool) -> Bool {
+        RedeemLinkPolicy.isFatalLoadFailure(error, isFirstNavigation: first, hasCommittedPage: committed)
     }
 
     func testAnyFailureBeforeTheFirstCommitIsFatal() {
         for error in [connectionLost, cancelled, stoppedByPolicy] {
-            XCTAssertTrue(isFatal(error, committed: false, finished: false), "\(error.code)")
+            XCTAssertTrue(isFatal(error, first: true, committed: false), "\(error.code)")
+            XCTAssertTrue(isFatal(error, first: false, committed: false), "\(error.code)")
         }
     }
 
-    func testADroppedConnectionBeforeTheFirstPageFinishesIsFatal() {
-        XCTAssertTrue(isFatal(connectionLost, committed: true, finished: false))
-        XCTAssertTrue(isFatal(NSError(domain: "WebKitErrorDomain", code: 101), committed: true, finished: false))
-        XCTAssertTrue(isFatal(NSError(domain: "Other", code: NSURLErrorCancelled), committed: true, finished: false))
+    func testAFailureOfTheFirstNavigationAfterItCommittedIsFatal() {
+        XCTAssertTrue(isFatal(connectionLost, first: true, committed: true))
+        XCTAssertTrue(isFatal(NSError(domain: "WebKitErrorDomain", code: 101), first: true, committed: true))
+        XCTAssertTrue(isFatal(NSError(domain: "Other", code: NSURLErrorCancelled), first: true, committed: true))
     }
 
-    func testACancelledLoadKeepsACommittedPage() {
-        XCTAssertFalse(isFatal(cancelled, committed: true, finished: false))
-        XCTAssertFalse(isFatal(stoppedByPolicy, committed: true, finished: false))
+    func testACancelledFirstNavigationKeepsItsCommittedPage() {
+        XCTAssertFalse(isFatal(cancelled, first: true, committed: true))
+        XCTAssertFalse(isFatal(stoppedByPolicy, first: true, committed: true))
     }
 
-    func testNoFailureIsFatalOnceAPageHasFinished() {
+    func testALaterNavigationThatFailsKeepsTheCommittedPage() {
         for error in [connectionLost, cancelled, stoppedByPolicy] {
-            XCTAssertFalse(isFatal(error, committed: true, finished: true), "\(error.code)")
+            XCTAssertFalse(isFatal(error, first: false, committed: true), "\(error.code)")
         }
     }
 }

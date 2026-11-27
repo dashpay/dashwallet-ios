@@ -78,16 +78,17 @@ enum RedeemLinkPolicy {
         externalURL(link, ctxBaseURL: ctxBaseURL) != nil
     }
 
-    /// Whether a failed load leaves no usable page, so the error state takes its place. Once a page has
-    /// finished, the web view is kept so Back still works. A page that committed without finishing is kept
-    /// only through a cancellation: WebKit reports a load replaced by the next one, or stopped by a policy
-    /// decision, as a failure too.
-    static func isFatalLoadFailure(_ error: Error, hasCommittedPage: Bool, hasFinishedPage: Bool) -> Bool {
-        if hasFinishedPage {
-            return false
-        }
+    /// Whether a failed load leaves no usable page, so the error state takes its place. With no page
+    /// committed every failure does. Once a page has committed, only the first navigation's own failure
+    /// does, and not its cancellation: WebKit reports a load replaced by the next one, or stopped by a
+    /// policy decision, as a failure too. A later navigation that fails leaves the committed page, and
+    /// what the user typed into it, in place.
+    static func isFatalLoadFailure(_ error: Error, isFirstNavigation: Bool, hasCommittedPage: Bool) -> Bool {
         if !hasCommittedPage {
             return true
+        }
+        if !isFirstNavigation {
+            return false
         }
 
         let error = error as NSError
