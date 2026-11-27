@@ -29,6 +29,7 @@ static const bool _SNAPSHOT = 0;
 #import "DWNumberKeyboardInputViewAudioFeedback.h"
 #import "DWInputValidator.h"
 #import "DWAmountInputValidator.h"
+#import "DWDemoAppRootViewController.h"
 #import "DWDemoDelegate.h"
 #import "DWModalPopupTransition.h"
 #import "DWModalTransition.h"

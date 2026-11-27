@@ -30289,6 +30289,17 @@
         }
       }
     },
+    "%lld of %lld" : {
+      "comment" : "Onboarding page indicator, VoiceOver",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld of %2$lld"
+          }
+        }
+      }
+    },
     "%lld receive" : {
       "comment" : "Wallet accounts — address pool",
       "localizations" : {
@@ -369130,6 +369141,9 @@
           }
         }
       }
+    },
+    "Page" : {
+      "comment" : "Onboarding page indicator, VoiceOver"
     },
     "Paid by sender" : {
       "comment" : "Network fee on a received transaction",

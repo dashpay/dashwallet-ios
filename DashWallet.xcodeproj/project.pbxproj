@@ -7,6 +7,12 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		8A06FEEFF9A2D9BFF7492AE4 /* OnboardingDemoViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3029FD7087C88F8C409D1FE1 /* OnboardingDemoViewController.swift */; };
+		AB895346187E1DCE3D8B022B /* OnboardingDemoViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3029FD7087C88F8C409D1FE1 /* OnboardingDemoViewController.swift */; };
+		308C6AFF7F9FB0E24F5332DF /* OnboardingViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 003097A70F8C485695AB3922 /* OnboardingViewController.swift */; };
+		AF274196DDD4C0C118623264 /* OnboardingViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 003097A70F8C485695AB3922 /* OnboardingViewController.swift */; };
+		3812AA7BA62589E09C17FDD2 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14F8B417B3A352AF4F509686 /* OnboardingView.swift */; };
+		EC3DF20CBF1E36E6CD60DE67 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14F8B417B3A352AF4F509686 /* OnboardingView.swift */; };
 		A11C00001274000000000002 /* AssetLockInputPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11C00001274000000000001 /* AssetLockInputPolicy.swift */; };
 		A11C00001274000000000003 /* AssetLockInputPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11C00001274000000000001 /* AssetLockInputPolicy.swift */; };
 		A11C00001274000000000012 /* CoreCoinConsolidationViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11C00001274000000000011 /* CoreCoinConsolidationViewModel.swift */; };
@@ -210,8 +216,6 @@
 		2A8F422021BEFEEA00858B91 /* DWAboutModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8F421F21BEFEEA00858B91 /* DWAboutModel.m */; };
 		2A913E6623A11DFE006A2A59 /* DWURLActions.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A913E6523A11DFE006A2A59 /* DWURLActions.m */; };
 		2A913E6823A1473A006A2A59 /* DWURLRequestHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A913E6723A14739006A2A59 /* DWURLRequestHandler.m */; };
-		2A913E6F23A26663006A2A59 /* DWOnboardingViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A913E6E23A26663006A2A59 /* DWOnboardingViewController.m */; };
-		2A913E7123A2667E006A2A59 /* Onboarding.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A913E7023A2667E006A2A59 /* Onboarding.storyboard */; };
 		2A913E7F23A30609006A2A59 /* DWRootModelStub.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A913E7E23A30609006A2A59 /* DWRootModelStub.m */; };
 		2A913E8223A30623006A2A59 /* DWHomeModelStub.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A913E8123A30623006A2A59 /* DWHomeModelStub.m */; };
 		2A913E8C23A3134E006A2A59 /* UIView+DWEmbedding.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A913E8B23A3134E006A2A59 /* UIView+DWEmbedding.m */; };
@@ -238,8 +242,6 @@
 		2AB3415E23A8133A004E37A7 /* DWPayModelStub.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB3415D23A8133A004E37A7 /* DWPayModelStub.m */; };
 		2AB3416223A81E8B004E37A7 /* DWReceiveModelStub.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB3416123A81E8B004E37A7 /* DWReceiveModelStub.m */; };
 		2AB3416523A8213C004E37A7 /* DWBaseReceiveModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB3416423A8213C004E37A7 /* DWBaseReceiveModel.m */; };
-		2AB3416923A8C479004E37A7 /* DWOnboardingCollectionViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB3416823A8C479004E37A7 /* DWOnboardingCollectionViewCell.m */; };
-		2AB3416F23A8DCFB004E37A7 /* DWOnboardingModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB3416E23A8DCFB004E37A7 /* DWOnboardingModel.m */; };
 		2AB3417323A926C9004E37A7 /* DWDemoAppRootViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB3417223A926C9004E37A7 /* DWDemoAppRootViewController.m */; };
 		2AB76051F87248AC36AED99B /* NetworkReachability.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5C4E3EBE8D8A77EBFAA1E86 /* NetworkReachability.swift */; };
 		2AB7F7E72384676200C173AD /* DWWatchDataManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AB7F7E62384676200C173AD /* DWWatchDataManager.swift */; };
@@ -1457,7 +1459,6 @@ F992AE17D040F0C0E6E79AF7 /* QuickVotingSheet.swift in Sources */ = {isa = PBXBui
 		C9D2C7012A320AA000D15901 /* ExplorePointOfUseListViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8BD228C1305E00490F5E /* ExplorePointOfUseListViewController.swift */; };
 		C9D2C7032A320AA000D15901 /* UIViewController+DWDisplayError.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AE4736A241BC5E300804DD4 /* UIViewController+DWDisplayError.m */; };
 		C9D2C7042A320AA000D15901 /* BRAppleWatchData.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A858A08237EE89B0097A7B5 /* BRAppleWatchData.m */; };
-		C9D2C7062A320AA000D15901 /* DWOnboardingModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB3416E23A8DCFB004E37A7 /* DWOnboardingModel.m */; };
 		C9D2C7072A320AA000D15901 /* AmountInputTypeSwitcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47838B7628FFFFAD0003E8AB /* AmountInputTypeSwitcher.swift */; };
 		C9D2C7092A320AA000D15901 /* DWOverlapControl.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8B9E4E22FED47E00FF8653 /* DWOverlapControl.m */; };
 		C9D2C70B2A320AA000D15901 /* DWDemoAppRootViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB3417223A926C9004E37A7 /* DWDemoAppRootViewController.m */; };
@@ -1487,7 +1488,6 @@ F992AE17D040F0C0E6E79AF7 /* QuickVotingSheet.swift in Sources */ = {isa = PBXBui
 		C9D2C72C2A320AA000D15901 /* CustodialSwapsModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47E94B99296D7F99000FE68E /* CustodialSwapsModel.swift */; };
 		C9D2C72E2A320AA000D15901 /* DWRecoverModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A74EFFD2305763F00C475EB /* DWRecoverModel.m */; };
 		C9D2C72F2A320AA000D15901 /* DWCenteredTableView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4431C722D4D92A009BAF7F /* DWCenteredTableView.m */; };
-		C9D2C7302A320AA000D15901 /* DWOnboardingViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A913E6E23A26663006A2A59 /* DWOnboardingViewController.m */; };
 		C9D2C7342A320AA000D15901 /* DWPinView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A44313822CE2CB9009BAF7F /* DWPinView.m */; };
 		C9D2C7362A320AA000D15901 /* DWBaseReceiveModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB3416423A8213C004E37A7 /* DWBaseReceiveModel.m */; };
 		C9D2C7382A320AA000D15901 /* CoinbasePlaceBuyOrderRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F6EDFA528C896BC000427E7 /* CoinbasePlaceBuyOrderRequest.swift */; };
@@ -1589,7 +1589,6 @@ F992AE17D040F0C0E6E79AF7 /* QuickVotingSheet.swift in Sources */ = {isa = PBXBui
 		C9D2C7D62A320AA000D15901 /* CALayer+DWShadow.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A2CD71222F97B65008C7BC9 /* CALayer+DWShadow.m */; };
 		C9D2C7D72A320AA000D15901 /* MerchantDAO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8BA328BFADD800490F5E /* MerchantDAO.swift */; };
 		C9D2C7D82A320AA000D15901 /* ExploreDatabaseSyncManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8BA828BFAE5800490F5E /* ExploreDatabaseSyncManager.swift */; };
-		C9D2C7D92A320AA000D15901 /* DWOnboardingCollectionViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB3416823A8C479004E37A7 /* DWOnboardingCollectionViewCell.m */; };
 		C9D2C7DC2A320AA000D15901 /* DWHomeModelStub.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A913E8123A30623006A2A59 /* DWHomeModelStub.m */; };
 		C9D2C7DD2A320AA000D15901 /* UISearchBar+DWAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 2ADC9D1B24603C4F001D7C0D /* UISearchBar+DWAdditions.m */; };
 		C9D2C7E02A320AA000D15901 /* TransactionFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 117ED4A728ED66F9006E3EE4 /* TransactionFilter.swift */; };
@@ -1775,7 +1774,6 @@ F992AE17D040F0C0E6E79AF7 /* QuickVotingSheet.swift in Sources */ = {isa = PBXBui
 		C9D2C92C2A320AA000D15901 /* Coinbase.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 0F3693812919A70B007F4E91 /* Coinbase.storyboard */; };
 		C9D2C9302A320AA000D15901 /* VerifySeedPhrase.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2AD1CE8522DC9B7300C99324 /* VerifySeedPhrase.storyboard */; };
 		C9D2C9332A320AA000D15901 /* SetPin.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A44312922CCC1D4009BAF7F /* SetPin.storyboard */; };
-		C9D2C9342A320AA000D15901 /* Onboarding.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A913E7023A2667E006A2A59 /* Onboarding.storyboard */; };
 		C9D2C9352A320AA000D15901 /* OperationStatus.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 1193FF3D2962F1BE004EA8D7 /* OperationStatus.storyboard */; };
 		C9D2C9362A320AA000D15901 /* UpholdLogoutTutorialStoryboard.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A9FFE662230FF4600956D5F /* UpholdLogoutTutorialStoryboard.storyboard */; };
 		C9D2C93B2A320AA000D15901 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FB66977E212C0B940034BE4F /* LaunchScreen.storyboard */; };
@@ -2119,6 +2117,9 @@ FF9D88432B0292498590D377 /* QuickVotingViewModelTests.swift in Sources */ = {isa
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		3029FD7087C88F8C409D1FE1 /* OnboardingDemoViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingDemoViewController.swift; sourceTree = "<group>"; };
+		003097A70F8C485695AB3922 /* OnboardingViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingViewController.swift; sourceTree = "<group>"; };
+		14F8B417B3A352AF4F509686 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
 		757E09971ADB8EEB006FD352 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		A11C00001274000000000001 /* AssetLockInputPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetLockInputPolicy.swift; sourceTree = "<group>"; };
 		A11C00001274000000000011 /* CoreCoinConsolidationViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreCoinConsolidationViewModel.swift; sourceTree = "<group>"; };
@@ -2417,9 +2418,6 @@ FF9D88432B0292498590D377 /* QuickVotingViewModelTests.swift in Sources */ = {isa
 		2A913E6423A11DFE006A2A59 /* DWURLActions.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWURLActions.h; sourceTree = "<group>"; };
 		2A913E6523A11DFE006A2A59 /* DWURLActions.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWURLActions.m; sourceTree = "<group>"; };
 		2A913E6723A14739006A2A59 /* DWURLRequestHandler.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWURLRequestHandler.m; sourceTree = "<group>"; };
-		2A913E6D23A26663006A2A59 /* DWOnboardingViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWOnboardingViewController.h; sourceTree = "<group>"; };
-		2A913E6E23A26663006A2A59 /* DWOnboardingViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWOnboardingViewController.m; sourceTree = "<group>"; };
-		2A913E7023A2667E006A2A59 /* Onboarding.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Onboarding.storyboard; sourceTree = "<group>"; };
 		2A913E7A23A2F7ED006A2A59 /* DWHomeProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWHomeProtocol.h; sourceTree = "<group>"; };
 		2A913E7B23A2FF4A006A2A59 /* DWRootProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWRootProtocol.h; sourceTree = "<group>"; };
 		2A913E7D23A30609006A2A59 /* DWRootModelStub.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWRootModelStub.h; sourceTree = "<group>"; };
@@ -2497,11 +2495,6 @@ FF9D88432B0292498590D377 /* QuickVotingViewModelTests.swift in Sources */ = {isa
 		2AB3416123A81E8B004E37A7 /* DWReceiveModelStub.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWReceiveModelStub.m; sourceTree = "<group>"; };
 		2AB3416323A8213C004E37A7 /* DWBaseReceiveModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWBaseReceiveModel.h; sourceTree = "<group>"; };
 		2AB3416423A8213C004E37A7 /* DWBaseReceiveModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWBaseReceiveModel.m; sourceTree = "<group>"; };
-		2AB3416723A8C479004E37A7 /* DWOnboardingCollectionViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWOnboardingCollectionViewCell.h; sourceTree = "<group>"; };
-		2AB3416823A8C479004E37A7 /* DWOnboardingCollectionViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWOnboardingCollectionViewCell.m; sourceTree = "<group>"; };
-		2AB3416B23A8DCBE004E37A7 /* DWOnboardingPageProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWOnboardingPageProtocol.h; sourceTree = "<group>"; };
-		2AB3416D23A8DCFB004E37A7 /* DWOnboardingModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWOnboardingModel.h; sourceTree = "<group>"; };
-		2AB3416E23A8DCFB004E37A7 /* DWOnboardingModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWOnboardingModel.m; sourceTree = "<group>"; };
 		2AB3417123A926C9004E37A7 /* DWDemoAppRootViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWDemoAppRootViewController.h; sourceTree = "<group>"; };
 		2AB3417223A926C9004E37A7 /* DWDemoAppRootViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWDemoAppRootViewController.m; sourceTree = "<group>"; };
 		2AB7F7E62384676200C173AD /* DWWatchDataManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DWWatchDataManager.swift; sourceTree = "<group>"; };
@@ -5071,14 +5064,11 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 		2A913E6C23A26469006A2A59 /* Onboarding */ = {
 			isa = PBXGroup;
 			children = (
+				3029FD7087C88F8C409D1FE1 /* OnboardingDemoViewController.swift */,
+				003097A70F8C485695AB3922 /* OnboardingViewController.swift */,
+				14F8B417B3A352AF4F509686 /* OnboardingView.swift */,
 				2AB3417023A92661004E37A7 /* Controllers */,
-				2AB3416C23A8DCEA004E37A7 /* Models */,
-				2AB3416A23A8DCA7004E37A7 /* Protocols */,
-				2AB3416623A8C464004E37A7 /* Views */,
 				2A913E7C23A305E5006A2A59 /* Stubs */,
-				2A913E6D23A26663006A2A59 /* DWOnboardingViewController.h */,
-				2A913E6E23A26663006A2A59 /* DWOnboardingViewController.m */,
-				2A913E7023A2667E006A2A59 /* Onboarding.storyboard */,
 				2A12E61623AB9B8D001CAF58 /* DWDemoDelegate.h */,
 			);
 			path = Onboarding;
@@ -5353,32 +5343,6 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				2AB231D62196E5CF00A6E7E6 /* DWStartModel.m */,
 			);
 			path = Start;
-			sourceTree = "<group>";
-		};
-		2AB3416623A8C464004E37A7 /* Views */ = {
-			isa = PBXGroup;
-			children = (
-				2AB3416723A8C479004E37A7 /* DWOnboardingCollectionViewCell.h */,
-				2AB3416823A8C479004E37A7 /* DWOnboardingCollectionViewCell.m */,
-			);
-			path = Views;
-			sourceTree = "<group>";
-		};
-		2AB3416A23A8DCA7004E37A7 /* Protocols */ = {
-			isa = PBXGroup;
-			children = (
-				2AB3416B23A8DCBE004E37A7 /* DWOnboardingPageProtocol.h */,
-			);
-			path = Protocols;
-			sourceTree = "<group>";
-		};
-		2AB3416C23A8DCEA004E37A7 /* Models */ = {
-			isa = PBXGroup;
-			children = (
-				2AB3416D23A8DCFB004E37A7 /* DWOnboardingModel.h */,
-				2AB3416E23A8DCFB004E37A7 /* DWOnboardingModel.m */,
-			);
-			path = Models;
 			sourceTree = "<group>";
 		};
 		2AB3417023A92661004E37A7 /* Controllers */ = {
@@ -8926,7 +8890,6 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				758CE59C2BC566DE0062AF53 /* PrivacyInfo.xcprivacy in Resources */,
 				2AD1CE8622DC9B7300C99324 /* VerifySeedPhrase.storyboard in Resources */,
 				2A44312A22CCC1D4009BAF7F /* SetPin.storyboard in Resources */,
-				2A913E7123A2667E006A2A59 /* Onboarding.storyboard in Resources */,
 				1193FF3E2962F1BE004EA8D7 /* OperationStatus.storyboard in Resources */,
 				2A9FFE9C2230FF4700956D5F /* UpholdLogoutTutorialStoryboard.storyboard in Resources */,
 				FB66977F212C0B940034BE4F /* LaunchScreen.storyboard in Resources */,
@@ -9012,7 +8975,6 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				C9D2C9302A320AA000D15901 /* VerifySeedPhrase.storyboard in Resources */,
 				758CE59D2BC566DE0062AF53 /* PrivacyInfo.xcprivacy in Resources */,
 				C9D2C9332A320AA000D15901 /* SetPin.storyboard in Resources */,
-				C9D2C9342A320AA000D15901 /* Onboarding.storyboard in Resources */,
 				C9D2C9352A320AA000D15901 /* OperationStatus.storyboard in Resources */,
 				C9D2C9362A320AA000D15901 /* UpholdLogoutTutorialStoryboard.storyboard in Resources */,
 				C9D2C93B2A320AA000D15901 /* LaunchScreen.storyboard in Resources */,
@@ -9381,6 +9343,9 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AB895346187E1DCE3D8B022B /* OnboardingDemoViewController.swift in Sources */,
+				AF274196DDD4C0C118623264 /* OnboardingViewController.swift in Sources */,
+				EC3DF20CBF1E36E6CD60DE67 /* OnboardingView.swift in Sources */,
 				2277460A914F0ECDB760DE7B /* ShieldedWithdrawalHistoryFixture.swift in Sources */,
 				A11C00001274000000000022 /* CoreCoinConsolidationSheet.swift in Sources */,
 				A11C00001274000000000012 /* CoreCoinConsolidationViewModel.swift in Sources */,
@@ -9520,7 +9485,6 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				47AE8BF628C1306000490F5E /* ExplorePointOfUseListViewController.swift in Sources */,
 				2AE4736B241BC5E300804DD4 /* UIViewController+DWDisplayError.m in Sources */,
 				2A858A10237EE89C0097A7B5 /* BRAppleWatchData.m in Sources */,
-				2AB3416F23A8DCFB004E37A7 /* DWOnboardingModel.m in Sources */,
 				47838B7728FFFFAD0003E8AB /* AmountInputTypeSwitcher.swift in Sources */,
 				2A8B9E4F22FED47E00FF8653 /* DWOverlapControl.m in Sources */,
 				7545ED572DA91AF10075F45C /* DashSpendUserAuthViewModel.swift in Sources */,
@@ -9574,7 +9538,6 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				757422252DF87B5200CB0175 /* MerchantFiltersView.swift in Sources */,
 				2A74EFFE2305763F00C475EB /* DWRecoverModel.m in Sources */,
 				2A4431C822D4D92A009BAF7F /* DWCenteredTableView.m in Sources */,
-				2A913E6F23A26663006A2A59 /* DWOnboardingViewController.m in Sources */,
 				2A44313922CE2CB9009BAF7F /* DWPinView.m in Sources */,
 				2AB3416523A8213C004E37A7 /* DWBaseReceiveModel.m in Sources */,
 				0F6EDFCA28C896BD000427E7 /* CoinbasePlaceBuyOrderRequest.swift in Sources */,
@@ -9708,7 +9671,6 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				2A2CD71322F97B65008C7BC9 /* CALayer+DWShadow.m in Sources */,
 				47AE8BA528BFADD900490F5E /* MerchantDAO.swift in Sources */,
 				47AE8BAA28BFAE5800490F5E /* ExploreDatabaseSyncManager.swift in Sources */,
-				2AB3416923A8C479004E37A7 /* DWOnboardingCollectionViewCell.m in Sources */,
 				2A913E8223A30623006A2A59 /* DWHomeModelStub.m in Sources */,
 				2ADC9D1C24603C4F001D7C0D /* UISearchBar+DWAdditions.m in Sources */,
 				75CED0A02ACFED200095F10C /* CoinbaseDepositResponse.swift in Sources */,
@@ -10376,6 +10338,9 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8A06FEEFF9A2D9BFF7492AE4 /* OnboardingDemoViewController.swift in Sources */,
+				308C6AFF7F9FB0E24F5332DF /* OnboardingViewController.swift in Sources */,
+				3812AA7BA62589E09C17FDD2 /* OnboardingView.swift in Sources */,
 				74648FE9B1A4F560BD376049 /* ShieldedWithdrawalHistoryFixture.swift in Sources */,
 				A11C00001274000000000023 /* CoreCoinConsolidationSheet.swift in Sources */,
 				A11C00001274000000000013 /* CoreCoinConsolidationViewModel.swift in Sources */,
@@ -10533,7 +10498,6 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				C943B3312A408CED00AF23C5 /* DWProfileAboutCellModel.m in Sources */,
 				75EBAA2A2BBBE385004488E3 /* ZenLedgerViewModel.swift in Sources */,
 				75FFD6C22BF493A60032879E /* HomeViewController+SecureWalletDelegateImpl.swift in Sources */,
-				C9D2C7062A320AA000D15901 /* DWOnboardingModel.m in Sources */,
 				C9D2C7072A320AA000D15901 /* AmountInputTypeSwitcher.swift in Sources */,
 				5E1C0A0100000000000000F3 /* MerchantLogoPlaceholder.swift in Sources */,
 				C9D2C7092A320AA000D15901 /* DWOverlapControl.m in Sources */,
@@ -10579,7 +10543,6 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				C9D2C72C2A320AA000D15901 /* CustodialSwapsModel.swift in Sources */,
 				C9D2C72E2A320AA000D15901 /* DWRecoverModel.m in Sources */,
 				C9D2C72F2A320AA000D15901 /* DWCenteredTableView.m in Sources */,
-				C9D2C7302A320AA000D15901 /* DWOnboardingViewController.m in Sources */,
 				C9D2C7342A320AA000D15901 /* DWPinView.m in Sources */,
 				C9D2C7362A320AA000D15901 /* DWBaseReceiveModel.m in Sources */,
 				7545ED582DA91AF10075F45C /* DashSpendUserAuthViewModel.swift in Sources */,
@@ -10783,7 +10746,6 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				C9D2C7D72A320AA000D15901 /* MerchantDAO.swift in Sources */,
 				C9D2C7D82A320AA000D15901 /* ExploreDatabaseSyncManager.swift in Sources */,
 				751B61C42ADFF9D000D1C2EF /* CoinbaseDepositRequest.swift in Sources */,
-				C9D2C7D92A320AA000D15901 /* DWOnboardingCollectionViewCell.m in Sources */,
 				C9D2C7DC2A320AA000D15901 /* DWHomeModelStub.m in Sources */,
 				C9D2C7DD2A320AA000D15901 /* UISearchBar+DWAdditions.m in Sources */,
 				51A57B022FBB41DE00FB4097 /* OrderPreviewTableRow.swift in Sources */,
