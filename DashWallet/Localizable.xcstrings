@@ -84560,6 +84560,9 @@
         }
       }
     },
+    "Back" : {
+      "comment" : "Accessibility"
+    },
     "Back home" : {
       "comment" : "Dash DEX",
       "localizations" : {

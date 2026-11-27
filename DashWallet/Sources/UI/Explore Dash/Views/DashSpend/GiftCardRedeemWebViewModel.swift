@@ -26,14 +26,16 @@ final class GiftCardRedeemWebViewModel: NSObject, ObservableObject {
     @Published private(set) var host: String?
     @Published private(set) var progress: Double = 0
     @Published private(set) var hasError = false
+    @Published private(set) var canGoBack = false
 
     private let link: String
     private let ctxBaseURL: String
     private var isAwaitingFirstRequest = false
     private var hasCommittedPage = false
+    private var hasFinishedPage = false
     private var scriptDialogCount = 0
-    private var downloadNoticeShown = false
-    private var progressObservation: AnyCancellable?
+    private var blockedNoticeShown = false
+    private var observations = Set<AnyCancellable>()
     private var scriptDialog: (alert: UIAlertController, reply: ScriptDialogReply)?
 
     init(link: String, ctxBaseURL: String) {
@@ -52,8 +54,9 @@ final class GiftCardRedeemWebViewModel: NSObject, ObservableObject {
         discardWebView()
         host = nil
         hasCommittedPage = false
+        hasFinishedPage = false
         scriptDialogCount = 0
-        downloadNoticeShown = false
+        blockedNoticeShown = false
         progress = 0
 
         guard let url = RedeemLinkPolicy.inAppURL(link, ctxBaseURL: ctxBaseURL) else {
@@ -65,10 +68,16 @@ final class GiftCardRedeemWebViewModel: NSObject, ObservableObject {
         hasError = false
         isAwaitingFirstRequest = true
         webView = view
-        progressObservation = view.publisher(for: \.estimatedProgress)
+        view.publisher(for: \.estimatedProgress)
             .sink { [weak self] progress in
                 self?.progress = progress
             }
+            .store(in: &observations)
+        view.publisher(for: \.canGoBack)
+            .sink { [weak self] canGoBack in
+                self?.canGoBack = canGoBack
+            }
+            .store(in: &observations)
         view.load(URLRequest(url: url))
     }
 
@@ -79,7 +88,11 @@ final class GiftCardRedeemWebViewModel: NSObject, ObservableObject {
     /// Only a touch on the page lifts the dialog and notice limits, so a page cannot reset them by navigating.
     func userDidTouchPage() {
         scriptDialogCount = 0
-        downloadNoticeShown = false
+        blockedNoticeShown = false
+    }
+
+    func goBack() {
+        webView?.goBack()
     }
 
     func openInBrowser() {
@@ -107,6 +120,7 @@ final class GiftCardRedeemWebViewModel: NSObject, ObservableObject {
     }
 
     // WKUIDelegate has no public hook to deny a page's location request, so the page API is replaced.
+    // WebKit does not run user scripts in a frame's initial empty document, so this is best effort.
     private static let denyGeolocationScript = """
     (function () {
         var proto = window.Geolocation && window.Geolocation.prototype;
@@ -139,7 +153,8 @@ final class GiftCardRedeemWebViewModel: NSObject, ObservableObject {
 
     private func discardWebView() {
         dismissScriptDialog()
-        progressObservation = nil
+        observations.removeAll()
+        canGoBack = false
 
         if let webView {
             webView.stopLoading()
@@ -178,12 +193,9 @@ final class GiftCardRedeemWebViewModel: NSObject, ObservableObject {
         }
 
         if isMainFrame {
-            let isUserTap = action.navigationType == .linkActivated
-
-            if isUserTap, let url, RedeemLinkPolicy.isContactLink(url.absoluteString) {
-                UIApplication.shared.open(url)
-            } else if isUserTap {
-                showBlockedNotice()
+            // A script's click counts as link activation too, so nothing is handed to another app from here.
+            if action.navigationType == .linkActivated {
+                showBlockedNoticeOnce()
             }
             // A redirect chain that ends here leaves a blank view.
             if !hasCommittedPage {
@@ -196,9 +208,22 @@ final class GiftCardRedeemWebViewModel: NSObject, ObservableObject {
     private func refuseDownload() {
         if !hasCommittedPage {
             fail()
-        } else if !downloadNoticeShown {
-            downloadNoticeShown = true
-            showBlockedNotice()
+        } else {
+            showBlockedNoticeOnce()
+        }
+    }
+
+    private func showBlockedNoticeOnce() {
+        guard !blockedNoticeShown else { return }
+        blockedNoticeShown = true
+        showBlockedNotice()
+    }
+
+    private func failIfNoUsablePage(_ error: Error) {
+        if RedeemLinkPolicy.isFatalLoadFailure(error,
+                                               hasCommittedPage: hasCommittedPage,
+                                               hasFinishedPage: hasFinishedPage) {
+            fail()
         }
     }
 
@@ -292,14 +317,23 @@ extension GiftCardRedeemWebViewModel: WKNavigationDelegate {
         }
     }
 
+    func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+        guard webView === self.webView, hasCommittedPage else { return }
+        hasFinishedPage = true
+    }
+
     // Before the first commit any failure would leave a blank view, whatever its cause: a navigation this
     // class cancels there has already discarded the web view, so what arrives here came from WebKit.
-    // Once a page has committed, a failed load leaves the web view as it is so Back still works.
     func webView(_ webView: WKWebView,
                  didFailProvisionalNavigation navigation: WKNavigation!,
                  withError error: Error) {
-        guard webView === self.webView, !hasCommittedPage else { return }
-        fail()
+        guard webView === self.webView else { return }
+        failIfNoUsablePage(error)
+    }
+
+    func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
+        guard webView === self.webView else { return }
+        failIfNoUsablePage(error)
     }
 
     func webViewWebContentProcessDidTerminate(_ webView: WKWebView) {
@@ -351,6 +385,14 @@ extension GiftCardRedeemWebViewModel: WKUIDelegate {
                  defaultText: String?,
                  initiatedByFrame frame: WKFrameInfo,
                  completionHandler: @escaping @MainActor @Sendable (String?) -> Void) {
+        completionHandler(nil)
+    }
+
+    @available(iOS 18.4, *)
+    func webView(_ webView: WKWebView,
+                 runOpenPanelWith parameters: WKOpenPanelParameters,
+                 initiatedByFrame frame: WKFrameInfo,
+                 completionHandler: @escaping @MainActor @Sendable ([URL]?) -> Void) {
         completionHandler(nil)
     }
 

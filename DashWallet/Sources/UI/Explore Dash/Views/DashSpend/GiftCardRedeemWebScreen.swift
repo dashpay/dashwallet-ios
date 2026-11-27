@@ -78,10 +78,9 @@ struct GiftCardRedeemWebScreen: View {
                 }
             }
         }
-        .onReceive(
-            NotificationCenter.default.publisher(for: UIApplication.protectedDataWillBecomeUnavailableNotification)
-        ) { _ in
-            // The app lock can be switched off, and then nothing else closes this screen when the device locks.
+        .onReceive(NotificationCenter.default.publisher(for: UIApplication.didEnterBackgroundNotification)) { _ in
+            // The app lock can be off or not yet due, so leaving the app or locking the device ends the
+            // session. A system alert, Control Centre or the app switcher only makes the app inactive.
             dismiss()
         }
     }
@@ -92,16 +91,24 @@ struct GiftCardRedeemWebScreen: View {
                 .font(.subheadMedium)
                 .foregroundColor(.dash.primaryText)
                 .lineLimit(1)
-                .padding(.horizontal, 56)
+                .padding(.horizontal, 104)
 
-            HStack {
+            HStack(spacing: 0) {
+                if viewModel.canGoBack {
+                    headerButton(
+                        systemImage: "chevron.backward",
+                        label: String(localized: "Back", comment: "Accessibility"),
+                        action: { viewModel.goBack() }
+                    )
+                }
+
+                Spacer()
+
                 headerButton(
                     systemImage: "safari",
                     label: String(localized: "Open in browser", comment: "DashSpend"),
                     action: { viewModel.openInBrowser() }
                 )
-
-                Spacer()
 
                 headerButton(
                     systemImage: "xmark",

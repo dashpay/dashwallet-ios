@@ -293,14 +293,50 @@ final class RedeemLinkPolicyTests: XCTestCase {
         XCTAssertFalse(canLeave("https://www.spend.ctx.com./gift-cards/abc/redeem?token=a b"))
     }
 
-    // MARK: Contact links
+    func testOtherAppLinksAreNeverANavigation() {
+        let links = [
+            "mailto:help@storedvalue.com",
+            "TEL:+18005550100",
+            "sms:+18005550100",
+            "itms-apps://apps.apple.com/app/id1",
+        ]
 
-    func testContactLinksAreMailtoAndTelOnly() {
-        XCTAssertTrue(RedeemLinkPolicy.isContactLink("mailto:help@storedvalue.com"))
-        XCTAssertTrue(RedeemLinkPolicy.isContactLink("TEL:+18005550100"))
-        XCTAssertFalse(RedeemLinkPolicy.isContactLink("sms:+18005550100"))
-        XCTAssertFalse(RedeemLinkPolicy.isContactLink("https://storedvalue.com/mailto:help"))
-        XCTAssertFalse(RedeemLinkPolicy.isContactLink("mailto"))
-        XCTAssertFalse(RedeemLinkPolicy.isContactLink(nil))
+        for link in links {
+            XCTAssertFalse(RedeemLinkPolicy.isAllowedNavigation(link, isMainFrame: true), link)
+            XCTAssertFalse(RedeemLinkPolicy.isAllowedNavigation(link, isMainFrame: false), link)
+        }
+    }
+
+    // MARK: Failed loads
+
+    private let connectionLost = NSError(domain: NSURLErrorDomain, code: NSURLErrorNetworkConnectionLost)
+    private let cancelled = NSError(domain: NSURLErrorDomain, code: NSURLErrorCancelled)
+    private let stoppedByPolicy = NSError(domain: "WebKitErrorDomain", code: 102)
+
+    private func isFatal(_ error: NSError, committed: Bool, finished: Bool) -> Bool {
+        RedeemLinkPolicy.isFatalLoadFailure(error, hasCommittedPage: committed, hasFinishedPage: finished)
+    }
+
+    func testAnyFailureBeforeTheFirstCommitIsFatal() {
+        for error in [connectionLost, cancelled, stoppedByPolicy] {
+            XCTAssertTrue(isFatal(error, committed: false, finished: false), "\(error.code)")
+        }
+    }
+
+    func testADroppedConnectionBeforeTheFirstPageFinishesIsFatal() {
+        XCTAssertTrue(isFatal(connectionLost, committed: true, finished: false))
+        XCTAssertTrue(isFatal(NSError(domain: "WebKitErrorDomain", code: 101), committed: true, finished: false))
+        XCTAssertTrue(isFatal(NSError(domain: "Other", code: NSURLErrorCancelled), committed: true, finished: false))
+    }
+
+    func testACancelledLoadKeepsACommittedPage() {
+        XCTAssertFalse(isFatal(cancelled, committed: true, finished: false))
+        XCTAssertFalse(isFatal(stoppedByPolicy, committed: true, finished: false))
+    }
+
+    func testNoFailureIsFatalOnceAPageHasFinished() {
+        for error in [connectionLost, cancelled, stoppedByPolicy] {
+            XCTAssertFalse(isFatal(error, committed: true, finished: true), "\(error.code)")
+        }
     }
 }

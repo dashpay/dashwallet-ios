@@ -20,7 +20,8 @@ import Foundation
 enum RedeemLinkPolicy {
     private static let redeemPath = "^/+gift-cards/[A-Za-z0-9_-]+/redeem$"
     private static let subframeOnlyURLs: Set<String> = ["about:blank", "about:srcdoc"]
-    private static let contactSchemes: Set<String> = ["mailto", "tel"]
+    private static let webKitErrorDomain = "WebKitErrorDomain"
+    private static let frameLoadInterruptedByPolicyChange = 102
     private static let httpsPort = 443
 
     /// The URL to load in the in-app browser, or nil when the link is not a redeem link on the CTX API host.
@@ -77,9 +78,22 @@ enum RedeemLinkPolicy {
         externalURL(link, ctxBaseURL: ctxBaseURL) != nil
     }
 
-    static func isContactLink(_ url: String?) -> Bool {
-        guard let url, let colon = url.firstIndex(of: ":") else { return false }
-        return contactSchemes.contains(url[..<colon].lowercased())
+    /// Whether a failed load leaves no usable page, so the error state takes its place. Once a page has
+    /// finished, the web view is kept so Back still works. A page that committed without finishing is kept
+    /// only through a cancellation: WebKit reports a load replaced by the next one, or stopped by a policy
+    /// decision, as a failure too.
+    static func isFatalLoadFailure(_ error: Error, hasCommittedPage: Bool, hasFinishedPage: Bool) -> Bool {
+        if hasFinishedPage {
+            return false
+        }
+        if !hasCommittedPage {
+            return true
+        }
+
+        let error = error as NSError
+        let isCancelled = error.domain == NSURLErrorDomain && error.code == NSURLErrorCancelled
+        let isStoppedByPolicy = error.domain == webKitErrorDomain && error.code == frameLoadInterruptedByPolicyChange
+        return !isCancelled && !isStoppedByPolicy
     }
 
     /// The whole host: the app ships no public-suffix list to cut it down to the registrable domain.
