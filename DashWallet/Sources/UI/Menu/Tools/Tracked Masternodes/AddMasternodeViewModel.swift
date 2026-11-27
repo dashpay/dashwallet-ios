@@ -94,7 +94,7 @@ final class AddMasternodeViewModel: ObservableObject {
         let text = query.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !text.isEmpty else { return }
         guard let manager = SwiftDashSDKHost.shared.manager else {
-            searchError = NSLocalizedString("Wallet is not ready. Try again in a moment.", comment: "Evonode withdrawal")
+            searchError = String(localized: "Wallet is not ready. Try again in a moment.", comment: "Evonode withdrawal")
             return
         }
         searching = true
@@ -107,12 +107,12 @@ final class AddMasternodeViewModel: ObservableObject {
             matches = result.matches
             switch result.platformLookup {
             case .notRequested:
-                platformLookupNote = NSLocalizedString(
-                    "That could also be an owner or payout key — turn on “Search Platform too” to check.",
+                platformLookupNote = String(
+                    localized: "That could also be an owner or payout key — turn on “Search Platform too” to check.",
                     comment: "Add masternode")
             case .unavailable:
-                platformLookupNote = NSLocalizedString(
-                    "Platform could not be reached, so owner and payout keys were not checked.",
+                platformLookupNote = String(
+                    localized: "Platform could not be reached, so owner and payout keys were not checked.",
                     comment: "Add masternode")
             case .notNeeded, .done:
                 platformLookupNote = nil
@@ -132,7 +132,7 @@ final class AddMasternodeViewModel: ObservableObject {
     func track(_ match: MasternodeLocateMatch) async {
         guard !tracking, trackedRecord == nil else { return }
         guard let manager = SwiftDashSDKHost.shared.manager else {
-            trackError = NSLocalizedString("Wallet is not ready. Try again in a moment.", comment: "Evonode withdrawal")
+            trackError = String(localized: "Wallet is not ready. Try again in a moment.", comment: "Evonode withdrawal")
             return
         }
         tracking = true
@@ -169,8 +169,8 @@ final class AddMasternodeViewModel: ObservableObject {
         do {
             trackedRecord = try await manager.refreshTrackedMasternode(proTxHash: record.proTxHash)
         } catch {
-            refreshNote = NSLocalizedString(
-                "Could not load the node's registration details — owner and payout keys will verify later.",
+            refreshNote = String(
+                localized: "Could not load the node's registration details — owner and payout keys will verify later.",
                 comment: "Add masternode")
         }
         revalidateKeys()
@@ -254,8 +254,8 @@ final class AddMasternodeViewModel: ObservableObject {
             let text = (keyInputs[role] ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
             guard !text.isEmpty else { continue }
             guard vault.store(text, for: record.proTxHash, role: role) else {
-                trackError = NSLocalizedString(
-                    "Could not save a key to the keychain. Nothing was lost — try again.",
+                trackError = String(
+                    localized: "Could not save a key to the keychain. Nothing was lost — try again.",
                     comment: "Add masternode")
                 return false
             }

@@ -25,15 +25,15 @@ extension HomeViewController {
             return
         }
 
-        let title = NSLocalizedString("WARNING", comment: "")
+        let title = String(localized: "WARNING", comment: "")
         let message: String
         var mainAction: UIAlertAction?
 
         if !model.isWalletEmpty {
-            message = NSLocalizedString("DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Move your funds to a wallet on a secure device, then reset this wallet using Reset Wallet in the Security menu.", comment: "")
+            message = String(localized: "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Move your funds to a wallet on a secure device, then reset this wallet using Reset Wallet in the Security menu.", comment: "")
         } else {
-            message = NSLocalizedString("DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash).", comment: "")
-            mainAction = UIAlertAction(title: NSLocalizedString("Close App", comment: ""), style: .default) { action in
+            message = String(localized: "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash).", comment: "")
+            mainAction = UIAlertAction(title: String(localized: "Close App", comment: ""), style: .default) { action in
                 NotificationCenter.default.post(name: .applicationTerminationRequest, object: nil)
             }
         }
@@ -41,9 +41,9 @@ extension HomeViewController {
         let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
         if let mainAction = mainAction {
             alert.addAction(mainAction)
-            alert.addAction(UIAlertAction(title: NSLocalizedString("Ignore", comment: ""), style: .cancel, handler: nil))
+            alert.addAction(UIAlertAction(title: String(localized: "Ignore", comment: ""), style: .cancel, handler: nil))
         } else {
-            alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .cancel, handler: nil))
+            alert.addAction(UIAlertAction(title: String(localized: "OK", comment: ""), style: .cancel, handler: nil))
         }
 
         present(alert, animated: true, completion: nil)

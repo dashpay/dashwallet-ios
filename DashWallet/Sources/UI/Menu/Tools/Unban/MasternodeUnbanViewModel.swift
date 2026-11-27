@@ -259,7 +259,7 @@ final class MasternodeUnbanViewModel: ObservableObject {
         guard canSubmit else { return }
         guard let manager = SwiftDashSDKHost.shared.manager,
               let walletId = SwiftDashSDKHost.shared.wallet?.walletId else {
-            errorText = NSLocalizedString("Wallet is not ready. Try again in a moment.", comment: "Masternode unban")
+            errorText = String(localized: "Wallet is not ready. Try again in a moment.", comment: "Masternode unban")
             return
         }
         errorText = nil
@@ -300,8 +300,8 @@ final class MasternodeUnbanViewModel: ObservableObject {
                     operatorPayoutAddress: payout)
             case .tracked(let vault):
                 guard let keyText = vault.key(for: record.proTxHash, role: .operator) else {
-                    errorText = NSLocalizedString(
-                        "The operator key is missing from the keychain — re-add it and try again.",
+                    errorText = String(
+                        localized: "The operator key is missing from the keychain — re-add it and try again.",
                         comment: "Masternode unban")
                     phase = .ready
                     return
@@ -330,14 +330,14 @@ final class MasternodeUnbanViewModel: ObservableObject {
             // Ambiguous outcome: the transaction may be on the network, so a
             // retry risks paying twice. Terminal — the DML refresh tells.
             PendingMasternodeUnbanStore.shared.clear(forProTxHash: record.proTxHash)
-            errorText = NSLocalizedString(
-                "The unban was sent but its result couldn't be confirmed. Don't retry — check the masternode's status again in a few minutes.",
+            errorText = String(
+                localized: "The unban was sent but its result couldn't be confirmed. Don't retry — check the masternode's status again in a few minutes.",
                 comment: "Masternode unban")
             terminal = true
             phase = .ready
         case .masternodeListUnavailable:
-            errorText = NSLocalizedString(
-                "The masternode list hasn't synced yet. Wait for sync to finish and try again.",
+            errorText = String(
+                localized: "The masternode list hasn't synced yet. Wait for sync to finish and try again.",
                 comment: "Masternode unban")
             phase = .ready
         case .invalidParameter(let message) where message.contains("operator reward"):
@@ -379,8 +379,8 @@ final class MasternodeUnbanViewModel: ObservableObject {
                     operatorPayoutAddress: payout)
             case .tracked(let vault):
                 guard let keyText = vault.key(for: record.proTxHash, role: .operator) else {
-                    errorText = NSLocalizedString(
-                        "The operator key is missing from the keychain — re-add it and try again.",
+                    errorText = String(
+                        localized: "The operator key is missing from the keychain — re-add it and try again.",
                         comment: "Masternode unban")
                     phase = .ready
                     return
@@ -414,7 +414,7 @@ final class MasternodeUnbanViewModel: ObservableObject {
         let network: PaymentNetwork = WalletEnvironment.isMainnet ? .mainnet : .testnet
         let outputs = parsed.outputs.map { output in
             (address: ScriptAddressCodec.address(forScript: output.scriptPubKey, network: network)
-                ?? NSLocalizedString("Non-standard output", comment: "Masternode unban"),
+                ?? String(localized: "Non-standard output", comment: "Masternode unban"),
              amountDuffs: output.valueDuffs)
         }
         return Preview(

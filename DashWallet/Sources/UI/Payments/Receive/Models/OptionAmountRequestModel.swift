@@ -49,8 +49,8 @@ final class OptionAmountRequestModel: NSObject, DWReceiveModelProtocol {
         request = PaymentURIBuilder(address: address, amount: amount).string
         qrCodeImage = QRCodeGenerator.image(for: request)
         addressCaption = option == .identity
-            ? NSLocalizedString("Identity ID", comment: "")
-            : NSLocalizedString("Your DASH address", comment: "Payments")
+            ? String(localized: "Identity ID", comment: "")
+            : String(localized: "Your DASH address", comment: "Payments")
         super.init()
     }
 

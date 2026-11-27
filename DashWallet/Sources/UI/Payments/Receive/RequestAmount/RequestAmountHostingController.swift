@@ -339,6 +339,6 @@ private struct RequestAmountScreenContainer: View {
             .transientToast(
                 isPresented: $state.copiedToastVisible,
                 style: .copied,
-                message: NSLocalizedString("Copied", comment: ""))
+                message: String(localized: "Copied", comment: ""))
     }
 }

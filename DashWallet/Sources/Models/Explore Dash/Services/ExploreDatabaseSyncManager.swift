@@ -242,7 +242,7 @@ extension ExploreDatabaseSyncManager {
                     continuation.resume()
                 } else {
                     let errorToThrow = error ?? NSError(domain: "ExploreDatabaseSyncManager", code: -1, userInfo: [
-                        NSLocalizedDescriptionKey: NSLocalizedString("Failed to unzip archive", comment: "Explore: merchant database update error"),
+                        NSLocalizedDescriptionKey: String(localized: "Failed to unzip archive", comment: "Explore: merchant database update error"),
                     ])
                     continuation.resume(throwing: errorToThrow)
                 }

@@ -85,33 +85,33 @@ struct WalletsScreen: View {
                                         Button {
                                             pendingSwitch = row
                                         } label: {
-                                            Label(NSLocalizedString("Switch to this wallet", comment: "Wallets"), systemImage: "arrow.left.arrow.right")
+                                            Label(String(localized: "Switch to this wallet", comment: "Wallets"), systemImage: "arrow.left.arrow.right")
                                         }
                                     }
                                     Button {
                                         renameText = row.displayName
                                         renameTarget = row
                                     } label: {
-                                        Label(NSLocalizedString("Rename", comment: "Wallets"), systemImage: "pencil")
+                                        Label(String(localized: "Rename", comment: "Wallets"), systemImage: "pencil")
                                     }
                                     Button {
                                         recoveryPhraseFlow.beginWallet(
                                             walletId: row.walletId,
                                             displayName: row.displayName)
                                     } label: {
-                                        Label(NSLocalizedString("View Recovery Phrase", comment: ""), systemImage: "key")
+                                        Label(String(localized: "View Recovery Phrase", comment: ""), systemImage: "key")
                                     }
                                     #if DEBUG
                                     Button {
                                         recoveryPhraseFlow.copyWalletMnemonic(walletId: row.walletId)
                                     } label: {
-                                        Label("Copy Seed (Debug)", systemImage: "doc.on.doc")
+                                        Label("Copy Seed (Debug)" as String, systemImage: "doc.on.doc")
                                     }
                                     #endif
                                     Button(role: .destructive) {
                                         beginRemove(row)
                                     } label: {
-                                        Label(NSLocalizedString("Remove", comment: "Wallets"), systemImage: "trash")
+                                        Label(String(localized: "Remove", comment: "Wallets"), systemImage: "trash")
                                     }
                                 }
                             if row.id != viewModel.rows.last?.id {
@@ -141,36 +141,34 @@ struct WalletsScreen: View {
         }
         // Switch confirmation
         .alert(
-            NSLocalizedString("Switch Wallet", comment: "Wallets"),
+            String(localized: "Switch Wallet", comment: "Wallets"),
             isPresented: Binding(
                 get: { pendingSwitch != nil },
                 set: { if !$0 { pendingSwitch = nil } })
         ) {
-            Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) { pendingSwitch = nil }
-            Button(NSLocalizedString("Switch", comment: "Wallets")) {
+            Button(String(localized: "Cancel", comment: ""), role: .cancel) { pendingSwitch = nil }
+            Button(String(localized: "Switch", comment: "Wallets")) {
                 if let target = pendingSwitch { viewModel.switchWallet(to: target.walletId) }
                 pendingSwitch = nil
             }
         } message: {
-            Text(String(
-                format: NSLocalizedString("Switch to \"%@\"? The app will reload with this wallet active.", comment: "Wallets"),
-                pendingSwitch?.displayName ?? ""))
+            Text(String(localized: "Switch to \"\(pendingSwitch?.displayName ?? "")\"? The app will reload with this wallet active.", comment: "Wallets"))
         }
         // Rename
         .alert(
-            NSLocalizedString("Rename Wallet", comment: "Wallets"),
+            String(localized: "Rename Wallet", comment: "Wallets"),
             isPresented: Binding(
                 get: { renameTarget != nil },
                 set: { if !$0 { renameTarget = nil } })
         ) {
-            TextField(NSLocalizedString("Wallet name", comment: "Wallets"), text: $renameText)
-            Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) { renameTarget = nil }
-            Button(NSLocalizedString("Save", comment: "Wallets")) {
+            TextField(String(localized: "Wallet name", comment: "Wallets"), text: $renameText)
+            Button(String(localized: "Cancel", comment: ""), role: .cancel) { renameTarget = nil }
+            Button(String(localized: "Save", comment: "Wallets")) {
                 if let target = renameTarget { viewModel.rename(walletId: target.walletId, to: renameText) }
                 renameTarget = nil
             }
         } message: {
-            Text(NSLocalizedString("Leave the name empty to reset it to the default.", comment: "Wallets"))
+            Text(String(localized: "Leave the name empty to reset it to the default.", comment: "Wallets"))
         }
         // Add Wallet (create / import)
         .sheet(isPresented: $showAddWallet) {
@@ -197,12 +195,12 @@ struct WalletsScreen: View {
         }
         // Errors
         .alert(
-            NSLocalizedString("Error", comment: ""),
+            String(localized: "Error", comment: ""),
             isPresented: Binding(
                 get: { viewModel.errorMessage != nil },
                 set: { if !$0 { viewModel.errorMessage = nil } })
         ) {
-            Button(NSLocalizedString("OK", comment: ""), role: .cancel) {}
+            Button(String(localized: "OK", comment: ""), role: .cancel) {}
         } message: {
             Text(viewModel.errorMessage ?? "")
         }
@@ -219,11 +217,11 @@ struct WalletsScreen: View {
                 },
                 trailing: {
                     DashUIKit.NavigationBarElement.plus.button { showAddWallet = true }
-                        .accessibilityLabel(NSLocalizedString("Add Wallet", comment: "Wallets"))
+                        .accessibilityLabel(String(localized: "Add Wallet", comment: "Wallets"))
                 })
 
             HStack {
-                Text(NSLocalizedString("Wallets", comment: "Wallets"))
+                Text(String(localized: "Wallets", comment: "Wallets"))
                     .font(.title)
                     .fontWeight(.bold)
                     .foregroundColor(.dash.primaryText)
@@ -287,8 +285,8 @@ struct WalletsScreen: View {
         } else if viewModel.rows.contains(where: { $0.walletId != row.walletId }) {
             removeTarget = row
         } else {
-            viewModel.errorMessage = NSLocalizedString(
-                "This is the only wallet on this network, but other wallet data is stored on this device (or the wallet list could not be read), so it can't be removed here. Remove the other wallet first, or add another wallet on this network.",
+            viewModel.errorMessage = String(
+                localized: "This is the only wallet on this network, but other wallet data is stored on this device (or the wallet list could not be read), so it can't be removed here. Remove the other wallet first, or add another wallet on this network.",
                 comment: "Wallets")
         }
     }
@@ -312,7 +310,7 @@ private struct WalletRowView: View {
                     .foregroundColor(.dash.primaryText)
                     .lineLimit(1)
                 if let username = row.username {
-                    Text("@\(username)")
+                    Text(verbatim: "@\(username)")
                         .font(.system(size: 13))
                         .foregroundColor(.dash.blue)
                         .lineLimit(1)
@@ -337,30 +335,30 @@ private struct WalletRowView: View {
                     Button {
                         onSwitch()
                     } label: {
-                        Label(NSLocalizedString("Switch to this wallet", comment: "Wallets"), systemImage: "arrow.left.arrow.right")
+                        Label(String(localized: "Switch to this wallet", comment: "Wallets"), systemImage: "arrow.left.arrow.right")
                     }
                 }
                 Button {
                     onRename()
                 } label: {
-                    Label(NSLocalizedString("Rename", comment: "Wallets"), systemImage: "pencil")
+                    Label(String(localized: "Rename", comment: "Wallets"), systemImage: "pencil")
                 }
                 Button {
                     onViewRecoveryPhrase()
                 } label: {
-                    Label(NSLocalizedString("View Recovery Phrase", comment: ""), systemImage: "key")
+                    Label(String(localized: "View Recovery Phrase", comment: ""), systemImage: "key")
                 }
                 #if DEBUG
                 Button {
                     onCopySeed()
                 } label: {
-                    Label("Copy Seed (Debug)", systemImage: "doc.on.doc")
+                    Label("Copy Seed (Debug)" as String, systemImage: "doc.on.doc")
                 }
                 #endif
                 Button(role: .destructive) {
                     onRemove()
                 } label: {
-                    Label(NSLocalizedString("Remove", comment: "Wallets"), systemImage: "trash")
+                    Label(String(localized: "Remove", comment: "Wallets"), systemImage: "trash")
                 }
             } label: {
                 Image(systemName: "ellipsis")
@@ -396,7 +394,7 @@ private struct RemoveWalletSheet: View {
 
     var body: some View {
         DashUIKit.BottomSheet(
-            title: NSLocalizedString("Remove Wallet", comment: "Wallets"),
+            title: String(localized: "Remove Wallet", comment: "Wallets"),
             showBackButton: .constant(false),
             onClose: onCancel
         ) {
@@ -404,20 +402,18 @@ private struct RemoveWalletSheet: View {
                 Color.dash.primaryBackground.ignoresSafeArea()
                 ScrollView {
                     VStack(alignment: .leading, spacing: 18) {
-                        Text(String(
-                            format: NSLocalizedString("Remove \"%@\"", comment: "Wallets"),
-                            row.displayName))
+                        Text(String(localized: "Remove \"\(row.displayName)\"", comment: "Wallets"))
                             .font(.title2).fontWeight(.bold)
                             .foregroundColor(.dash.primaryText)
 
-                        Text(NSLocalizedString(
-                            "This removes this wallet from this device on every network where it is stored, including its private keys and synced data. Other wallets are not affected. Your funds are NOT deleted — they remain on the Dash network and can only be recovered with this wallet's recovery phrase. If you have not backed up the phrase, you will lose access to these funds.",
+                        Text(String(
+                            localized: "This removes this wallet from this device on every network where it is stored, including its private keys and synced data. Other wallets are not affected. Your funds are NOT deleted — they remain on the Dash network and can only be recovered with this wallet's recovery phrase. If you have not backed up the phrase, you will lose access to these funds.",
                             comment: "Wallets"))
                             .font(.subheadline)
                             .foregroundColor(.dash.secondaryText)
 
-                        Text(NSLocalizedString(
-                            "Type this wallet's recovery phrase to confirm.",
+                        Text(String(
+                            localized: "Type this wallet's recovery phrase to confirm.",
                             comment: "Wallets"))
                             .font(.system(size: 15, weight: .medium))
                             .foregroundColor(.dash.primaryText)
@@ -431,15 +427,15 @@ private struct RemoveWalletSheet: View {
                             .textInputAutocapitalization(.never)
 
                         if showMismatch {
-                            Text(NSLocalizedString(
-                                "That is not this wallet's recovery phrase.",
+                            Text(String(
+                                localized: "That is not this wallet's recovery phrase.",
                                 comment: "Wallets"))
                                 .font(.footnote)
                                 .foregroundColor(.dash.red)
                         }
 
                         Button(action: confirm) {
-                            Text(NSLocalizedString("Remove Wallet", comment: "Wallets"))
+                            Text(String(localized: "Remove Wallet", comment: "Wallets"))
                                 .font(.system(size: 16, weight: .semibold))
                                 .foregroundColor(Color.dash.whiteText)
                                 .frame(maxWidth: .infinity)
@@ -519,9 +515,9 @@ private struct AddWalletSheet: View {
 
     private var title: String {
         switch step {
-        case .chooser: return NSLocalizedString("Add Wallet", comment: "Wallets")
-        case .create: return NSLocalizedString("New Wallet", comment: "Wallets")
-        case .importPhrase: return NSLocalizedString("Import Wallet", comment: "Wallets")
+        case .chooser: return String(localized: "Add Wallet", comment: "Wallets")
+        case .create: return String(localized: "New Wallet", comment: "Wallets")
+        case .importPhrase: return String(localized: "Import Wallet", comment: "Wallets")
         }
     }
 
@@ -545,8 +541,8 @@ private struct AddWalletSheet: View {
     private var chooser: some View {
         VStack(spacing: 16) {
             Spacer(minLength: 20)
-            Text(NSLocalizedString(
-                "Add another wallet to this device. You can create a brand-new wallet or restore one from its recovery phrase.",
+            Text(String(
+                localized: "Add another wallet to this device. You can create a brand-new wallet or restore one from its recovery phrase.",
                 comment: "Wallets"))
                 .font(.subheadline)
                 .foregroundColor(.dash.secondaryText)
@@ -555,14 +551,14 @@ private struct AddWalletSheet: View {
 
             Button(action: { step = .create }) {
                 chooserRow(
-                    title: NSLocalizedString("Create New Wallet", comment: "Wallets"),
-                    subtitle: NSLocalizedString("Generate a new recovery phrase", comment: "Wallets"),
+                    title: String(localized: "Create New Wallet", comment: "Wallets"),
+                    subtitle: String(localized: "Generate a new recovery phrase", comment: "Wallets"),
                     systemImage: "plus.circle")
             }
             Button(action: { step = .importPhrase }) {
                 chooserRow(
-                    title: NSLocalizedString("Import from Phrase", comment: "Wallets"),
-                    subtitle: NSLocalizedString("Restore an existing wallet", comment: "Wallets"),
+                    title: String(localized: "Import from Phrase", comment: "Wallets"),
+                    subtitle: String(localized: "Restore an existing wallet", comment: "Wallets"),
                     systemImage: "square.and.arrow.down")
             }
             Spacer()
@@ -618,18 +614,14 @@ private struct CreateWalletView: View {
                 RecoveryPhraseLengthPicker(selection: $phraseLength)
                     .disabled(viewModel.addInProgress || viewModel.switchInProgress)
 
-                Text(String.localizedStringWithFormat(
-                    NSLocalizedString(
-                        "Write down these %d words in order and keep them somewhere safe. They are the ONLY way to recover this wallet. Anyone with them can spend your funds.",
-                        comment: "Wallets"),
-                    phraseLength.rawValue))
+                Text(String(localized: "Write down these \(phraseLength.rawValue) words in order and keep them somewhere safe. They are the ONLY way to recover this wallet. Anyone with them can spend your funds.", comment: "Wallets"))
                     .font(.subheadline)
                     .foregroundColor(.dash.secondaryText)
 
                 phraseGrid
 
                 Toggle(isOn: $confirmedWrittenDown) {
-                    Text(NSLocalizedString("I have written down my recovery phrase.", comment: "Wallets"))
+                    Text(String(localized: "I have written down my recovery phrase.", comment: "Wallets"))
                         .font(.system(size: 15))
                         .foregroundColor(.dash.primaryText)
                 }
@@ -640,7 +632,7 @@ private struct CreateWalletView: View {
                         if viewModel.addInProgress || viewModel.switchInProgress {
                             SwiftUI.ProgressView().tint(Color.dash.whiteText)
                         }
-                        Text(NSLocalizedString("Create Wallet", comment: "Wallets"))
+                        Text(String(localized: "Create Wallet", comment: "Wallets"))
                             .font(.system(size: 16, weight: .semibold))
                             .foregroundColor(Color.dash.whiteText)
                     }
@@ -675,7 +667,7 @@ private struct CreateWalletView: View {
         ) {
             ForEach(Array(words.enumerated()), id: \.offset) { index, word in
                 HStack(spacing: 8) {
-                    Text("\(index + 1)")
+                    Text(verbatim: "\((index + 1).formatted())")
                         .font(.system(size: 13, design: .monospaced))
                         .foregroundColor(.dash.secondaryText)
                         .frame(width: 22, alignment: .trailing)
@@ -723,8 +715,8 @@ private struct ImportWalletView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 18) {
-                Text(NSLocalizedString(
-                    "Enter the recovery phrase of the wallet you want to add.",
+                Text(String(
+                    localized: "Enter the recovery phrase of the wallet you want to add.",
                     comment: "Wallets"))
                     .font(.subheadline)
                     .foregroundColor(.dash.secondaryText)
@@ -740,12 +732,12 @@ private struct ImportWalletView: View {
 
                 if let existingWalletId {
                     VStack(alignment: .leading, spacing: 10) {
-                        Text(NSLocalizedString(
-                            "This wallet is already on this device.",
+                        Text(String(
+                            localized: "This wallet is already on this device.",
                             comment: "Wallets"))
                             .font(.footnote)
                             .foregroundColor(.dash.secondaryText)
-                        Button(NSLocalizedString("Switch to it", comment: "Wallets")) {
+                        Button(String(localized: "Switch to it", comment: "Wallets")) {
                             onSwitchToExisting(existingWalletId)
                         }
                         .font(.system(size: 15, weight: .semibold))
@@ -758,7 +750,7 @@ private struct ImportWalletView: View {
                         if viewModel.addInProgress || viewModel.switchInProgress {
                             SwiftUI.ProgressView().tint(Color.dash.whiteText)
                         }
-                        Text(NSLocalizedString("Import Wallet", comment: "Wallets"))
+                        Text(String(localized: "Import Wallet", comment: "Wallets"))
                             .font(.system(size: 16, weight: .semibold))
                             .foregroundColor(Color.dash.whiteText)
                     }

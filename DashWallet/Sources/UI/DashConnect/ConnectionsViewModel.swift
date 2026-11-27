@@ -40,11 +40,11 @@ struct ConnectionsScreenMessage: Identifiable, Equatable {
     var title: String {
         switch kind {
         case .error:
-            return NSLocalizedString("Error", comment: "")
+            return String(localized: "Error", comment: "")
         case .success:
-            return NSLocalizedString("Success", comment: "DashConnect")
+            return String(localized: "Success", comment: "DashConnect")
         case .notice:
-            return NSLocalizedString("Disconnected", comment: "DashConnect")
+            return String(localized: "Disconnected", comment: "DashConnect")
         }
     }
 }
@@ -120,23 +120,16 @@ final class ConnectionsViewModel: ObservableObject {
         guard let funding = shownDetails?.keyFunding else { return nil }
         return funding.map { key in
             let title = key.isProfileKey
-                ? NSLocalizedString("DashPay profile key", comment: "DashConnect connection sheet: a key's budget line")
-                : NSLocalizedString("App key", comment: "DashConnect connection sheet: a key's budget line")
+                ? String(localized: "DashPay profile key", comment: "DashConnect connection sheet: a key's budget line")
+                : String(localized: "App key", comment: "DashConnect connection sheet: a key's budget line")
             guard let total = key.totalBudget else {
-                return (title, NSLocalizedString(
-                    "No limit", comment: "DashConnect connection sheet: a key with no spending limit"))
+                return (title, String(
+                    localized: "No limit", comment: "DashConnect connection sheet: a key with no spending limit"))
             }
             guard let remaining = key.remaining else {
-                return (title, String(
-                    format: NSLocalizedString(
-                        "Maximum of %@", comment: "DashConnect connection sheet: an amount with its unit, e.g. 0.5 DASH"),
-                    PlatformCreditsFormatter.dashString(total)))
+                return (title, String(localized: "Maximum of \(PlatformCreditsFormatter.dashString(total))", comment: "DashConnect connection sheet: an amount with its unit, e.g. 0.5 DASH"))
             }
-            return (title, String(
-                format: NSLocalizedString(
-                    "%1$@ left of %2$@",
-                    comment: "DashConnect connection sheet: what is left of a key's budget, then the budget; amounts with units"),
-                PlatformCreditsFormatter.dashString(remaining), PlatformCreditsFormatter.dashString(total)))
+            return (title, String(localized: "\(PlatformCreditsFormatter.dashString(remaining)) left of \(PlatformCreditsFormatter.dashString(total))", comment: "DashConnect connection sheet: what is left of a key's budget, then the budget; amounts with units"))
         }
     }
 
@@ -445,13 +438,13 @@ final class ConnectionsViewModel: ObservableObject {
 
     private static let anotherRequestMessage = ConnectionsScreenMessage(
         kind: .error,
-        text: NSLocalizedString(
-            "Another DashConnect request is in progress. Try again when it finishes.", comment: "DashConnect"))
+        text: String(
+            localized: "Another DashConnect request is in progress. Try again when it finishes.", comment: "DashConnect"))
 
     private static let noLongerDisconnectableMessage = ConnectionsScreenMessage(
         kind: .error,
-        text: NSLocalizedString(
-            "This connection has nothing to disconnect now.",
+        text: String(
+            localized: "This connection has nothing to disconnect now.",
             comment: "DashConnect: a disconnect asked for on a connection that no longer offers one"))
 
     /// With `keepingShown`, a read that fails leaves what the sheet shows.
@@ -642,7 +635,7 @@ final class ConnectionsViewModel: ObservableObject {
         // The refusal has to appear where the user is looking: the sheet
         // covers the screen, and a screen-level `.alert` cannot show over it.
         guard pendingRequest == nil, pendingTokenPurchase == nil else {
-            let refusal = NSLocalizedString("Another DashConnect request arrived. Finish this one first, then try again.",
+            let refusal = String(localized: "Another DashConnect request arrived. Finish this one first, then try again.",
                                             comment: "DashConnect: a second request arrived while one was on screen")
             // Onto the sheet that is actually up: the purchase sheet reads
             // `purchaseApproveError` alone, so a refusal parked in
@@ -659,7 +652,7 @@ final class ConnectionsViewModel: ObservableObject {
         guard !isProcessingStateTransition, !isDisconnecting else {
             let refusal = ConnectionsScreenMessage(
                 kind: .error,
-                text: NSLocalizedString("Finish the current DashConnect request first, then try again.",
+                text: String(localized: "Finish the current DashConnect request first, then try again.",
                                         comment: "DashConnect: a second request arrived during key registration")
             )
             // A disconnect runs from its connection's sheet, which the
@@ -703,6 +696,8 @@ final class ConnectionsViewModel: ObservableObject {
                     guard generation == requestGeneration else { return }
                     pendingLoginRequest = request
                     pendingRequestArrivedByLink = byLink
+                    // What an earlier approval left unsaid is about another request.
+                    messageAfterApproveSheet = nil
                     pendingFailureStatus = nil
                     pendingRequest = connectionRequest
                 case let .stateTransition(request):
@@ -741,10 +736,7 @@ final class ConnectionsViewModel: ObservableObject {
                 guard generation == requestGeneration else { return }
                 let failure = ConnectionsScreenMessage(
                     kind: .error,
-                    text: String(
-                        format: NSLocalizedString("Could not complete the DashConnect request: %@", comment: "DashConnect"),
-                        error.localizedDescription
-                    )
+                    text: String(localized: "Could not complete the DashConnect request: \(error.localizedDescription)", comment: "DashConnect")
                 )
                 // A request that did not read leaves an open connection's
                 // sheet up, and says so on it.
@@ -777,20 +769,20 @@ final class ConnectionsViewModel: ObservableObject {
     }
 
     static var usernameNeededText: String {
-        NSLocalizedString(
-            "Create a username to connect apps, then ask the app for a new code.",
+        String(
+            localized: "Create a username to connect apps, then ask the app for a new code.",
             comment: "DashConnect: a request arrived while the wallet has no username")
     }
 
     static var topUpThenAskAgainText: String {
-        NSLocalizedString(
-            "Your identity's balance is too low for this connection. Top up, then ask the app for a new code.",
+        String(
+            localized: "Your identity's balance is too low for this connection. Top up, then ask the app for a new code.",
             comment: "DashConnect approve sheet: Platform refused the approval for the identity's balance")
     }
 
     static var usernameUnreadText: String {
-        NSLocalizedString(
-            "The wallet is still reading your username. Try again in a moment.",
+        String(
+            localized: "The wallet is still reading your username. Try again in a moment.",
             comment: "DashConnect: a request arrived before the wallet read the identity's usernames")
     }
 
@@ -842,6 +834,16 @@ final class ConnectionsViewModel: ObservableObject {
                 self.pendingRequest = nil
                 self.pendingLoginRequest = nil
                 self.approveError = nil
+                // With no return to ask about (a scanned code, or a link
+                // with no callback), the app is on another screen: the user
+                // is told to go back to it, once the sheet has gone.
+                if pendingReturn == nil {
+                    messageAfterApproveSheet = ConnectionsScreenMessage(
+                        kind: .success,
+                        text: String(
+                            localized: "Connected to \(consent.resolvedAppLabel). Go back to your browser to continue.",
+                            comment: "DashConnect: an approved sign-in with no return link; the placeholder is the app's name"))
+                }
             } catch DashConnectPlatformError.approvalOutOfDate {
                 Self.logApprovalStopped(DashConnectPlatformError.approvalOutOfDate)
                 // Another identity, wallet or network became active, or the
@@ -916,10 +918,7 @@ final class ConnectionsViewModel: ObservableObject {
                 Self.logApprovalStopped(error, offersTopUp: needsTopUp)
                 self.approveError = needsTopUp
                     ? Self.topUpThenAskAgainText
-                    : String(
-                        format: NSLocalizedString("Could not complete the DashConnect request: %@", comment: "DashConnect"),
-                        error.localizedDescription
-                    )
+                    : String(localized: "Could not complete the DashConnect request: \(error.localizedDescription)", comment: "DashConnect")
                 self.approveNeedsTopUp = needsTopUp
             }
         }
@@ -969,10 +968,7 @@ final class ConnectionsViewModel: ObservableObject {
     /// "Maximum of 0.5 DASH" for the pending request's funding limit.
     var approvalFundingText: String? {
         approvalTerms.map {
-            String(
-                format: NSLocalizedString(
-                    "Maximum of %@", comment: "DashConnect approve sheet: the funding limit with its unit, e.g. 0.5 DASH"),
-                PlatformCreditsFormatter.dashString($0.fundingLimit))
+            String(localized: "Maximum of \(PlatformCreditsFormatter.dashString($0.fundingLimit))", comment: "DashConnect approve sheet: the funding limit with its unit, e.g. 0.5 DASH")
         }
     }
 
@@ -1012,22 +1008,18 @@ final class ConnectionsViewModel: ObservableObject {
     /// there.
     static func unknownAppText(returnHost: String?) -> String {
         guard let returnHost else {
-            return NSLocalizedString(
-                "This wallet does not know this app.",
+            return String(
+                localized: "This wallet does not know this app.",
                 comment: "DashConnect approve sheet: an app the wallet does not know")
         }
-        return String(
-            format: NSLocalizedString(
-                "This wallet does not know this app, so it cannot confirm where it will return you (%@).",
-                comment: "DashConnect approve sheet: an app the wallet does not know; the placeholder is a website, e.g. yap.pr"),
-            returnHost)
+        return String(localized: "This wallet does not know this app, so it cannot confirm where it will return you (\(returnHost)).", comment: "DashConnect approve sheet: an app the wallet does not know; the placeholder is a website, e.g. yap.pr")
     }
 
     /// The first-connection caution. It does not name the app: the name is
     /// the one the request gives, shown in the title.
     static var firstConnectionText: String {
-        NSLocalizedString(
-            "You have never connected to this app before. Only approve if you trust it.",
+        String(
+            localized: "You have never connected to this app before. Only approve if you trust it.",
             comment: "DashConnect: approve sheet, first connection caution")
     }
 
@@ -1157,29 +1149,19 @@ final class ConnectionsViewModel: ObservableObject {
     func fundingLimitError(forDash text: String, locale: Locale = .current) -> String? {
         // Finer than a credit: said rather than cut to a smaller limit.
         if let typed = typedCredits(fromDash: text, locale: locale), !Self.isWhole(typed) {
-            return String(
-                format: NSLocalizedString(
-                    "Use at most %ld digits after the decimal point",
-                    comment: "DashConnect funding limit keypad: the number of decimal places a limit can have"),
-                Self.creditDigits)
+            return String(localized: "Use at most \(Self.creditDigits) digits after the decimal point", comment: "DashConnect funding limit keypad: the number of decimal places a limit can have")
         }
         guard let credits = credits(fromDash: text, locale: locale), credits > 0 else { return nil }
         guard credits <= AppConnect.v2BudgetCapCredits else {
-            return String(
-                format: NSLocalizedString(
-                    "Max limit is %@", comment: "DashConnect funding limit keypad: the cap with its unit, e.g. 5 DASH"),
-                PlatformCreditsFormatter.dashString(AppConnect.v2BudgetCapCredits))
+            return String(localized: "Max limit is \(PlatformCreditsFormatter.dashString(AppConnect.v2BudgetCapCredits))", comment: "DashConnect funding limit keypad: the cap with its unit, e.g. 5 DASH")
         }
         // Every key needs a budget of its own: a limit too small to share
         // gives one of them nothing.
         if let plan = pendingRequest?.login.grantPlan, AppConnect.keyBudgets(for: plan, limit: credits) == nil {
             return smallestFundingLimit.map {
-                String(
-                    format: NSLocalizedString(
-                        "Min limit is %@", comment: "DashConnect funding limit keypad: the smallest limit with its unit"),
-                    PlatformCreditsFormatter.dashString($0))
-            } ?? NSLocalizedString(
-                "This limit cannot be shared between the app's keys.",
+                String(localized: "Min limit is \(PlatformCreditsFormatter.dashString($0))", comment: "DashConnect funding limit keypad: the smallest limit with its unit")
+            } ?? String(
+                localized: "This limit cannot be shared between the app's keys.",
                 comment: "DashConnect funding limit keypad")
         }
         return nil
@@ -1190,12 +1172,12 @@ final class ConnectionsViewModel: ObservableObject {
     var approveDisabledReason: String? {
         guard pendingRequest?.login.grantPlan != nil, termsAppliedPlan == nil else { return nil }
         if let expiresAt = approvalTerms?.expiresAt, expiresAt <= AppConnect.milliseconds(termsNow) {
-            return NSLocalizedString(
-                "This expiry has passed. Pick another one, then approve.",
+            return String(
+                localized: "This expiry has passed. Pick another one, then approve.",
                 comment: "DashConnect approve sheet: the chosen expiry is in the past")
         }
-        return NSLocalizedString(
-            "Set a funding limit and an expiry within the limits, then approve.",
+        return String(
+            localized: "Set a funding limit and an expiry within the limits, then approve.",
             comment: "DashConnect approve sheet: the terms are out of bounds")
     }
 
@@ -1319,7 +1301,7 @@ final class ConnectionsViewModel: ObservableObject {
                 self.purchaseApproveError = nil
                 message = ConnectionsScreenMessage(
                     kind: .success,
-                    text: NSLocalizedString("Token purchase completed.", comment: "DashConnect")
+                    text: String(localized: "Token purchase completed.", comment: "DashConnect")
                 )
             } catch DashConnectTokenPurchaseFailure.outcomeUnknown(let underlying) {
                 // The transition was signed and submitted, and only the wait
@@ -1332,22 +1314,14 @@ final class ConnectionsViewModel: ObservableObject {
                 self.purchaseApproveError = nil
                 message = ConnectionsScreenMessage(
                     kind: .error,
-                    text: String(
-                        format: NSLocalizedString(
-                            "The purchase was submitted but its result is unknown: %@. Check this identity's tokens and credit balance before buying again — approving a second time would pay twice.",
-                            comment: "DashConnect token purchase"),
-                        underlying.localizedDescription
-                    )
+                    text: String(localized: "The purchase was submitted but its result is unknown: \(underlying.localizedDescription). Check this identity's tokens and credit balance before buying again — approving a second time would pay twice.", comment: "DashConnect token purchase")
                 )
             } catch {
                 // Refused before anything was signed or sent (a cancelled
                 // authentication, a wrong identity, "the identity has no
                 // CRITICAL key"): nothing was charged, so keep the sheet up
                 // and let the user retry without rescanning the QR.
-                self.purchaseApproveError = String(
-                    format: NSLocalizedString("Could not complete the DashConnect request: %@", comment: "DashConnect"),
-                    error.localizedDescription
-                )
+                self.purchaseApproveError = String(localized: "Could not complete the DashConnect request: \(error.localizedDescription)", comment: "DashConnect")
             }
         }
     }
@@ -1407,9 +1381,7 @@ final class ConnectionsViewModel: ObservableObject {
                 }
                 self.show(ConnectionsScreenMessage(
                     kind: .error,
-                    text: String(
-                        format: NSLocalizedString("Could not disconnect: %@", comment: "DashConnect"),
-                        error.localizedDescription)),
+                    text: String(localized: "Could not disconnect: \(error.localizedDescription)", comment: "DashConnect")),
                     from: connection)
                 return
             }
@@ -1421,41 +1393,21 @@ final class ConnectionsViewModel: ObservableObject {
             var texts: [String] = []
             if result.unrecordedKeysTurnedOff > 0 {
                 // swiftlint:disable line_length
-                texts.append(String.localizedStringWithFormat(
-                    NSLocalizedString(
-                        "This also turned off keys on your identity that this wallet has no record of giving (%d), such as keys given on another device or DashPay profile keys.",
-                        comment: "DashConnect: after a disconnect that turned off keys no approval in this wallet names"),
-                    result.unrecordedKeysTurnedOff))
+                texts.append(String(localized: "This also turned off keys on your identity that this wallet has no record of giving (\(result.unrecordedKeysTurnedOff)), such as keys given on another device or DashPay profile keys.", comment: "DashConnect: after a disconnect that turned off keys no approval in this wallet names"))
                 // swiftlint:enable line_length
             }
             if result.keysStillLive > 0 {
-                texts.append(String.localizedStringWithFormat(
-                    NSLocalizedString(
-                        "Not every key was turned off: %d still on your identity. The connection stays listed; disconnect it again to turn them off.",
-                        comment: "DashConnect: after a disconnect that stopped part-way or left keys live"),
-                    result.keysStillLive))
+                texts.append(String(localized: "Not every key was turned off: \(result.keysStillLive) still on your identity. The connection stays listed; disconnect it again to turn them off.", comment: "DashConnect: after a disconnect that stopped part-way or left keys live"))
             }
             if result.fencesNotPlaced > 0 {
-                texts.append(String.localizedStringWithFormat(
-                    NSLocalizedString(
-                        "The sign-in may still land: some temporary keys (%d) may not be placed yet. Disconnect again to be sure they are turned off.",
-                        comment: "DashConnect: after a disconnect whose fence keys the read after it does not show"),
-                    result.fencesNotPlaced))
+                texts.append(String(localized: "The sign-in may still land: some temporary keys (\(result.fencesNotPlaced)) may not be placed yet. Disconnect again to be sure they are turned off.", comment: "DashConnect: after a disconnect whose fence keys the read after it does not show"))
             }
             if result.keysNotChecked > 0 {
-                texts.append(String.localizedStringWithFormat(
-                    NSLocalizedString(
-                        "This wallet could not tell yet which app holds some keys on your identity (%d), so it left them on. Open Connections again later to check them.",
-                        comment: "DashConnect: after a disconnect that found keys whose app is not known yet"),
-                    result.keysNotChecked))
+                texts.append(String(localized: "This wallet could not tell yet which app holds some keys on your identity (\(result.keysNotChecked)), so it left them on. Open Connections again later to check them.", comment: "DashConnect: after a disconnect that found keys whose app is not known yet"))
             }
             if result.keysNotAttributable > 0 {
                 // swiftlint:disable line_length
-                texts.append(String.localizedStringWithFormat(
-                    NSLocalizedString(
-                        "Some keys on your identity (%d) may belong to another app of the same developer, so this wallet left them on. Each one shows on its own row in Connections; disconnect it there if you no longer need it.",
-                        comment: "DashConnect: after a disconnect that left keys another app of the same developer may hold"),
-                    result.keysNotAttributable))
+                texts.append(String(localized: "Some keys on your identity (\(result.keysNotAttributable)) may belong to another app of the same developer, so this wallet left them on. Each one shows on its own row in Connections; disconnect it there if you no longer need it.", comment: "DashConnect: after a disconnect that left keys another app of the same developer may hold"))
                 // swiftlint:enable line_length
             }
             if result.keysOnAnotherIdentity {
@@ -1468,11 +1420,11 @@ final class ConnectionsViewModel: ObservableObject {
                 let someLeftOn = notTurnedOff || result.keysNotChecked > 0 || result.keysNotAttributable > 0
                     || result.keysOnAnotherIdentity
                 texts.append(someLeftOn
-                    ? NSLocalizedString(
-                        "The app's response may still appear; an App Connect approval or disconnect on this identity after it appears deletes it.",
+                    ? String(
+                        localized: "The app's response may still appear; an App Connect approval or disconnect on this identity after it appears deletes it.",
                         comment: "DashConnect: after a disconnect that left keys on, whose app's response may still land on Platform")
-                    : NSLocalizedString(
-                        "The app's keys are off. Its response may still appear; an App Connect approval or disconnect on this identity after it appears deletes it.",
+                    : String(
+                        localized: "The app's keys are off. Its response may still appear; an App Connect approval or disconnect on this identity after it appears deletes it.",
                         comment: "DashConnect: after a disconnect whose app's response may still land on Platform"))
                 // swiftlint:enable line_length
             }
@@ -1509,6 +1461,17 @@ final class ConnectionsViewModel: ObservableObject {
 
     /// A page message waiting for the connection's sheet to go.
     private var messageAfterSheet: ConnectionsScreenMessage?
+
+    /// A page message waiting for the approve sheet to go: the page cannot
+    /// show an alert while that sheet is still up.
+    private var messageAfterApproveSheet: ConnectionsScreenMessage?
+
+    /// The approve sheet has gone: says what an approval left to say.
+    func approveSheetDismissed() {
+        guard let waiting = messageAfterApproveSheet else { return }
+        messageAfterApproveSheet = nil
+        message = waiting
+    }
 
     /// Waits with `message` for the sheet to go, after any already waiting.
     private func holdForAfterSheet(_ message: ConnectionsScreenMessage) {

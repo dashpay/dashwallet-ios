@@ -46,6 +46,11 @@ jobs:
         with:
           persist-credentials: false
       - run: python3 scripts/ci/check_test_target_membership.py
+      # Swift looks texts up with String(localized:) since the String Catalog move;
+      # NSLocalizedString stays only in Objective-C.
+      - run: python3 scripts/ci/test_check_no_old_swift_lookup.py
+      - run: python3 scripts/ci/check_no_old_swift_lookup.py
+      - run: python3 scripts/test_convert_strings_to_utf8.py
 
   test:
     name: DashWalletTests on simulator
@@ -239,6 +244,19 @@ jobs:
             ${{ github.workspace }}/dashwallet-ios/Pods
           key: ${{ steps.cocoapods-cache.outputs.cache-primary-key }}
 
+      # The String Catalog tools: the build's sync phase, the zero-loss check and
+      # its formatter. They compile Swift helpers, so Xcode must be selected; the
+      # compiled helpers are cached in the runner temp dir, outside the checkout.
+      # The manual-entry scan reads the dashpay Debug build's Swift flags through
+      # xcodebuild with the pinned package versions, and CocoaPods' xcconfig adds
+      # two of them (COCOAPODS, SystemSQLite), so it runs after pod install.
+      - name: Test the String Catalog tools
+        env:
+          FORMATTER_CACHE: ${{ runner.temp }}/l10n-formatter
+          CATALOG_WRITER_CACHE: ${{ runner.temp }}/l10n-catalog-writer
+        run: |
+          python3 -m unittest discover -s scripts/localization/tests
+
       - name: Write placeholder app configuration
         run: |
           set -euo pipefail
@@ -339,8 +357,8 @@ jobs:
             } >> "$GITHUB_STEP_SUMMARY"
           fi
 
-      # The dashpay target runs clang-format and bartycrouch as build phases
-      # when they are on PATH; a build must never change the checkout.
+      # The dashpay target runs clang-format and, in Debug, the String Catalog sync as build
+      # phases; a build must never change the checkout.
       - name: Build must not modify the checkout
         if: always()
         run: |

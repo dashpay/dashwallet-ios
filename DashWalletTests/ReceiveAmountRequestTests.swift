@@ -98,13 +98,13 @@ final class ReceiveAmountRequestTests: XCTestCase {
     func testSheetShowsTheValueWithTheCaptionOfItsOption() {
         let platform = request(Self.platformMainnet, 1)
         XCTAssertEqual(platform.paymentAddress, Self.platformMainnet)
-        XCTAssertEqual(platform.addressCaption, NSLocalizedString("Your DASH address", comment: ""))
+        XCTAssertEqual(platform.addressCaption, String(localized: "Your DASH address", comment: ""))
         XCTAssertNil(platform.username)
         XCTAssertNotNil(platform.qrCodeImage)
 
         let identity = request(Self.identityIdBase58, 1, option: .identity)
         XCTAssertEqual(identity.paymentAddress, Self.identityIdBase58)
-        XCTAssertEqual(identity.addressCaption, NSLocalizedString("Identity ID", comment: ""))
+        XCTAssertEqual(identity.addressCaption, String(localized: "Identity ID", comment: ""))
     }
 
     /// Copy puts the whole request on the pasteboard, as Core's sheet does.

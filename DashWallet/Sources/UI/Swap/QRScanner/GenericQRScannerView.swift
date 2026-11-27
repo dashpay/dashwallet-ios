@@ -54,7 +54,7 @@ struct GenericQRScannerView: View {
                 // Top bar: Cancel + Torch
                 HStack {
                     Button(action: { onCancel?() }) {
-                        Text(NSLocalizedString("Cancel", comment: ""))
+                        Text(String(localized: "Cancel", comment: ""))
                             .font(.system(size: 17))
                             .foregroundColor(Color.dash.whiteText)
                     }
@@ -78,7 +78,7 @@ struct GenericQRScannerView: View {
                     .frame(width: 250, height: 250)
 
                 // Instruction label
-                Text(NSLocalizedString("Scan QR Code", comment: "Dash DEX"))
+                Text(String(localized: "Scan QR Code", comment: "Dash DEX"))
                     .font(.system(size: 15, weight: .medium))
                     .foregroundColor(Color.dash.whiteText)
                     .padding(.top, 24)
@@ -90,9 +90,9 @@ struct GenericQRScannerView: View {
         .background(Color.dash.black.ignoresSafeArea())
         .alert(isPresented: $showCameraAlert) {
             Alert(
-                title: Text(NSLocalizedString("Camera Unavailable", comment: "")),
-                message: Text(NSLocalizedString("Camera is required to scan QR codes.", comment: "")),
-                dismissButton: .default(Text(NSLocalizedString("OK", comment: ""))) {
+                title: Text(String(localized: "Camera Unavailable", comment: "")),
+                message: Text(String(localized: "Camera is required to scan QR codes.", comment: "")),
+                dismissButton: .default(Text(String(localized: "OK", comment: ""))) {
                     onCancel?()
                 }
             )

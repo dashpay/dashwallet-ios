@@ -64,7 +64,7 @@ struct RequestAmountScreen: View {
     private var hasAddress: Bool { paymentAddress != nil }
 
     static var coreAddressCaption: String {
-        NSLocalizedString("Your DASH address", comment: "Receive screen")
+        String(localized: "Your DASH address", comment: "Receive screen")
     }
 
     var body: some View {
@@ -112,7 +112,7 @@ struct RequestAmountScreen: View {
     private var card: some View {
         VStack(alignment: .leading, spacing: 0) {
             VStack(alignment: .center, spacing: 20) {
-                Text(NSLocalizedString("This QR contains the specified amount", comment: "Receive screen"))
+                Text(String(localized: "This QR contains the specified amount", comment: "Receive screen"))
                     .dashFont(.footnote)
                     .foregroundStyle(Color.dash.primaryText)
 
@@ -127,7 +127,7 @@ struct RequestAmountScreen: View {
 
                 if let username {
                     addressRow(
-                        caption: NSLocalizedString("Username", comment: "Receive screen"),
+                        caption: String(localized: "Username", comment: "Receive screen"),
                         value: username,
                         action: onCopyUsername)
                 }
@@ -136,7 +136,7 @@ struct RequestAmountScreen: View {
                 // control bound to it the requested payment could be copied
                 // but never sent to anyone.
                 DashUIKit.DashButton(
-                    text: NSLocalizedString("Share", comment: "Receive screen"),
+                    text: String(localized: "Share", comment: "Receive screen"),
                     isEnabled: hasAddress,
                     fillsWidth: true,
                     size: .medium,
@@ -174,8 +174,8 @@ struct RequestAmountScreen: View {
                     .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
-            .accessibilityLabel(Text(NSLocalizedString(
-                "Copy QR code", comment: "Receive: the QR image doubles as a copy control")))
+            .accessibilityLabel(Text(String(
+                localized: "Copy QR code", comment: "Receive: the QR image doubles as a copy control")))
         } else {
             // The same 220pt square the QR occupies, so the rows below do not
             // jump once the address resolves.
@@ -329,7 +329,7 @@ private func requestAmountSheet(
         amountDuffs: 1,
         fiatAmount: "$0.00",
         address: "4EfA9Jrvv3nnCFdSf7fad59851iiTRZ6Wcu6YVJ4iSeF",
-        addressCaption: NSLocalizedString("Identity ID", comment: ""))
+        addressCaption: String(localized: "Identity ID", comment: ""))
 }
 
 #endif

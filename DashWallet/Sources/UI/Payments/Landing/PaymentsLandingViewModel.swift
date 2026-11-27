@@ -17,9 +17,9 @@ enum PaymentsLandingTab: String, CaseIterable, Identifiable {
 
     var title: String {
         switch self {
-        case .receive: return NSLocalizedString("Receive", comment: "")
-        case .internalTransfer: return NSLocalizedString("Internal", comment: "")
-        case .send: return NSLocalizedString("Send", comment: "")
+        case .receive: return String(localized: "Receive", comment: "")
+        case .internalTransfer: return String(localized: "Internal", comment: "")
+        case .send: return String(localized: "Send", comment: "")
         }
     }
 }
@@ -37,13 +37,13 @@ enum CoreReceiptSettlementStatus: Int, Comparable {
     var title: String {
         switch self {
         case .mempool:
-            return NSLocalizedString("Detected in mempool", comment: "Receive payment status")
+            return String(localized: "Detected in mempool", comment: "Receive payment status")
         case .instantSend:
-            return NSLocalizedString("InstantSend confirmed", comment: "Receive payment status")
+            return String(localized: "InstantSend confirmed", comment: "Receive payment status")
         case .inBlock:
-            return NSLocalizedString("Confirmed in block", comment: "Receive payment status")
+            return String(localized: "Confirmed in block", comment: "Receive payment status")
         case .chainLocked:
-            return NSLocalizedString("ChainLocked", comment: "Receive payment status")
+            return String(localized: "ChainLocked", comment: "Receive payment status")
         }
     }
 }
@@ -58,7 +58,7 @@ struct ReceiveReceipt: Identifiable, Equatable {
     var coreStatus: CoreReceiptSettlementStatus?
 
     var statusTitle: String {
-        coreStatus?.title ?? NSLocalizedString("Received", comment: "Receive payment status")
+        coreStatus?.title ?? String(localized: "Received", comment: "Receive payment status")
     }
 }
 

@@ -82,14 +82,14 @@ final class CoreShieldedDrainMaxController: ObservableObject {
 
     var actionTitle: String? {
         guard isActive, !isLoading else { return nil }
-        if isCompleted { return NSLocalizedString("New transfer", comment: "Start a separate transfer") }
+        if isCompleted { return String(localized: "New transfer", comment: "Start a separate transfer") }
         if isPending {
             return hasOutpoint
-                ? NSLocalizedString("Resume transfer", comment: "Resume the same asset lock")
-                : NSLocalizedString("Check status", comment: "Read-only drain lookup")
+                ? String(localized: "Resume transfer", comment: "Resume the same asset lock")
+                : String(localized: "Check status", comment: "Read-only drain lookup")
         }
         return confirmation == nil
-            ? NSLocalizedString("Try again", comment: "Retry drain preview") : nil
+            ? String(localized: "Try again", comment: "Retry drain preview") : nil
     }
 
     /// Max was tapped on a Core → Shielded route. The owner has already
@@ -166,7 +166,7 @@ final class CoreShieldedDrainMaxController: ObservableObject {
         self.generation = generation
         isLoading = true
         confirmation = nil
-        notice = NSLocalizedString("Checking available funds and fees…", comment: "Core drain preview")
+        notice = String(localized: "Checking available funds and fees…", comment: "Core drain preview")
         task = Task { [weak self] in
             guard let self else { return }
             do {
@@ -198,8 +198,8 @@ final class CoreShieldedDrainMaxController: ObservableObject {
                 case .pending(let hasOutpoint):
                     self.isPending = true
                     self.hasOutpoint = hasOutpoint
-                    self.notice = NSLocalizedString(
-                        "A previous Max transfer is still pending. Check its status or resume it before starting another. Resume pays the address it was started with.",
+                    self.notice = String(
+                        localized: "A previous Max transfer is still pending. Check its status or resume it before starting another. Resume pays the address it was started with.",
                         comment: "Core drain recovery")
                     self.isLoading = false
                     return
@@ -281,14 +281,14 @@ final class CoreShieldedDrainMaxController: ObservableObject {
             return Estimate(notice: insufficientFundsMessage(), amountDuffs: nil, isConfirmable: false)
         case .ready:
             return Estimate(
-                notice: NSLocalizedString(
-                    "Max moves all eligible funds available at confirmation. The displayed amount and fees are estimates.",
+                notice: String(
+                    localized: "Max moves all eligible funds available at confirmation. The displayed amount and fees are estimates.",
                     comment: "Core drain estimate"),
                 amountDuffs: amountDuffs, isConfirmable: true)
         case .inputLimitMayBeExceeded:
             return Estimate(
-                notice: NSLocalizedString(
-                    "This balance is made of too many separate payments to move with Max in one transfer. Enter a smaller amount instead.",
+                notice: String(
+                    localized: "This balance is made of too many separate payments to move with Max in one transfer. Enter a smaller amount instead.",
                     comment: "Core drain input limit preview"),
                 amountDuffs: amountDuffs, isConfirmable: true)
         }

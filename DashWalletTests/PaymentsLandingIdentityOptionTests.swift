@@ -157,8 +157,8 @@ final class PaymentsLandingIdentityOptionTests: XCTestCase {
     func testIdentityReceiptNamesTheIdentityBalanceAndIsReceived() {
         let receipt = ReceiveReceipt(
             id: "identity-1", rail: .identity, amountDuffs: 1, receivedAt: Date(), memo: nil, transactionId: nil)
-        XCTAssertEqual(receipt.rail.balanceName, NSLocalizedString("Identity", comment: ""))
-        XCTAssertEqual(receipt.statusTitle, NSLocalizedString("Received", comment: "Receive payment status"))
+        XCTAssertEqual(receipt.rail.balanceName, String(localized: "Identity", comment: ""))
+        XCTAssertEqual(receipt.statusTitle, String(localized: "Received", comment: "Receive payment status"))
     }
 
     // MARK: Identity watch (T6)

@@ -54,11 +54,11 @@ public struct JoinDashPayScreen: View {
                 .frame(maxHeight: 20)
 
             VStack(alignment: .leading, spacing: 6) {
-                Text(NSLocalizedString("Create username", comment: ""))
+                Text(String(localized: "Create username", comment: ""))
                     .dashFont(.title1)
                     .foregroundStyle(Color.dash.primaryText)
 
-                Text(NSLocalizedString("Forget about long crypto addresses, create the username, find friends and add them to your contacts", comment: ""))
+                Text(String(localized: "Forget about long crypto addresses, create the username, find friends and add them to your contacts", comment: ""))
                     .dashFont(.body)
                     .foregroundStyle(Color.dash.secondaryText)
             }
@@ -67,18 +67,18 @@ public struct JoinDashPayScreen: View {
 
             VStack(alignment: .leading, spacing: 16) {
                 SheetFeature(
-                    title: NSLocalizedString("Pay to usernames", comment: ""),
-                    description: NSLocalizedString("No more alphanumeric addresses", comment: ""),
+                    title: String(localized: "Pay to usernames", comment: ""),
+                    description: String(localized: "No more alphanumeric addresses", comment: ""),
                     icon: DashIcon.Features.username.source
                 )
                 SheetFeature(
-                    title: NSLocalizedString("Add your friends & family", comment: ""),
-                    description: NSLocalizedString("Invite your family, find your friends by searching their usernames", comment: ""),
+                    title: String(localized: "Add your friends & family", comment: ""),
+                    description: String(localized: "Invite your family, find your friends by searching their usernames", comment: ""),
                     icon: DashIcon.Features.friends.source
                 )
                 SheetFeature(
-                    title: NSLocalizedString("Personalize profile", comment: ""),
-                    description: NSLocalizedString("Upload your picture, personalize your identity", comment: ""),
+                    title: String(localized: "Personalize profile", comment: ""),
+                    description: String(localized: "Upload your picture, personalize your identity", comment: ""),
                     icon: DashIcon.Features.profile.source
                 )
             }
@@ -104,8 +104,8 @@ public struct JoinDashPayScreen: View {
                     // "not yet" rather than promising a registration.
                     DashUIKit.DashButton(
                         text: canProceed
-                            ? NSLocalizedString("Create username", comment: "")
-                            : NSLocalizedString("Continue", comment: ""),
+                            ? String(localized: "Create username", comment: "")
+                            : String(localized: "Continue", comment: ""),
                         isEnabled: canProceed,
                         fillsWidth: true,
                         size: .large,
@@ -118,7 +118,7 @@ public struct JoinDashPayScreen: View {
                     // out.
                     if let onClaimInvitation {
                         DashUIKit.DashButton(
-                            text: NSLocalizedString("Scan invitation QR", comment: ""),
+                            text: String(localized: "Scan invitation QR", comment: ""),
                             fillsWidth: true,
                             size: .large,
                             style: .tintedBlue,
@@ -175,24 +175,16 @@ public struct JoinDashPayScreen: View {
             shieldedOnlyFunding: viewModel.shieldedOnlyFunding)
         switch note {
         case .minimum:
-            return String.localizedStringWithFormat(
-                NSLocalizedString("You should have at least %@ Dash to create a username", comment: "Usernames"),
-                viewModel.minimumRequiredBalance)
+            return String(localized: "You should have at least \(viewModel.minimumRequiredBalance) Dash to create a username", comment: "Usernames")
         case .shielded(let matureDuffs):
-            return String.localizedStringWithFormat(
-                NSLocalizedString("You have %@ Dash in Shielded (enough for a standard username).\nSome usernames cost up to %@ Dash.", comment: "Usernames"),
-                matureDuffs.dashAmount.formattedDashAmountWithoutCurrencySymbol,
-                viewModel.recommendedBalance)
+            return String(localized: "You have \(matureDuffs.dashAmount.formattedDashAmountWithoutCurrencySymbol) Dash in Shielded (enough for a standard username).\nSome usernames cost up to \(viewModel.recommendedBalance) Dash.", comment: "Usernames")
         case .dashBalance:
             // "available", not "you have": the figure is what can actually be
             // spent — `coreSpendableDuffs`, i.e. confirmed inputs less the
             // miner fee an ordinary send still needs. Home's header shows the
             // total, so without saying which is which the two numbers read as
             // a bug (0.25 in the header, 0.24999661 here).
-            return String.localizedStringWithFormat(
-                NSLocalizedString("You have %@ Dash available (network fee reserved).\nSome usernames cost up to %@ Dash.", comment: "Usernames"),
-                viewModel.balance,
-                viewModel.recommendedBalance)
+            return String(localized: "You have \(viewModel.balance) Dash available (network fee reserved).\nSome usernames cost up to \(viewModel.recommendedBalance) Dash.", comment: "Usernames")
         case nil:
             return nil
         }

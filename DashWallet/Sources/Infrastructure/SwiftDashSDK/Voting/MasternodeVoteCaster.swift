@@ -45,9 +45,9 @@ enum VoteChoice: Hashable {
 
     var displayName: String {
         switch self {
-        case .towards: return NSLocalizedString("Approve", comment: "Voting")
-        case .abstain: return NSLocalizedString("Abstain", comment: "Voting")
-        case .lock: return NSLocalizedString("Lock", comment: "Voting")
+        case .towards: return String(localized: "Approve", comment: "Voting")
+        case .abstain: return String(localized: "Abstain", comment: "Voting")
+        case .lock: return String(localized: "Lock", comment: "Voting")
         }
     }
 
@@ -97,14 +97,14 @@ struct VoteOutcome: Identifiable {
 
     /// A masternode with no vote left here: "No votes left".
     static func noVotesLeft(_ node: VoterNode) -> VoteOutcome {
-        var outcome = VoteOutcome(node: node, failure: NSLocalizedString("No votes left", comment: "Voting"))
+        var outcome = VoteOutcome(node: node, failure: String(localized: "No votes left", comment: "Voting"))
         outcome.hasNoVotesLeft = true
         return outcome
     }
 
     /// A broadcast whose result the SDK could not confirm.
     static func unconfirmed(_ node: VoterNode) -> VoteOutcome {
-        var outcome = VoteOutcome(node: node, failure: NSLocalizedString("Result not confirmed", comment: "Voting"))
+        var outcome = VoteOutcome(node: node, failure: String(localized: "Result not confirmed", comment: "Voting"))
         outcome.mayHaveLanded = true
         return outcome
     }
@@ -227,18 +227,16 @@ final class MasternodeVoteCaster {
         var errorDescription: String? {
             switch self {
             case .authenticationFailed:
-                return NSLocalizedString("Authentication failed. Your vote was not cast.", comment: "Voting")
+                return String(localized: "Authentication failed. Your vote was not cast.", comment: "Voting")
             case .authenticationCancelled:
-                return NSLocalizedString("Authentication cancelled. Your vote was not cast.", comment: "Voting")
+                return String(localized: "Authentication cancelled. Your vote was not cast.", comment: "Voting")
             case .noNodesSelected:
-                return NSLocalizedString("Select at least one masternode to vote with.", comment: "Voting")
+                return String(localized: "Select at least one masternode to vote with.", comment: "Voting")
             case .contestClosed(let label):
-                return String(format: NSLocalizedString(
-                    "Voting on “%@” has already closed. Refresh to see the result.",
-                    comment: "Voting"), label)
+                return String(localized: "Voting on “\(label)” has already closed. Refresh to see the result.", comment: "Voting")
             case .sdkUnavailable:
-                return NSLocalizedString(
-                    "Dash Platform is not connected yet. Wait for syncing to finish and try again.",
+                return String(
+                    localized: "Dash Platform is not connected yet. Wait for syncing to finish and try again.",
                     comment: "Voting")
             }
         }
@@ -334,8 +332,8 @@ final class MasternodeVoteCaster {
                 normalizedLabel: cast.normalizedLabel, choice: cast.choice,
                 outcomes: cast.nodes.map { VoteOutcome(node: $0, failure: reason) }, contestClosed: closed)
         }
-        let stopped = NSLocalizedString("Quick voting stopped before this vote was sent.", comment: "Voting")
-        let ended = NSLocalizedString("Voting has ended", comment: "Voting")
+        let stopped = String(localized: "Quick voting stopped before this vote was sent.", comment: "Voting")
+        let ended = String(localized: "Voting has ended", comment: "Voting")
         // The sheet or "One vote left" may have stayed open past the end.
         func hasEnded() -> Bool { cast.endsAt.map { now() >= $0 } ?? false }
         guard !Task.isCancelled else { return notSent(stopped) }
@@ -406,8 +404,8 @@ final class MasternodeVoteCaster {
                 DWLogger.log("Voting: \(attempt) not sent: vote count unreadable")
                 outcomes.append(VoteOutcome(
                     node: node,
-                    failure: NSLocalizedString(
-                        "Could not check how many votes this node has left.",
+                    failure: String(
+                        localized: "Could not check how many votes this node has left.",
                         comment: "Voting")))
                 continue
             }
@@ -422,8 +420,8 @@ final class MasternodeVoteCaster {
                 DWLogger.log("Voting: \(attempt) not sent: no voting key")
                 outcomes.append(VoteOutcome(
                     node: node,
-                    failure: NSLocalizedString(
-                        "This wallet could not derive the voting key for this node.",
+                    failure: String(
+                        localized: "This wallet could not derive the voting key for this node.",
                         comment: "Voting")))
                 continue
             }
@@ -435,7 +433,7 @@ final class MasternodeVoteCaster {
                 DWLogger.log("Voting: \(attempt) not sent: stopped")
                 outcomes.append(VoteOutcome(
                     node: node,
-                    failure: NSLocalizedString("Quick voting stopped before this vote was sent.", comment: "Voting")))
+                    failure: String(localized: "Quick voting stopped before this vote was sent.", comment: "Voting")))
                 continue
             }
             // A Quick voting name's known end may have passed while the count
@@ -443,7 +441,7 @@ final class MasternodeVoteCaster {
             guard !(endsAt.map { now() >= $0 } ?? false) else {
                 DWLogger.log("Voting: \(attempt) not sent: voting ended")
                 outcomes.append(VoteOutcome(
-                    node: node, failure: NSLocalizedString("Voting has ended", comment: "Voting")))
+                    node: node, failure: String(localized: "Voting has ended", comment: "Voting")))
                 ended = true
                 continue
             }

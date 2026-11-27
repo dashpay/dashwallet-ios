@@ -31,13 +31,13 @@ extension IntegrationItemType {
     var title: String {
         switch self {
         case .buyDash:
-            return NSLocalizedString("Buy Dash", comment: "Integration Entry Point")
+            return String(localized: "Buy Dash", comment: "Integration Entry Point")
         case .sellDash:
-            return NSLocalizedString("Sell Dash", comment: "Integration Entry Point")
+            return String(localized: "Sell Dash", comment: "Integration Entry Point")
 //        case .convertCrypto:
 //            return NSLocalizedString("Convert Crypto", comment: "Integration Entry Point")
         case .transferDash:
-            return NSLocalizedString("Transfer Dash", comment: "Integration Entry Point")
+            return String(localized: "Transfer Dash", comment: "Integration Entry Point")
         }
     }
     

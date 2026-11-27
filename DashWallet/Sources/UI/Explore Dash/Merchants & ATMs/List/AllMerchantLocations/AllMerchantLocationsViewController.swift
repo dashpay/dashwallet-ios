@@ -53,7 +53,7 @@ class AllMerchantLocationsViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        title = NSLocalizedString("Where to Spend", comment: "")
+        title = String(localized: "Where to Spend", comment: "")
         navigationBarHost = installExploreNavigationBar(
             title: title ?? "",
             leading: .back,

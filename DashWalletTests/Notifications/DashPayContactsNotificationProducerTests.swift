@@ -105,7 +105,7 @@ final class DashPayContactsNotificationProducerTests: XCTestCase {
         XCTAssertEqual(request.identifier, eventId("request", owner: DashPayContactsNotificationProducerTests.ownerAHex, item: item))
         XCTAssertEqual(request.content.threadIdentifier, NotificationTopic.dashpay.rawValue)
         XCTAssertEqual(request.content.body,
-                       String(format: NSLocalizedString("%@ has sent you a contact request", comment: "DashPay Notifications"), "alice"))
+                       String(localized: "\("alice") has sent you a contact request", comment: "DashPay Notifications"))
         XCTAssertEqual(DeepLinkRoute.decode(fromUserInfo: request.content.userInfo), .dashPayNotifications)
         XCTAssertEqual(request.content.userInfo[NotificationUserInfoKey.foregroundBehavior] as? String,
                        NotificationForegroundBehavior.suppress.rawValue)
@@ -218,7 +218,7 @@ final class DashPayContactsNotificationProducerTests: XCTestCase {
         let request = client.addedRequests[0]
         XCTAssertEqual(request.identifier, eventId("accepted", owner: DashPayContactsNotificationProducerTests.ownerAHex, item: item))
         XCTAssertEqual(request.content.body,
-                       String(format: NSLocalizedString("%@ accepted your contact request", comment: "DashPay Notifications"), "bob"))
+                       String(localized: "\("bob") accepted your contact request", comment: "DashPay Notifications"))
         XCTAssertEqual(DeepLinkRoute.decode(fromUserInfo: request.content.userInfo), .dashPayNotifications)
     }
 

@@ -41,11 +41,11 @@ struct MerchantDenominations: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            Text(NSLocalizedString("Select amount", comment: "DashSpend"))
+            Text(String(localized: "Select amount", comment: "DashSpend"))
                 .font(.title1)
                 .foregroundColor(.dash.primaryText)
             
-            Text(NSLocalizedString("This merchant sells gift cards at fixed prices", comment: "DashSpend"))
+            Text(String(localized: "This merchant sells gift cards at fixed prices", comment: "DashSpend"))
                 .font(.subhead)
                 .foregroundColor(.dash.secondaryText)
                 .padding(.top, 4)
@@ -65,7 +65,7 @@ struct MerchantDenominations: View {
             .padding(.top, 20)
             
             DashButton(
-                text: NSLocalizedString("Continue", comment: ""),
+                text: String(localized: "Continue", comment: ""),
                 style: .filled,
                 size: .large,
                 stretch: true,

@@ -89,20 +89,20 @@ enum SwiftDashSDKWalletDeletionError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .invalidMnemonic:
-            return NSLocalizedString(
-                "The wallet recovery phrase is invalid. Please try again.",
+            return String(
+                localized: "The wallet recovery phrase is invalid. Please try again.",
                 comment: "Wallets")
         case .managerUnavailable:
-            return NSLocalizedString(
-                "The wallet manager is not available. Please try again.",
+            return String(
+                localized: "The wallet manager is not available. Please try again.",
                 comment: "Wallets")
         case .unrecognizedWalletNetwork:
-            return NSLocalizedString(
-                "The wallet network could not be determined. Please try again.",
+            return String(
+                localized: "The wallet network could not be determined. Please try again.",
                 comment: "Wallets")
         case .walletDeletionIncomplete:
-            return NSLocalizedString(
-                "The wallet could not be fully removed. Please try again.",
+            return String(
+                localized: "The wallet could not be fully removed. Please try again.",
                 comment: "Wallets")
         }
     }

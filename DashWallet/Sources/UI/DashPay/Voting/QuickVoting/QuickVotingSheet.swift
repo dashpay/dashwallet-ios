@@ -39,7 +39,7 @@ struct QuickVotingSheet: View {
         DashUIKit.BottomSheet.selfSizing(showBackButton: .constant(false), showsCloseButton: false) {
             VStack(alignment: .leading, spacing: 20) {
                 DashUIKit.TopIntroView(
-                    title: NSLocalizedString("Quick voting", comment: "Voting"),
+                    title: String(localized: "Quick voting", comment: "Voting"),
                     mainDescription: Self.description(
                         votedCount: votedCount, skippedCount: skippedCount,
                         approvesLinkedRequests: approvesLinkedRequests),
@@ -48,13 +48,13 @@ struct QuickVotingSheet: View {
                 if votedCount > 0 {
                     HStack(spacing: 10) {
                         DashUIKit.DashButton(
-                            text: NSLocalizedString("Cancel", comment: ""),
+                            text: String(localized: "Cancel", comment: ""),
                             fillsWidth: true,
                             size: .large,
                             style: .tintedGray,
                             action: onCancel)
                         DashUIKit.DashButton(
-                            text: NSLocalizedString("Vote for all", comment: "Voting"),
+                            text: String(localized: "Vote for all", comment: "Voting"),
                             fillsWidth: true,
                             size: .large,
                             style: .filledBlue,
@@ -62,7 +62,7 @@ struct QuickVotingSheet: View {
                     }
                 } else {
                     DashUIKit.DashButton(
-                        text: NSLocalizedString("Close", comment: ""),
+                        text: String(localized: "Close", comment: ""),
                         fillsWidth: true,
                         size: .large,
                         style: .tintedGray,
@@ -78,16 +78,14 @@ struct QuickVotingSheet: View {
     /// request submitted first…».
     static func description(votedCount: Int, skippedCount: Int, approvesLinkedRequests: Bool = false) -> String {
         guard votedCount > 0 else {
-            return NSLocalizedString("None of the filtered usernames can get a vote.", comment: "Voting")
+            return String(localized: "None of the filtered usernames can get a vote.", comment: "Voting")
         }
         let format = approvesLinkedRequests
-            ? NSLocalizedString("Vote for all approves the linked request for %d usernames", comment: "Voting: Quick voting sheet")
-            : NSLocalizedString("Vote for all approves %d usernames", comment: "Voting: Quick voting sheet")
+            ? String(localized: "Vote for all approves the linked request for %d usernames", comment: "Voting: Quick voting sheet")
+            : String(localized: "Vote for all approves %d usernames", comment: "Voting: Quick voting sheet")
         let voted = String.localizedStringWithFormat(format, votedCount)
         guard skippedCount > 0 else { return voted }
-        let skipped = String.localizedStringWithFormat(
-            NSLocalizedString("%d usernames are skipped", comment: "Voting: Quick voting sheet"),
-            skippedCount)
+        let skipped = String(localized: "\(skippedCount) usernames are skipped", comment: "Voting: Quick voting sheet")
         return voted + " " + skipped
     }
 }

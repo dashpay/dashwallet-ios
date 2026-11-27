@@ -98,12 +98,12 @@ final class VotingKeyInputViewModel: ObservableObject {
         if let problem = VotingKeyFormat.problem(with: key, isMainnet: isMainnet) {
             // The case only, never the text entered.
             DWLogger.log("Voting: voting key refused: \(problem)")
-            error = NSLocalizedString("You have entered an invalid key", comment: "Voting")
+            error = String(localized: "You have entered an invalid key", comment: "Voting")
             return .failed
         }
 
         guard let manager = tracker() else {
-            error = NSLocalizedString("Wallet is not ready. Try again in a moment.", comment: "Evonode withdrawal")
+            error = String(localized: "Wallet is not ready. Try again in a moment.", comment: "Evonode withdrawal")
             return .failed
         }
 
@@ -116,11 +116,11 @@ final class VotingKeyInputViewModel: ObservableObject {
         } catch let sdkError as PlatformWalletError {
             switch sdkError {
             case .masternodeListUnavailable:
-                error = NSLocalizedString(
-                    "The masternode list is still syncing. Try again in a moment.",
+                error = String(
+                    localized: "The masternode list is still syncing. Try again in a moment.",
                     comment: "Voting")
             case .invalidParameter:
-                error = NSLocalizedString("You have entered an invalid key", comment: "Voting")
+                error = String(localized: "You have entered an invalid key", comment: "Voting")
             default:
                 error = sdkError.errorDescription ?? sdkError.localizedDescription
             }
@@ -136,8 +136,8 @@ final class VotingKeyInputViewModel: ObservableObject {
         // vote, and `MasternodeVoterRegistry` would not list it anyway.
         let votingMatches = located.filter { $0.isVotingKeyMatch && $0.isValid }
         guard !votingMatches.isEmpty else {
-            error = NSLocalizedString(
-                "You have entered a key that is not associated to an active Masternode",
+            error = String(
+                localized: "You have entered a key that is not associated to an active Masternode",
                 comment: "Voting")
             return .failed
         }
@@ -152,9 +152,9 @@ final class VotingKeyInputViewModel: ObservableObject {
         let walletOwnedCount = notYetVotable.count - addable.count
         guard !addable.isEmpty else {
             error = notYetVotable.isEmpty
-                ? NSLocalizedString("You have already entered this masternode key", comment: "Voting")
-                : NSLocalizedString(
-                    "This masternode is registered to a wallet in this app. Its voting key cannot be added separately.",
+                ? String(localized: "You have already entered this masternode key", comment: "Voting")
+                : String(
+                    localized: "This masternode is registered to a wallet in this app. Its voting key cannot be added separately.",
                     comment: "Voting")
             return .failed
         }
@@ -184,8 +184,8 @@ final class VotingKeyInputViewModel: ObservableObject {
                 if trackedNow {
                     manager.untrackForVoting(proTxHash: match.proTxHash)
                 }
-                failure = NSLocalizedString(
-                    "Could not save a key to the keychain. Nothing was lost — try again.",
+                failure = String(
+                    localized: "Could not save a key to the keychain. Nothing was lost — try again.",
                     comment: "Add masternode")
                 break
             }
@@ -200,15 +200,11 @@ final class VotingKeyInputViewModel: ObservableObject {
         case 0:
             walletOwnedNote = nil
         case 1:
-            walletOwnedNote = NSLocalizedString(
-                "One masternode that votes with this key is registered to a wallet in this app and was not added. Its voting key cannot be added separately.",
+            walletOwnedNote = String(
+                localized: "One masternode that votes with this key is registered to a wallet in this app and was not added. Its voting key cannot be added separately.",
                 comment: "Voting")
         default:
-            walletOwnedNote = String.localizedStringWithFormat(
-                NSLocalizedString(
-                    "%d masternodes that vote with this key are registered to a wallet in this app and were not added. Their voting key cannot be added separately.",
-                    comment: "Voting"),
-                walletOwnedCount)
+            walletOwnedNote = String(localized: "\(walletOwnedCount) masternodes that vote with this key are registered to a wallet in this app and were not added. Their voting key cannot be added separately.", comment: "Voting")
         }
 
         var retryPart: [String] = []
@@ -220,11 +216,7 @@ final class VotingKeyInputViewModel: ObservableObject {
             // Counted against `addable` only, so "the rest" is exactly what a
             // retry can add.
             retryPart = [
-                String.localizedStringWithFormat(
-                    NSLocalizedString(
-                        "Added %1$d of %2$d masternodes that vote with this key. Enter the key again to add the rest.",
-                        comment: "Voting"),
-                    added, addable.count),
+                String(localized: "Added \(added) of \(addable.count) masternodes that vote with this key. Enter the key again to add the rest.", comment: "Voting"),
                 failure,
             ]
         }

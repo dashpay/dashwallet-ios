@@ -192,7 +192,7 @@ struct PaymentsReceiveContent: View {
                 } label: {
                     DashUIKit.MenuItem(
                         leadingIcon: .custom(DashIcon.Menu.importPrivateKey.rawValue, bundle: .dashUIKit),
-                        title: NSLocalizedString("Import private key", comment: "Payments"),
+                        title: String(localized: "Import private key", comment: "Payments"),
                         accessory: .none
                     )
                     .modifier(MenuViewModifier())
@@ -227,7 +227,7 @@ struct PaymentsReceiveContent: View {
                     HStack(spacing: 12) {
                         if let address = viewModel.currentAddress {
                             VStack(alignment: .leading, spacing: 2) {
-                                Text(NSLocalizedString("Your DASH address", comment: "Payments"))
+                                Text(String(localized: "Your DASH address", comment: "Payments"))
                                     .dashFont(.footnote)
                                     .foregroundStyle(Color.dash.secondaryText)
 
@@ -253,12 +253,12 @@ struct PaymentsReceiveContent: View {
                             .onTapGesture { onCopyAddress() }
                             .accessibilityElement(children: .combine)
                             .accessibilityAddTraits(.isButton)
-                            .accessibilityHint(Text(NSLocalizedString("Copy", comment: "")))
+                            .accessibilityHint(Text(String(localized: "Copy", comment: "")))
                         } else {
                             // Same full-width, leading slot the address takes,
                             // so the copy button stays on the trailing edge
                             // instead of the pair centring in the row.
-                            Text(NSLocalizedString("No address available", comment: "Payments"))
+                            Text(String(localized: "No address available", comment: "Payments"))
                                 .font(.footnote)
                                 .foregroundColor(Color.dash.secondaryText)
                                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -290,7 +290,7 @@ struct PaymentsReceiveContent: View {
                 // the button looking live.
                 HStack(spacing: 20) {
                     DashUIKit.DashButton(
-                        text: NSLocalizedString("Share address", comment: "Payments"),
+                        text: String(localized: "Share address", comment: "Payments"),
                         isEnabled: hasAddress,
                         size: .medium,
                         style: .tintedGray,
@@ -298,7 +298,7 @@ struct PaymentsReceiveContent: View {
                     )
 
                     DashUIKit.DashButton(
-                        text: NSLocalizedString("Specify amount", comment: "Payments"),
+                        text: String(localized: "Specify amount", comment: "Payments"),
                         isEnabled: viewModel.canSpecifyAmount,
                         size: .medium,
                         style: .tintedGray,
@@ -325,17 +325,17 @@ struct PaymentsReceiveContent: View {
 
                 VStack(spacing: 12) {
                     copyRow(
-                        label: NSLocalizedString("Username", comment: ""),
+                        label: String(localized: "Username", comment: ""),
                         value: viewModel.receiveIdentity?.username,
-                        copyLabel: NSLocalizedString("Copy username", comment: "Receive, Identity option"),
+                        copyLabel: String(localized: "Copy username", comment: "Receive, Identity option"),
                         action: onCopyUsername)
 
                     // One line, cut in the middle like an address: both ends
                     // are what a person compares.
                     copyRow(
-                        label: NSLocalizedString("Identity ID", comment: ""),
+                        label: String(localized: "Identity ID", comment: ""),
                         value: viewModel.receiveIdentity?.identityIdBase58,
-                        copyLabel: NSLocalizedString("Copy Identity ID", comment: "Receive, Identity option"),
+                        copyLabel: String(localized: "Copy Identity ID", comment: "Receive, Identity option"),
                         action: onCopyAddress)
                 }
             }
@@ -346,7 +346,7 @@ struct PaymentsReceiveContent: View {
 
             HStack(spacing: 20) {
                 DashUIKit.DashButton(
-                    text: NSLocalizedString("Share ID", comment: "Receive, Identity option"),
+                    text: String(localized: "Share ID", comment: "Receive, Identity option"),
                     isEnabled: hasAddress,
                     size: .medium,
                     style: .tintedGray,
@@ -354,7 +354,7 @@ struct PaymentsReceiveContent: View {
                 )
 
                 DashUIKit.DashButton(
-                    text: NSLocalizedString("Specify amount", comment: "Payments"),
+                    text: String(localized: "Specify amount", comment: "Payments"),
                     isEnabled: viewModel.canSpecifyAmount,
                     size: .medium,
                     style: .tintedGray,
@@ -366,10 +366,10 @@ struct PaymentsReceiveContent: View {
             .padding(.top, 20)
 
             DashUIKit.SystemMessageView(
-                title: NSLocalizedString(
+                title: String(localized:
                     "Most exchanges and many wallets can send only to Core addresses",
                     comment: "Receive, Identity option warning"),
-                subtitle: NSLocalizedString(
+                subtitle: String(localized:
                     "Funds sent to your identity pay for Dash apps and usernames.",
                     comment: "Receive, Identity option warning"),
                 icon: DashIcon.SystemMessage.warningTriangle.source,
@@ -403,7 +403,7 @@ struct PaymentsReceiveContent: View {
             .onTapGesture(perform: action)
             .accessibilityElement(children: .combine)
             .accessibilityAddTraits(.isButton)
-            .accessibilityHint(Text(NSLocalizedString("Copy", comment: "")))
+            .accessibilityHint(Text(String(localized: "Copy", comment: "")))
 
             DashUIKit.DashButton(
                 leadingIcon: .custom(DashIcon.Icons.copyOutline.rawValue, bundle: .dashUIKit),
@@ -450,13 +450,13 @@ struct PaymentsReceiveContent: View {
                     .background(Color.dash.white)
                     .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
             } else if viewModel.network == .platform && !viewModel.platformIsReady {
-                placeholder(NSLocalizedString("Platform sync starting…", comment: ""))
+                placeholder(String(localized: "Platform sync starting…", comment: ""))
             } else if viewModel.network == .shielded {
                 // Nil only until the shielded sub-wallet binds at startup
                 // (the view model retries as the platform stack comes up).
-                placeholder(NSLocalizedString("Shielded wallet starting…", comment: ""))
+                placeholder(String(localized: "Shielded wallet starting…", comment: ""))
             } else {
-                placeholder(NSLocalizedString("No address available", comment: ""))
+                placeholder(String(localized: "No address available", comment: ""))
             }
         }
     }
@@ -495,20 +495,20 @@ private struct ReceiveReceiptCard: View {
     var body: some View {
         VStack(spacing: 16) {
             PaymentSuccessHeader(
-                title: NSLocalizedString("Received", comment: "Receive success title"),
+                title: String(localized: "Received", comment: "Receive success title"),
                 amountDuffs: Int64(clamping: receipt.amountDuffs),
                 fiatText: CurrencyExchanger.shared.fiatAmountString(
                     for: receipt.amountDuffs.dashAmount))
 
             VStack(spacing: 8) {
-                row(NSLocalizedString("Balance", comment: "Receive receipt rail"),
+                row(String(localized: "Balance", comment: "Receive receipt rail"),
                     receipt.rail.balanceName)
-                row(NSLocalizedString("Status", comment: "Receive receipt status"),
+                row(String(localized: "Status", comment: "Receive receipt status"),
                     receipt.statusTitle)
-                row(NSLocalizedString("Time", comment: "Receive receipt time"),
+                row(String(localized: "Time", comment: "Receive receipt time"),
                     receipt.receivedAt.formatted(date: .omitted, time: .shortened))
                 if let memo = receipt.memo, !memo.isEmpty {
-                    row(NSLocalizedString("Memo", comment: "Receive receipt memo"), memo)
+                    row(String(localized: "Memo", comment: "Receive receipt memo"), memo)
                 }
             }
             .padding(14)
@@ -518,7 +518,7 @@ private struct ReceiveReceiptCard: View {
                 Button {
                     onViewTransaction(transactionId)
                 } label: {
-                    Text(NSLocalizedString("View transaction", comment: "Receive receipt action"))
+                    Text(String(localized: "View transaction", comment: "Receive receipt action"))
                         .dashFont(.subheadMedium)
                         .foregroundColor(.dash.blue)
                 }
@@ -530,9 +530,9 @@ private struct ReceiveReceiptCard: View {
             ButtonsGroup(
                 orientation: .horizontal,
                 size: .large,
-                positiveButtonText: NSLocalizedString("Done", comment: "Receive receipt action"),
+                positiveButtonText: String(localized: "Done", comment: "Receive receipt action"),
                 positiveButtonAction: onDone,
-                negativeButtonText: NSLocalizedString("Receive another", comment: "Receive receipt action"),
+                negativeButtonText: String(localized: "Receive another", comment: "Receive receipt action"),
                 negativeButtonAction: onReceiveAnother)
                 .padding(.bottom, 16)
         }
@@ -570,7 +570,7 @@ struct ReceiveWatchingIndicator: View {
             // at that size.
             SwiftUI.ProgressView()
                 .controlSize(.small)
-            Text(NSLocalizedString("Watching for a payment…", comment: "Receive screen activity"))
+            Text(String(localized: "Watching for a payment…", comment: "Receive screen activity"))
                 .dashFont(.caption1)
                 .foregroundColor(.dash.secondaryText)
         }

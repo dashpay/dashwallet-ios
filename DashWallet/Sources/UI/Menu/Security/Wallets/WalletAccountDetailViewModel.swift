@@ -188,7 +188,7 @@ final class WalletAccountDetailViewModel: ObservableObject {
             sections = items.isEmpty
                 ? []
                 : [AccountAddressSection(
-                    name: NSLocalizedString("Platform Addresses", comment: "Wallet accounts"),
+                    name: String(localized: "Platform Addresses", comment: "Wallet accounts"),
                     items: items)]
         } else {
             sections = [UInt8(0), 1, 2, 3].compactMap { tag in
@@ -205,7 +205,7 @@ final class WalletAccountDetailViewModel: ObservableObject {
             typeName: account.accountTypeName,
             accountIndex: account.accountIndex,
             networkName: account.wallet.network.map { WalletEnvironment.displayName(of: $0) }
-                ?? NSLocalizedString("Unknown", comment: ""),
+                ?? String(localized: "Unknown", comment: ""),
             showsBalance: showsBalance,
             isPlatformPayment: isPlatformPayment,
             isProviderKeyAccount: account.accountType == 10 || account.accountType == 11,

@@ -48,13 +48,13 @@ extension TransactionDirection {
     var title: String {
         switch self {
         case .sent:
-            return NSLocalizedString("Amount Sent", comment: "");
+            return String(localized: "Amount Sent", comment: "");
         case .received:
-            return NSLocalizedString("Amount received", comment: "");
+            return String(localized: "Amount received", comment: "");
         case .moved:
-            return NSLocalizedString("Moved to Address", comment: "");
+            return String(localized: "Moved to Address", comment: "");
         case .notAccountFunds:
-            return NSLocalizedString("Registered Masternode", comment: "");
+            return String(localized: "Registered Masternode", comment: "");
         }
     }
 
@@ -114,7 +114,7 @@ extension TransactionDirection {
 extension TransactionDataItem {
     var formattedDashAmountWithDirectionalSymbol: String {
         guard dashAmount != UInt64.max else {
-            return NSLocalizedString("Syncing...", comment: "Transaction/Amount")
+            return String(localized: "Syncing...", comment: "Transaction/Amount")
         }
 
         let formatted = dashAmount.formattedDashAmount
@@ -128,7 +128,7 @@ extension TransactionDataItem {
 
     func attributedDashAmount(with font: UIFont, color: UIColor = .dw_label()) -> NSAttributedString {
         guard dashAmount != UInt64.max else {
-            return NSAttributedString(string: NSLocalizedString("Syncing...", comment: "Transaction/Amount"))
+            return NSAttributedString(string: String(localized: "Syncing...", comment: "Transaction/Amount"))
         }
 
         let formatted = formattedDashAmountWithDirectionalSymbol

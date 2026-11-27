@@ -134,9 +134,9 @@ private struct VotingKeysScreen: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
                     DashUIKit.TopIntroView(
-                        title: NSLocalizedString("Add your voting keys", comment: "Voting"),
-                        mainDescription: NSLocalizedString(
-                            "The IP address(es) below are associated with this wallet. Tick the ones that should vote.",
+                        title: String(localized: "Add your voting keys", comment: "Voting"),
+                        mainDescription: String(
+                            localized: "The IP address(es) below are associated with this wallet. Tick the ones that should vote.",
                             comment: "Voting"),
                         descriptionColor: Color.dash.secondaryText)
 
@@ -159,15 +159,15 @@ private struct VotingKeysScreen: View {
 
                     if keys.showsLinkingWarning {
                         VotingBanner(
-                            text: NSLocalizedString(
-                                "Voting with several masternodes at once publicly links them to each other.",
+                            text: String(
+                                localized: "Voting with several masternodes at once publicly links them to each other.",
                                 comment: "Voting"),
                             tone: .warning,
                             isRounded: true)
                     }
 
                     DashUIKit.DashButton(
-                        text: NSLocalizedString("Add masternode voting key", comment: "Voting"),
+                        text: String(localized: "Add masternode voting key", comment: "Voting"),
                         leadingIcon: .system("plus"),
                         size: .medium,
                         style: .plainBlue,
@@ -181,31 +181,31 @@ private struct VotingKeysScreen: View {
             if let choice = keys.voteChoice {
                 voteButton(
                     title: choice == .lock
-                        ? NSLocalizedString("Block", comment: "Voting")
-                        : NSLocalizedString("Approve", comment: "Voting"),
+                        ? String(localized: "Block", comment: "Voting")
+                        : String(localized: "Approve", comment: "Voting"),
                     style: choice == .lock ? .filledRed : .filledBlue)
             } else if keys.mode == .quickVoting {
-                voteButton(title: NSLocalizedString("Vote for all", comment: "Voting"), style: .filledBlue)
+                voteButton(title: String(localized: "Vote for all", comment: "Voting"), style: .filledBlue)
             }
         }
         .background(Color.dash.primaryBackground)
         .navigationBarHidden(true)
         .onChange(of: keys.rowsState) { keys.rowsChanged() }
         .confirmationDialog(
-            NSLocalizedString("Remove voting key", comment: "Voting"),
+            String(localized: "Remove voting key", comment: "Voting"),
             isPresented: Binding(
                 get: { nodePendingRemoval != nil },
                 set: { if !$0 { nodePendingRemoval = nil } }),
             titleVisibility: .visible,
             presenting: nodePendingRemoval
         ) { node in
-            Button(NSLocalizedString("Remove", comment: ""), role: .destructive) {
+            Button(String(localized: "Remove", comment: ""), role: .destructive) {
                 removalError = voting.removeImportedVotingKey(for: node)
             }
-            Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) {}
+            Button(String(localized: "Cancel", comment: ""), role: .cancel) {}
         } message: { _ in
-            Text(NSLocalizedString(
-                "This node will no longer vote from this wallet. You can add its voting key again at any time.",
+            Text(String(
+                localized: "This node will no longer vote from this wallet. You can add its voting key again at any time.",
                 comment: "Voting"))
         }
     }
@@ -255,7 +255,7 @@ private struct VotingKeysScreen: View {
                         .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
-                .accessibilityLabel(NSLocalizedString("Remove voting key", comment: "Voting"))
+                .accessibilityLabel(String(localized: "Remove voting key", comment: "Voting"))
                 .padding(.trailing, 6)
             }
         }
@@ -267,9 +267,9 @@ private struct VotingKeysScreen: View {
         let origin: String
         switch node.keySource {
         case .trackedVault:
-            origin = NSLocalizedString("Added by you", comment: "Voting")
+            origin = String(localized: "Added by you", comment: "Voting")
         case .walletIndex:
-            origin = NSLocalizedString("From this wallet", comment: "Voting")
+            origin = String(localized: "From this wallet", comment: "Voting")
         }
         return "\(node.displayName) · \(origin)"
     }

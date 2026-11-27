@@ -246,7 +246,7 @@ final class SendViewModel: ObservableObject {
             self.amountText = "0"
         },
         completionMessage: { _ in
-            NSLocalizedString("The pending Max transfer completed.", comment: "Send: Core drain recovery success")
+            String(localized: "The pending Max transfer completed.", comment: "Send: Core drain recovery success")
         }))
     private var coreDrainMaxCancellable: AnyCancellable?
 
@@ -764,12 +764,12 @@ final class SendViewModel: ObservableObject {
 
     /// Shown both on the picker row and in place of the amount validation, so
     /// the two say the same thing.
-    static let contactPaymentsUnavailableMessage = NSLocalizedString(
-        "Payments unavailable — ask them to send you a new contact request.",
+    static let contactPaymentsUnavailableMessage = String(
+        localized: "Payments unavailable — ask them to send you a new contact request.",
         comment: "DashPay: contact whose payment channel could not be built")
 
-    static let contactGoneMessage = NSLocalizedString(
-        "This contact is not in your contacts any more.",
+    static let contactGoneMessage = String(
+        localized: "This contact is not in your contacts any more.",
         comment: "Send to contact: the contact was removed, or another wallet was opened, while the amount step was open")
 
     // MARK: Contact review
@@ -929,8 +929,8 @@ final class SendViewModel: ObservableObject {
     /// happened, so it must not be offered again.
     @Published private(set) var contactSendOutcomeIsUnknown = false
 
-    static let contactSendUnknownOutcomeMessage = NSLocalizedString(
-        "We couldn't confirm whether this payment went through. Don't send it again — wait for the wallet to finish synchronizing and check your history.",
+    static let contactSendUnknownOutcomeMessage = String(
+        localized: "We couldn't confirm whether this payment went through. Don't send it again — wait for the wallet to finish synchronizing and check your history.",
         comment: "Send to contact: the broadcast outcome is unknown")
 
     /// The details screen of a payment `sendToContact` just broadcast (see
@@ -1469,11 +1469,11 @@ final class SendViewModel: ObservableObject {
         // silently while `canContinue` refuses it. Only the too-large case —
         // `dashDuffsIfRepresentable` also rejects negatives, which are not this.
         if (parsedDashAmount * .duffs).whole > Decimal(UInt64.max) {
-            return NSLocalizedString("The amount is too large to transfer.", comment: "InternalTransfer")
+            return String(localized: "The amount is too large to transfer.", comment: "InternalTransfer")
         }
         guard dashDuffsUnsigned > 0, let route else { return nil }
         if hasUnavailableSourceBalance {
-            return NSLocalizedString("Balance unavailable", comment: "Selected source balance not restored")
+            return String(localized: "Balance unavailable", comment: "Selected source balance not restored")
         }
 
         // The Core → Shielded pool fee rides on top of the amount, so there
@@ -1624,11 +1624,7 @@ final class SendViewModel: ObservableObject {
                     : nil
             }
             guard preflight.canWithdraw else {
-                return String.localizedStringWithFormat(
-                    NSLocalizedString(
-                        "Your %@ balance is too low to cover the withdrawal fee.",
-                        comment: "Platform withdrawal cannot fund its own fee"),
-                    balanceName)
+                return String(localized: "Your \(balanceName) balance is too low to cover the withdrawal fee.", comment: "Platform withdrawal cannot fund its own fee")
             }
             if isFullPlatformWithdrawal { return nil }
             guard creditsPreview > partialWithdrawCapCredits else { return nil }
@@ -1636,11 +1632,7 @@ final class SendViewModel: ObservableObject {
             let formattedCap =
                 "\((partialWithdrawCapCredits / 1000).formattedDashAmountWithoutCurrencySymbol) DASH"
             if let fullDuffs = platformWithdrawableDuffs, dashDuffsUnsigned <= fullDuffs {
-                return String.localizedStringWithFormat(
-                    NSLocalizedString(
-                        "A partial withdrawal is limited to %@. Tap Max to withdraw the full balance.",
-                        comment: "Platform partial withdrawal cap"),
-                    formattedCap)
+                return String(localized: "A partial withdrawal is limited to \(formattedCap). Tap Max to withdraw the full balance.", comment: "Platform partial withdrawal cap")
             }
             return TransferSpendAmountPolicy.insufficientBalanceMessage(
                 balanceName: balanceName,
@@ -1649,8 +1641,8 @@ final class SendViewModel: ObservableObject {
         }
     }
 
-    private static let feeEstimateUnavailableMessage = NSLocalizedString(
-        "There was an error, please try again later",
+    private static let feeEstimateUnavailableMessage = String(
+        localized: "There was an error, please try again later",
         comment: "External send fee estimate unavailable")
 
     /// Gate for advancing from the address step to the amount step: the
@@ -1758,7 +1750,7 @@ final class SendViewModel: ObservableObject {
     func fillMaxFromWallet() {
         if hasUnavailableSourceBalance {
             clearShieldedMaxSelection()
-            shieldedMaxNotice = NSLocalizedString("Balance unavailable", comment: "Max requires a known source balance")
+            shieldedMaxNotice = String(localized: "Balance unavailable", comment: "Max requires a known source balance")
             return
         }
         clearShieldedMaxSelection()
@@ -1817,8 +1809,8 @@ final class SendViewModel: ObservableObject {
                 shieldedMaxNotice = Self.shieldedConfirmingMessage(credits)
                 sourceDuffs = 0
             case .unavailable:
-                shieldedMaxNotice = NSLocalizedString(
-                    "Your Shielded balance is not ready to spend. Sync and try Max again.",
+                shieldedMaxNotice = String(
+                    localized: "Your Shielded balance is not ready to spend. Sync and try Max again.",
                     comment: "Shielded Max unavailable")
                 sourceDuffs = 0
             }
@@ -1863,20 +1855,12 @@ final class SendViewModel: ObservableObject {
 
     private static func shieldedConfirmingMessage(_ credits: UInt64) -> String {
         let formatted = (credits / 1000).formattedDashAmountWithoutCurrencySymbol
-        return String.localizedStringWithFormat(
-            NSLocalizedString(
-                "%@ DASH is still confirming. Use Max again once it settles.",
-                comment: "Shielded Max pending change"),
-            formatted)
+        return String(localized: "\(formatted) DASH is still confirming. Use Max again once it settles.", comment: "Shielded Max pending change")
     }
 
     private static func shieldedCeilingMessage(_ credits: UInt64) -> String {
         let formatted = (credits / 1000).formattedDashAmountWithoutCurrencySymbol
-        return String.localizedStringWithFormat(
-            NSLocalizedString(
-                "Your Shielded balance is split across notes, and at most %@ DASH of it can be sent in one transaction. Send the rest afterwards.",
-                comment: "Shielded amount above the single-transaction ceiling"),
-            formatted)
+        return String(localized: "Your Shielded balance is split across notes, and at most \(formatted) DASH of it can be sent in one transaction. Send the rest afterwards.", comment: "Shielded amount above the single-transaction ceiling")
     }
 
     // MARK: - Conversion on unit toggle

@@ -21,7 +21,7 @@ final class CoinJoinWithdrawalTxSet: GroupedTransactions {
     let id = "coinjoin-withdrawal"
 
     var title: String {
-        NSLocalizedString("CoinJoin Withdrawals", comment: "CoinJoin")
+        String(localized: "CoinJoin Withdrawals", comment: "CoinJoin")
     }
 
     var iconName: String {
@@ -29,7 +29,7 @@ final class CoinJoinWithdrawalTxSet: GroupedTransactions {
     }
 
     var infoText: String {
-        NSLocalizedString("Your mixed Dash was moved to your spendable balance using these transactions.", comment: "CoinJoin")
+        String(localized: "Your mixed Dash was moved to your spendable balance using these transactions.", comment: "CoinJoin")
     }
 
     /// "N transactions · M UTXOs" — makes the sweep's scale visible: a single
@@ -40,16 +40,14 @@ final class CoinJoinWithdrawalTxSet: GroupedTransactions {
         guard !txs.isEmpty else { return nil }
         let txCount = txs.count
         let utxoCount = txs.reduce(0) { $0 + $1.inputCount }
-        let txPart = String.localizedStringWithFormat(
-            NSLocalizedString("%d transaction(s)", comment: "#bc-ignore!"), txCount)
-        let utxoPart = String.localizedStringWithFormat(
-            NSLocalizedString("%d UTXOs", comment: "CoinJoin"), utxoCount)
+        let txPart = String(localized: "\(txCount) transaction(s)", comment: "Number of transactions in a group of transactions")
+        let utxoPart = String(localized: "\(utxoCount) UTXOs", comment: "CoinJoin")
         return "\(txPart) · \(utxoPart)"
     }
 
     var fiatAmount: String {
         (try? CurrencyExchanger.shared.convertDash(amount: UInt64(abs(amount)).dashAmount, to: App.fiatCurrency).formattedFiatAmount) ??
-            NSLocalizedString("Updating Price", comment: "Updating Price")
+            String(localized: "Updating Price", comment: "Updating Price")
     }
 
     /// The day this group sorts under on the home screen (latest included tx).

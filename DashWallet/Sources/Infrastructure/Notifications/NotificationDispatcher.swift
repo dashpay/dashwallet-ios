@@ -63,10 +63,10 @@ final class NotificationDispatcher {
     func registerCategories() {
         let inactivityActions = [
             UNNotificationAction(identifier: InactivityReminderScheduler.remindLaterActionIdentifier,
-                                 title: NSLocalizedString("Remind me later", comment: "Inactivity reminder"),
+                                 title: String(localized: "Remind me later", comment: "Inactivity reminder"),
                                  options: []),
             UNNotificationAction(identifier: InactivityReminderScheduler.optOutActionIdentifier,
-                                 title: NSLocalizedString("Don't remind me again", comment: "Inactivity reminder"),
+                                 title: String(localized: "Don't remind me again", comment: "Inactivity reminder"),
                                  options: []),
         ]
         let categories = Set(NotificationTopic.allCases.map { topic in
