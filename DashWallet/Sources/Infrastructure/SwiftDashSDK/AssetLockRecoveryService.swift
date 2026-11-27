@@ -27,7 +27,6 @@
 
 import Combine
 import Foundation
-import OSLog
 import SwiftDashSDK
 import SwiftData
 
@@ -44,9 +43,7 @@ struct AssetLockRecoveryService {
         self.probeStore = probeStore
     }
 
-    private static let logger = Logger(
-        subsystem: "org.dashfoundation.dash",
-        category: "swift-sdk-migration.asset-lock-recovery")
+    private static let logger = AppLogger(category: "swift-sdk-migration.asset-lock-recovery")
 
     enum RecoveryError: LocalizedError {
         case notReady
@@ -268,9 +265,7 @@ struct AssetLockRecoveryService {
         var failed = 0
         var cancelled = false
         /// First failure's message, surfaced so a run that mostly failed says
-        /// WHY on screen instead of a bare count. Bulk failures land in OSLog,
-        /// which a diagnostic export never captures (the gap ticket 32004
-        /// found for sends), so the count alone left nothing to diagnose from.
+        /// WHY on screen instead of a bare count.
         var firstFailureMessage: String?
         /// Set when the pass gave up early after repeated failures.
         var stoppedAfterRepeatedFailures = false
@@ -504,7 +499,7 @@ struct AssetLockRecoveryService {
             // do and hides the reason, so it gets its own state.
             outcome.authFailureMessage = (error as? LocalizedError)?.errorDescription
                 ?? error.localizedDescription
-            DWLogger.log("LOCK-RETRY bulk aborted — authentication failed: \(outcome.authFailureMessage ?? "")")
+            DWLogger.log("LOCK-RETRY bulk aborted — authentication failed: \(AppLogMessage.errorSummary(error))")
             return outcome
         }
 
@@ -608,7 +603,7 @@ struct AssetLockRecoveryService {
                 let step = Self.bulkStep(for: error)
                 let stop = Self.apply(step, to: &outcome, consecutiveFailures: &consecutiveFailures)
                 if case .failed = step {
-                    // File logger, not just OSLog: a bulk pass that fails is
+                    // A bulk pass that fails is
                     // exactly what a diagnostic export needs to carry, with the
                     // typed error case so a consensus refusal is searchable.
                     AssetLockRetryLog.logFailure(
@@ -712,26 +707,23 @@ struct AssetLockRecoveryService {
             txidWire: txidWire, vout: vout, walletIdHex: walletIdHex,
             retryUnverifiedConsumption: retryUnverifiedConsumption
         ) {
-            let resume = {
-                try await wallet.resumeTopUpWithAssetLock(
-                    identityId: identityId,
-                    outPointTxid: txidWire,
-                    outPointVout: vout)
-            }
             // Announced like every other own top-up (ADR-0034), so the watched
             // Identity card raises no Receipt for it. The lock's value is the
-            // most it can add; without the lock row or a network it is not
-            // announced, as nothing true can be said about the credits.
+            // most it can add.
             if let network = SwiftDashSDKHost.shared.runningNetwork,
                let container = SwiftDashSDKHost.shared.modelContainer,
                let lock = try? Self.persistedLock(txidWire: txidWire, vout: vout, in: container.mainContext),
                lock.amountDuffs > 0 {
                 _ = try await IdentityTopUpDidComplete.announcing(
                     walletId: wallet.walletId, network: network, identityId: identityId,
-                    suppliedCredits: UInt64(lock.amountDuffs) * PlatformPaymentIdentityFundingPolicy.creditsPerDuff,
-                    resume)
+                    suppliedCredits: UInt64(lock.amountDuffs) * PlatformPaymentIdentityFundingPolicy.creditsPerDuff) {
+                    try await wallet.resumeTopUpWithAssetLock(
+                        identityId: identityId, outPointTxid: txidWire, outPointVout: vout)
+                }
             } else {
-                _ = try await resume()
+                // top-up not announced: without the lock row or a network nothing true can be said about its credits.
+                _ = try await wallet.resumeTopUpWithAssetLock(
+                    identityId: identityId, outPointTxid: txidWire, outPointVout: vout)
             }
         }
         DWCurrentUserIdentityInfo.shared.refreshFromSDK()

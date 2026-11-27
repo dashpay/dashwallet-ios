@@ -79,12 +79,32 @@ protocol GiftCardPurchaseRecording {
     func record(_ purchase: GiftCardPurchaseRecord)
 }
 
+/// Sets the merchant icon a purchase's transaction shows.
+protocol GiftCardIconUpdating {
+    func updateIcon(txId: Data, iconUrl: String)
+}
+
+extension CustomIconMetadataProvider: GiftCardIconUpdating {}
+
 /// Writes a purchase to the app's stores: the tax and service metadata of the transaction,
 /// the merchant icon, and the `gift_cards` row whose `note` carries the order id.
 @MainActor
 final class GiftCardPurchaseStore: GiftCardPurchaseRecording {
-    private lazy var customIconProvider = CustomIconMetadataProvider.shared
-    private lazy var txMetadataDao = TransactionMetadataDAOImpl.shared
+    private let makeTxMetadataDao: () -> TransactionMetadataDAO
+    private let makeIconProvider: () -> GiftCardIconUpdating
+    private let makeGiftCardsDao: () -> GiftCardsDAO
+    private lazy var txMetadataDao = makeTxMetadataDao()
+    private lazy var customIconProvider = makeIconProvider()
+    private lazy var giftCardsDao = makeGiftCardsDao()
+
+    /// Each store is made on the first purchase; by default, the app's shared one.
+    init(txMetadata: @escaping () -> TransactionMetadataDAO = { TransactionMetadataDAOImpl.shared },
+         icons: @escaping () -> GiftCardIconUpdating = { CustomIconMetadataProvider.shared },
+         giftCards: @escaping () -> GiftCardsDAO = { GiftCardsDAOImpl.shared }) {
+        makeTxMetadataDao = txMetadata
+        makeIconProvider = icons
+        makeGiftCardsDao = giftCards
+    }
 
     func record(_ purchase: GiftCardPurchaseRecord) {
         var txMetadata = TransactionMetadata(txHash: purchase.txidWire)
@@ -101,7 +121,7 @@ final class GiftCardPurchaseStore: GiftCardPurchaseRecording {
 
         customIconProvider.updateIcon(txId: purchase.txidWire, iconUrl: purchase.merchantIconUrl)
 
-        DWLogger.log("Gift card saved - txId: \(purchase.txidWire.hexEncodedString()), note: \(purchase.note)")
+        DWLogger.log("Gift card saved - txId: \(purchase.txidWire.hexEncodedString())")
         let giftCard = GiftCard(
             txId: purchase.txidWire,
             merchantName: purchase.merchantName,
@@ -109,8 +129,9 @@ final class GiftCardPurchaseStore: GiftCardPurchaseRecording {
             price: purchase.price,
             note: purchase.note,
             provider: purchase.provider.displayName)
+        let giftCardsDao = giftCardsDao
         Task {
-            await GiftCardsDAOImpl.shared.create(dto: giftCard)
+            await giftCardsDao.create(dto: giftCard)
         }
     }
 }

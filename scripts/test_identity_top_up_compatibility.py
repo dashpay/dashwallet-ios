@@ -41,6 +41,7 @@ with tempfile.TemporaryDirectory(prefix="identity-top-up-compatibility-") as dir
         "    private func executeTopUp(",
         "    enum TopUpError: LocalizedError {",
         "    private func topUpFromShielded(",
+        "    private func requireActiveWallet(",
     ))
     scaffold = (repository / "scripts/fixtures/IdentityTopUpCompatibilityHarness.swift").read_text()
     scaffold = scaffold.replace("    // PRODUCTION_FUNDING_SOURCE", declaration("    enum FundingSource:"))

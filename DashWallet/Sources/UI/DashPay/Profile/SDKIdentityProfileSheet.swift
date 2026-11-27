@@ -485,10 +485,10 @@ struct SDKIdentityProfileSheet: View {
 ///   to the wallet's own next Platform receive address
 ///   (`shieldedUnshield`, proven execution). Step 2 claims the landed
 ///   credits minus the policy fee headroom from that address into an
-///   IdentityTopUp (`topUpFromAddresses` — its fee comes out of the
+///   IdentityTopUp (`topUpIdentityFromAddresses` — its fee comes out of the
 ///   supplied credits, so the identity receives "most" of the amount and
 ///   the unclaimed headroom stays in the Platform balance).
-/// - `.platform`: one `topUpFromAddresses` over inputs selected by
+/// - `.platform`: one `topUpIdentityFromAddresses` over inputs selected by
 ///   `PlatformPaymentIdentityFundingPolicy` (same policy the registration
 ///   coordinator uses).
 /// - `.transparent`: one Core asset lock + IdentityTopUp
@@ -538,9 +538,14 @@ final class IdentityTopUpViewModel: ObservableObject {
         case noPlatformReceiveAddress
         case movedToPlatform(Error)
         case secondLegCancelled
+        /// The wallet the top-up runs on is no longer the active one, or does
+        /// not manage the identity. Thrown before anything is sent.
+        case walletChanged
 
         var errorDescription: String? {
             switch self {
+            case .walletChanged:
+                return String(localized: "The active wallet changed. Start the top-up again.", comment: "Identity top-up refused: the identity does not belong to the active wallet")
             case .noPlatformReceiveAddress:
                 return String(localized: "No Platform receive address is available yet — wait for the Platform sync to finish and try again.", comment: "Identity top-up sheet — missing unshield destination")
             case .secondLegCancelled:
@@ -663,6 +668,7 @@ final class IdentityTopUpViewModel: ObservableObject {
             return nil
         }
         do {
+            try requireActiveWallet(wallet, manages: identityId)
             switch source {
             case .transparent:
                 return try await AssetLockInputLimit.mappingRefusal(inputCheck) {
@@ -681,7 +687,7 @@ final class IdentityTopUpViewModel: ObservableObject {
                     candidates: candidates,
                     targetCredits: credits)
                 let signer = KeychainSigner(modelContainer: modelContainer)
-                return try await wallet.topUpFromAddresses(
+                return try await wallet.topUpIdentityFromAddresses(
                     identityId: identityId,
                     inputs: inputs,
                     addressSigner: signer)
@@ -771,7 +777,8 @@ final class IdentityTopUpViewModel: ObservableObject {
         let signer = KeychainSigner(modelContainer: modelContainer)
         let newBalance: UInt64
         do {
-            newBalance = try await wallet.topUpFromAddresses(
+            try requireActiveWallet(wallet, manages: identityId)
+            newBalance = try await wallet.topUpIdentityFromAddresses(
                 identityId: identityId,
                 inputs: [input],
                 addressSigner: signer)
@@ -786,6 +793,17 @@ final class IdentityTopUpViewModel: ObservableObject {
         }
         Task { await PlatformAddressSyncCoordinator.shared.syncNow() }
         return newBalance
+    }
+
+    /// Refuses a top-up whose wallet is no longer the active one or does not
+    /// manage the identity. `topUpIdentityFromAddresses` tops up any identity,
+    /// so without this a wallet switch after the identity was read would pay
+    /// another wallet's identity.
+    private func requireActiveWallet(_ wallet: ManagedPlatformWallet, manages identityId: Data) throws {
+        guard SwiftDashSDKHost.shared.wallet?.walletId == wallet.walletId,
+              (try? wallet.managedIdentity(identityId: identityId)) != nil else {
+            throw TopUpError.walletChanged
+        }
     }
 }
 

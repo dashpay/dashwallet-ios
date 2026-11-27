@@ -120,7 +120,7 @@ NS_ASSUME_NONNULL_BEGIN
     const uint64_t total = [DWSwiftDashSDKReceiveAddressReader receivedTotalExcludingAddress:request.address];
 
     if (total + fuzz >= request.amount) {
-        DWLog(@"DWReceiveModel: Received %@", @(total));
+        DWLog(@"DWReceiveModel: Received the requested amount");
 
         // TODO: Fix me. Using `self.amount` here is a workaround and we should use `total` instead.
         // (`total` is not calculated properly for very small amounts like 0.000257)
