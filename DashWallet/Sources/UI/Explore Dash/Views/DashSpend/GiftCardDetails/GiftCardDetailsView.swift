@@ -78,6 +78,11 @@ struct GiftCardDetailsView: View {
         VStack(spacing: 20) {
             merchantHeaderSection
             giftCardInfoSection
+
+            if viewModel.uiState.needsSignIn && selectedCard?.lacksNumberAndLink == true {
+                signInNotice
+            }
+
             transactionDetailsSection
             howToUseSection
             poweredBySection
@@ -133,6 +138,18 @@ struct GiftCardDetailsView: View {
             onRedeemLink: redeem,
             onCopy: { GiftCardSheetFeedback.copySensitive($0) }
         )
+    }
+
+    private var signInNotice: some View {
+        Text(String(
+            localized: "Sign in to DashSpend and reopen this purchase to see your gift card.",
+            comment: "DashSpend"
+        ))
+        .font(.subheadline)
+        .foregroundColor(.dash.tertiaryText)
+        .multilineTextAlignment(.center)
+        .fixedSize(horizontal: false, vertical: true)
+        .padding(.horizontal, 24)
     }
 
     private var selectedCard: GiftCardDetailsCardItem? {

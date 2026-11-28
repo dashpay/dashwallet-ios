@@ -131,6 +131,14 @@ final class GiftCardLinkRulesTests: XCTestCase {
         XCTAssertTrue(GiftCardDetailsCardItem.hasStoredDetails(number: nil, pin: nil, barcodeValue: "6006491234567890"))
     }
 
+    func testCardWithoutANumberOrALinkLacksBoth() {
+        XCTAssertTrue(stored(number: "  ", pin: "1234").lacksNumberAndLink)
+        XCTAssertTrue(stored(number: nil, pin: "1234").lacksNumberAndLink)
+        XCTAssertTrue(payloadCard(number: "   ", isClaimLink: true).lacksNumberAndLink)
+        XCTAssertFalse(stored(number: "6006491234567890").lacksNumberAndLink)
+        XCTAssertFalse(stored(number: ctxLink).lacksNumberAndLink)
+    }
+
     func testPayloadCardFollowsItsOwnFlag() {
         XCTAssertEqual(payloadCard(number: " https://piggy.cards/claim/abc ", isClaimLink: true).redeemLink,
                        "https://piggy.cards/claim/abc")

@@ -37,6 +37,11 @@ struct GiftCardDetailsCardItem: Identifiable {
         Self.trimmedOrNil(redeemUrlChallenge)
     }
 
+    /// Whether the card lacks both a number and a redeem link, so it cannot be used yet.
+    var lacksNumberAndLink: Bool {
+        Self.nonBlank(cardNumber) == nil && redeemLink == nil
+    }
+
     static func trimmedOrNil(_ value: String?) -> String? {
         guard let trimmed = value?.trimmingCharacters(in: .whitespacesAndNewlines), !trimmed.isEmpty else {
             return nil
