@@ -27,6 +27,127 @@ struct GiftCardDetailsCardItem: Identifiable {
     let redeemUrlChallenge: String?
     let barcodeImage: UIImage?
     let isClaimLink: Bool
+
+    /// The link a claim-link card is redeemed at; such a card keeps it in `cardNumber`.
+    var redeemLink: String? {
+        isClaimLink ? Self.trimmedOrNil(cardNumber) : nil
+    }
+
+    var challengeCode: String? {
+        Self.trimmedOrNil(redeemUrlChallenge)
+    }
+
+    /// Whether the card lacks both a number and a redeem link, so it cannot be used yet.
+    var lacksNumberAndLink: Bool {
+        Self.nonBlank(cardNumber) == nil && redeemLink == nil
+    }
+
+    static func trimmedOrNil(_ value: String?) -> String? {
+        guard let trimmed = value?.trimmingCharacters(in: .whitespacesAndNewlines), !trimmed.isEmpty else {
+            return nil
+        }
+        return trimmed
+    }
+
+    /// The value as it is, or nil when it is blank. Rows stored by earlier versions may hold a blank
+    /// number or PIN, which is a missing one.
+    static func nonBlank(_ value: String?) -> String? {
+        trimmedOrNil(value) == nil ? nil : value
+    }
+
+    /// Whether a stored row holds anything to show as a card.
+    static func hasStoredDetails(number: String?, pin: String?, barcodeValue: String?) -> Bool {
+        nonBlank(number) != nil || nonBlank(pin) != nil || nonBlank(barcodeValue) != nil
+    }
+
+    /// Whether a stored card number is in fact the card's link. Rows stored by earlier versions
+    /// may hold it untrimmed.
+    static func isLink(_ storedNumber: String?) -> Bool {
+        guard let value = trimmedOrNil(storedNumber)?.lowercased() else { return false }
+        return value.hasPrefix("https://") || value.hasPrefix("http://")
+    }
+
+    /// The card of an order stored without a per-card payload.
+    static func stored(formattedPrice: String,
+                       number: String?,
+                       pin: String?,
+                       redeemUrlChallenge: String?,
+                       barcodeImage: UIImage?) -> GiftCardDetailsCardItem {
+        GiftCardDetailsCardItem(
+            id: "legacy-0",
+            formattedPrice: formattedPrice,
+            cardNumber: nonBlank(number),
+            cardPin: nonBlank(pin),
+            redeemUrlChallenge: redeemUrlChallenge,
+            barcodeImage: barcodeImage,
+            isClaimLink: isLink(number)
+        )
+    }
+}
+
+/// What a fulfilled CTX order delivered. A card number wins over a redeem link; a blank one of either is none.
+enum CTXGiftCardDelivery: Equatable {
+    case number(String, pin: String?)
+    case link(String, challenge: String?)
+    case nothingYet
+
+    init(cardNumber: String?, cardPin: String?, redeemUrl: String?, redeemUrlChallenge: String?) {
+        if let cardNumber = GiftCardDetailsCardItem.trimmedOrNil(cardNumber) {
+            self = .number(cardNumber, pin: GiftCardDetailsCardItem.nonBlank(cardPin))
+        } else if let link = GiftCardDetailsCardItem.trimmedOrNil(redeemUrl) {
+            self = .link(link, challenge: GiftCardDetailsCardItem.trimmedOrNil(redeemUrlChallenge))
+        } else {
+            self = .nothingYet
+        }
+    }
+
+    static let maxFulfilledAnswersWithoutDetails = 60
+
+    /// Whether a stored CTX row still waits for what its order delivers. A row without an order
+    /// reference waits only when its number was written blank: that write removed the reference, and
+    /// the order is then looked up by transaction id.
+    static func isAwaited(storedNumber: String?, hasOrderReference: Bool) -> Bool {
+        guard GiftCardDetailsCardItem.nonBlank(storedNumber) == nil else { return false }
+        return hasOrderReference || storedNumber != nil
+    }
+
+    /// Whether there is an order to ask the provider about. A PiggyCards row needs its order reference.
+    /// A CTX row without one is asked for by transaction id only when its number was written blank and
+    /// it holds no barcode. A PIN alone redeems nothing, so a row holding only a PIN is still fetched.
+    static func hasOrderToFetch(provider: String?,
+                                hasOrderReference: Bool,
+                                number: String?,
+                                pin: String?,
+                                barcodeValue: String?) -> Bool {
+        if hasOrderReference {
+            return true
+        }
+        return provider != "PiggyCards"
+            && number != nil
+            && !GiftCardDetailsCardItem.hasStoredDetails(number: number, pin: nil, barcodeValue: barcodeValue)
+    }
+
+    /// Whether the order cannot be asked for until the user signs in to the provider.
+    static func isSignInRequired(isSignedIn: Bool, hasOrderToFetch: Bool) -> Bool {
+        hasOrderToFetch && !isSignedIn
+    }
+
+    /// The count of fulfilled answers without a number or a link in a row, after one more answer.
+    /// An answer that the order is still pending ends the run. A failed poll is no answer and is not
+    /// passed here; the failure streak counts those.
+    static func fulfilledAnswersWithoutDetails(after count: Int, isFulfilled: Bool) -> Int {
+        isFulfilled ? count + 1 : 0
+    }
+
+    /// Whether to stop asking: CTX keeps reporting the order fulfilled without a number or a link.
+    static func isUnavailable(afterFulfilledAnswersWithoutDetails count: Int) -> Bool {
+        count >= maxFulfilledAnswersWithoutDetails
+    }
+
+    /// A delivered PIN, or else the stored one, so an answer without a PIN does not erase it.
+    static func pinToStore(delivered: String?, stored: String?) -> String? {
+        GiftCardDetailsCardItem.nonBlank(delivered) ?? GiftCardDetailsCardItem.nonBlank(stored)
+    }
 }
 
 struct GiftCardDetailsUIState {
@@ -46,6 +167,8 @@ struct GiftCardDetailsUIState {
     var hasBeenPollingForLongTime: Bool = false
     /// The poller stopped on a run of failures and the sheet may offer to start it again.
     var canRetryLoading: Bool = false
+    /// The poller stopped because the user is signed out of the provider.
+    var needsSignIn: Bool = false
     var provider: String? = nil
     var cards: [GiftCardDetailsCardItem] = []
 }
@@ -81,6 +204,7 @@ class GiftCardDetailsViewModel: ObservableObject {
     private var pollCount = 0
     /// Consecutive failed polls. Reset by any answered poll; drives the backoff and the give-up.
     private var errorStreak = 0
+    private var fulfilledAnswersWithoutDetails = 0
     /// Give up after this many consecutive failures. With the backoff below that is ~2 minutes
     /// of a CTX outage before the retry affordance is offered, instead of hammering it.
     private let maxErrorStreak = 8
@@ -169,7 +293,7 @@ class GiftCardDetailsViewModel: ObservableObject {
 
         let formattedPrice = currencyFormatter.string(from: card.price as NSDecimalNumber) ?? "$0.00"
         let displayCards = buildDisplayCards(from: card, fallbackFormattedPrice: formattedPrice)
-        let isClaimLink = displayCards.first?.isClaimLink ?? (card.number?.starts(with: "http") ?? false)
+        let isClaimLink = displayCards.first?.isClaimLink ?? GiftCardDetailsCardItem.isLink(card.number)
         let barcodeImage = displayCards.first?.barcodeImage ?? imageFromBarcode(value: card.barcodeValue, format: card.barcodeFormat)
 
         await MainActor.run {
@@ -193,16 +317,27 @@ class GiftCardDetailsViewModel: ObservableObject {
     }
 
     private func shouldStartPolling(for card: GiftCard, hasDisplayCards: Bool) -> Bool {
-        guard card.note != nil else { return false }
-
         if card.provider == "PiggyCards" {
-            if let note = card.note, decodeOrderMetadata(from: note).cards?.isEmpty == false {
+            guard let note = card.note else { return false }
+
+            if decodeOrderMetadata(from: note).cards?.isEmpty == false {
                 return false
             }
             return !hasDisplayCards
         }
 
-        return card.number == nil
+        return hasOrderToFetch(card)
+            && CTXGiftCardDelivery.isAwaited(storedNumber: card.number, hasOrderReference: card.note != nil)
+    }
+
+    private func hasOrderToFetch(_ card: GiftCard) -> Bool {
+        CTXGiftCardDelivery.hasOrderToFetch(
+            provider: card.provider,
+            hasOrderReference: card.note != nil,
+            number: card.number,
+            pin: card.pin,
+            barcodeValue: card.barcodeValue
+        )
     }
 
     private func startTicker() {
@@ -214,6 +349,7 @@ class GiftCardDetailsViewModel: ObservableObject {
         uiState.isLoadingCardDetails = true
         uiState.loadingError = nil
         uiState.canRetryLoading = false
+        uiState.needsSignIn = false
 
         Task {
             await fetchGiftCardInfo()
@@ -256,13 +392,14 @@ class GiftCardDetailsViewModel: ObservableObject {
         uiState.isLoadingCardDetails = false
         uiState.hasBeenPollingForLongTime = false
         pollCount = 0
+        fulfilledAnswersWithoutDetails = 0
         errorStreak = 0
         pollInterval = basePollInterval
     }
 
     private func fetchGiftCardInfo() async {
         guard let giftCard = await giftCardsDAO.get(byTxId: txId),
-              giftCard.note != nil else {
+              hasOrderToFetch(giftCard) else {
             stopTicker()
             return
         }
@@ -286,8 +423,14 @@ class GiftCardDetailsViewModel: ObservableObject {
     }
 
     private func fetchCTXGiftCardInfo() async {
-        guard let giftCard = await giftCardsDAO.get(byTxId: txId),
-              ctxSpendRepository.isUserSignedIn else {
+        guard let giftCard = await giftCardsDAO.get(byTxId: txId) else {
+            stopTicker()
+            return
+        }
+
+        if CTXGiftCardDelivery.isSignInRequired(isSignedIn: ctxSpendRepository.isUserSignedIn,
+                                                hasOrderToFetch: hasOrderToFetch(giftCard)) {
+            uiState.needsSignIn = true
             stopTicker()
             return
         }
@@ -311,16 +454,25 @@ class GiftCardDetailsViewModel: ObservableObject {
 
             switch response.status {
             case "fulfilled":
-                if let cardNumber = response.cardNumber, !cardNumber.isEmpty {
+                let delivery = CTXGiftCardDelivery(
+                    cardNumber: response.cardNumber,
+                    cardPin: response.cardPin,
+                    redeemUrl: response.redeemUrl,
+                    redeemUrlChallenge: response.redeemUrlChallenge
+                )
+
+                switch delivery {
+                case .number(let cardNumber, let pin):
                     await giftCardsDAO.updateCardDetails(
                         txId: txId,
                         number: cardNumber,
-                        pin: response.cardPin
+                        pin: CTXGiftCardDelivery.pinToStore(delivered: pin, stored: giftCard.pin)
                     )
 
-                    if !cardNumber.isEmpty {
-                        let cleanNumber = cardNumber.replacingOccurrences(of: " ", with: "")
-                            .replacingOccurrences(of: "-", with: "")
+                    let cleanNumber = cardNumber.replacingOccurrences(of: " ", with: "")
+                        .replacingOccurrences(of: "-", with: "")
+
+                    if !cleanNumber.isEmpty {
                         await giftCardsDAO.updateBarcode(
                             txId: txId,
                             value: cleanNumber,
@@ -329,14 +481,27 @@ class GiftCardDetailsViewModel: ObservableObject {
                     }
                     stopTicker()
                     DWLogger.log("DashSpend: Gift card details fetched successfully")
-                } else if let redeemUrl = response.redeemUrl, !redeemUrl.isEmpty {
-                    await giftCardsDAO.updateRedeemUrl(
-                        txId: txId,
-                        url: redeemUrl,
-                        challenge: response.redeemUrlChallenge
-                    )
+                case .link(let redeemUrl, let challenge):
+                    await giftCardsDAO.updateRedeemUrl(txId: txId, url: redeemUrl, challenge: challenge)
                     stopTicker()
                     DWLogger.log("DashSpend: Gift card redeem URL fetched successfully")
+                case .nothingYet:
+                    fulfilledAnswersWithoutDetails = CTXGiftCardDelivery.fulfilledAnswersWithoutDetails(
+                        after: fulfilledAnswersWithoutDetails,
+                        isFulfilled: true
+                    )
+
+                    if CTXGiftCardDelivery.isUnavailable(
+                        afterFulfilledAnswersWithoutDetails: fulfilledAnswersWithoutDetails
+                    ) {
+                        await MainActor.run {
+                            self.uiState.loadingError = DashSpendError.customError(
+                                String(localized: "Gift card details are unavailable. Please contact support.", comment: "")
+                            )
+                            self.uiState.canRetryLoading = true
+                        }
+                        stopTicker()
+                    }
                 }
 
             case "rejected":
@@ -348,7 +513,10 @@ class GiftCardDetailsViewModel: ObservableObject {
                 stopTicker()
 
             default:
-                break
+                fulfilledAnswersWithoutDetails = CTXGiftCardDelivery.fulfilledAnswersWithoutDetails(
+                    after: fulfilledAnswersWithoutDetails,
+                    isFulfilled: false
+                )
             }
         } catch {
             errorStreak += 1
@@ -540,16 +708,16 @@ class GiftCardDetailsViewModel: ObservableObject {
             }
         }
 
-        if card.number != nil || card.pin != nil || card.barcodeValue != nil {
+        if GiftCardDetailsCardItem.hasStoredDetails(number: card.number,
+                                                    pin: card.pin,
+                                                    barcodeValue: card.barcodeValue) {
             return [
-                GiftCardDetailsCardItem(
-                    id: "legacy-0",
+                GiftCardDetailsCardItem.stored(
                     formattedPrice: fallbackFormattedPrice,
-                    cardNumber: card.number,
-                    cardPin: card.pin,
+                    number: card.number,
+                    pin: card.pin,
                     redeemUrlChallenge: card.redeemUrlChallenge,
-                    barcodeImage: imageFromBarcode(value: card.barcodeValue, format: card.barcodeFormat),
-                    isClaimLink: card.number?.starts(with: "http") ?? false
+                    barcodeImage: imageFromBarcode(value: card.barcodeValue, format: card.barcodeFormat)
                 )
             ]
         }
@@ -624,8 +792,8 @@ class GiftCardDetailsViewModel: ObservableObject {
         }
     }
 
-    private func imageFromBarcode(value: String?, format: String?) -> UIImage? {
-        guard let value, !value.isEmpty else { return nil }
+    func imageFromBarcode(value: String?, format: String?) -> UIImage? {
+        guard let value = GiftCardDetailsCardItem.nonBlank(value) else { return nil }
         let normalizedFormat = normalizeBarcodeFormat(format)
 
         let filterName: String

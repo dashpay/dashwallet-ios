@@ -28,6 +28,7 @@ extern NSTimeInterval const DW_INFO_HUD_DISPLAY_TIME;
 
 - (void)dw_showInfoHUDWithText:(NSString *)text;
 - (void)dw_showInfoHUDWithText:(NSString *)text offsetForNavBar:(BOOL)shouldOffset;
+- (void)dw_hideInfoHUD;
 
 @end
 

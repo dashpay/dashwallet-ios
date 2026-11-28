@@ -16,12 +16,15 @@
 //
 
 import SwiftUI
+import UniformTypeIdentifiers
 import DashUIKit
 
 struct GiftCardDetailsView: View {
     @StateObject private var viewModel: GiftCardDetailsViewModel
     @State private var showHowToUse = false
     @State private var originalBrightness: CGFloat = -1
+    @State private var redeemRoute: RedeemLinkRoute?
+    @State private var isOnScreen = false
     @Binding var backNavigationRequested: Bool
     var onShowBackButton: (Bool) -> Void
     var onOpenTransaction: ((Transaction) -> Void)?
@@ -75,6 +78,11 @@ struct GiftCardDetailsView: View {
         VStack(spacing: 20) {
             merchantHeaderSection
             giftCardInfoSection
+
+            if viewModel.uiState.needsSignIn && selectedCard?.lacksNumberAndLink == true {
+                signInNotice
+            }
+
             transactionDetailsSection
             howToUseSection
             poweredBySection
@@ -83,6 +91,7 @@ struct GiftCardDetailsView: View {
         .background(Color.dash.primaryBackground)
         .onAppear {
             guard !isPreview else { return }
+            isOnScreen = true
             if shouldObserve {
                 viewModel.startObserving()
             }
@@ -90,10 +99,23 @@ struct GiftCardDetailsView: View {
         }
         .onDisappear {
             guard !isPreview else { return }
+            isOnScreen = false
             if shouldObserve {
                 viewModel.stopObserving()
             }
             setMaxBrightness(false)
+        }
+        .fullScreenCover(item: $redeemRoute, onDismiss: {
+            // If the sheet went away together with the browser, nothing would lower the brightness again.
+            guard isOnScreen else { return }
+            setMaxBrightness(true)
+        }) { route in
+            GiftCardRedeemWebScreen(
+                link: route.link,
+                merchantName: viewModel.uiState.merchantName,
+                challenge: route.challenge,
+                onCopyChallenge: { GiftCardSheetFeedback.copySensitive($0) }
+            )
         }
     }
 
@@ -113,9 +135,21 @@ struct GiftCardDetailsView: View {
             hasBeenPollingForLongTime: viewModel.uiState.hasBeenPollingForLongTime,
             loadingError: viewModel.uiState.loadingError,
             onRetryLoading: viewModel.uiState.canRetryLoading ? { viewModel.retryLoadingCardDetails() } : nil,
-            onOpenClaimLink: openClaimLink,
-            onCopy: copyToPasteboard
+            onRedeemLink: redeem,
+            onCopy: { GiftCardSheetFeedback.copySensitive($0) }
         )
+    }
+
+    private var signInNotice: some View {
+        Text(String(
+            localized: "Sign in to DashSpend and reopen this purchase to see your gift card.",
+            comment: "DashSpend"
+        ))
+        .font(.subheadline)
+        .foregroundColor(.dash.tertiaryText)
+        .multilineTextAlignment(.center)
+        .fixedSize(horizontal: false, vertical: true)
+        .padding(.horizontal, 24)
     }
 
     private var selectedCard: GiftCardDetailsCardItem? {
@@ -165,7 +199,10 @@ struct GiftCardDetailsView: View {
                 }
                 .padding(.horizontal, 16)
             } else {
-                GiftCardDetailsHowToUseSection()
+                GiftCardDetailsHowToUseSection(
+                    isLinkCard: selectedCard?.redeemLink != nil,
+                    hasChallenge: selectedCard?.challengeCode != nil
+                )
             }
         }
         .padding(.vertical, 10)
@@ -181,25 +218,25 @@ struct GiftCardDetailsView: View {
         return dateFormatter.string(from: date)
     }
 
-    private func openClaimLink(_ claimLink: String) {
-        guard let url = URL(string: claimLink) else { return }
-        UIApplication.shared.open(url)
+    private func redeem(_ link: String) {
+        let ctxBaseURL = CTXConstants.baseURI
+
+        let opensInApp = RedeemLinkPolicy.shouldOpenInApp(
+            link,
+            ctxBaseURL: ctxBaseURL,
+            canRefuseUploads: GiftCardRedeemWebViewModel.canRefuseUploads
+        )
+
+        if opensInApp {
+            setMaxBrightness(false)
+            redeemRoute = RedeemLinkRoute(link: link, challenge: selectedCard?.challengeCode)
+        } else if let url = RedeemLinkPolicy.externalURL(link, ctxBaseURL: ctxBaseURL) {
+            UIApplication.shared.open(url)
+        } else {
+            GiftCardSheetFeedback.showBlockedLinkNotice()
+        }
     }
 
-    private func copyToPasteboard(_ value: String) {
-        UIPasteboard.general.string = value
-        UINotificationFeedbackGenerator().notificationOccurred(.success)
-
-        // Show the same "Copied" HUD used elsewhere (Receive) over the topmost
-        // controller so it appears above this gift card sheet.
-        let windowScene = UIApplication.shared.connectedScenes
-            .compactMap { $0 as? UIWindowScene }
-            .first
-        let keyWindow = windowScene?.windows.first(where: { $0.isKeyWindow }) ?? windowScene?.windows.first
-        keyWindow?.rootViewController?.topController().view
-            .dw_showInfoHUD(withText: String(localized: "Copied", comment: ""))
-    }
-    
     private func setMaxBrightness(_ enable: Bool) {
         if enable {
             // Save original brightness
@@ -222,6 +259,49 @@ struct GiftCardDetailsView: View {
         // en_US stays "MMMM dd, yyyy 'at' h:mm a"; other locales get their own order, words and clock (`j`).
         formatter.setLocalizedDateFormatFromTemplate("MMMMddyyyyjmm")
         return formatter
+    }
+}
+
+private struct RedeemLinkRoute: Identifiable {
+    let id = UUID()
+    let link: String
+    let challenge: String?
+}
+
+@MainActor
+enum GiftCardSheetFeedback {
+    private static let clipboardLifetime: TimeInterval = 120
+    private static weak var noticeView: UIView?
+
+    /// Copies a card secret so that it stays on this device and leaves the pasteboard after two minutes.
+    static func copySensitive(_ value: String) {
+        UIPasteboard.general.setItems(
+            [[UTType.utf8PlainText.identifier: value]],
+            options: [
+                .localOnly: true,
+                .expirationDate: Date().addingTimeInterval(clipboardLifetime),
+            ]
+        )
+        UINotificationFeedbackGenerator().notificationOccurred(.success)
+        showNotice(String(localized: "Copied", comment: ""))
+    }
+
+    static func showBlockedLinkNotice() {
+        showNotice(String(localized: "This link can't be opened here.", comment: "DashSpend"))
+    }
+
+    static func hideNotice() {
+        noticeView?.dw_hideInfoHUD()
+    }
+
+    // Shown over the topmost controller so it appears above the gift card sheet and the redeem screen.
+    private static func showNotice(_ text: String) {
+        let windowScene = UIApplication.shared.connectedScenes
+            .compactMap { $0 as? UIWindowScene }
+            .first
+        let keyWindow = windowScene?.windows.first(where: { $0.isKeyWindow }) ?? windowScene?.windows.first
+        noticeView = keyWindow?.rootViewController?.topController().view
+        noticeView?.dw_showInfoHUD(withText: text)
     }
 }
 

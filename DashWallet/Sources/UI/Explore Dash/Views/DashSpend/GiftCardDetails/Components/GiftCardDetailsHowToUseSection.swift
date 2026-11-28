@@ -19,6 +19,9 @@ import SwiftUI
 import DashUIKit
 
 struct GiftCardDetailsHowToUseSection: View {
+    var isLinkCard = false
+    var hasChallenge = false
+
     var body: some View {
         VStack(alignment: .leading, spacing: 30) {
             Text(String(localized: "How to use your gift card", comment: "DashSpend"))
@@ -27,27 +30,59 @@ struct GiftCardDetailsHowToUseSection: View {
                 .foregroundColor(.dash.tertiaryText)
                 .frame(maxWidth: .infinity, alignment: .leading)
 
-            FeatureSingleItem(
-                iconName: .custom("dp_user_generic"),
-                title: String(localized: "Self-checkout", comment: "DashSpend"),
-                description: String(localized: "Request assistance and show the barcode on your screen for scanning.", comment: "DashSpend")
-            )
-
-            FeatureSingleItem(
-                iconName: .custom("image.dashspend.shop"),
-                title: String(localized: "In store", comment: "DashSpend"),
-                description: String(localized: "Tell the cashier that you'd like to pay with a gift card and share the card number and pin.", comment: "DashSpend")
-            )
-
-            FeatureSingleItem(
-                iconName: .custom("image.dashspend.online"),
-                title: String(localized: "Online", comment: "DashSpend"),
-                description: String(localized: "In the payment section of your checkout, select \"gift card\" and enter your card number and pin.", comment: "DashSpend")
-            )
+            if isLinkCard {
+                linkSteps
+            } else {
+                cardSteps
+            }
         }
         .padding(20)
         .background(Color.dash.secondaryBackground)
         .cornerRadius(20)
+    }
+
+    @ViewBuilder
+    private var linkSteps: some View {
+        FeatureSingleItem(
+            iconName: .custom("image.dashspend.online"),
+            title: String(localized: "Open the link", comment: "DashSpend"),
+            description: String(
+                localized: "Tap Redeem gift card to open the page where the card is claimed.",
+                comment: "DashSpend"
+            )
+        )
+
+        if hasChallenge {
+            FeatureSingleItem(
+                iconName: .custom("image.dashspend.online"),
+                title: String(localized: "Enter the challenge code", comment: "DashSpend"),
+                description: String(
+                    localized: "If the page asks for a challenge code, enter the one shown for this card.",
+                    comment: "DashSpend"
+                )
+            )
+        }
+    }
+
+    @ViewBuilder
+    private var cardSteps: some View {
+        FeatureSingleItem(
+            iconName: .custom("dp_user_generic"),
+            title: String(localized: "Self-checkout", comment: "DashSpend"),
+            description: String(localized: "Request assistance and show the barcode on your screen for scanning.", comment: "DashSpend")
+        )
+
+        FeatureSingleItem(
+            iconName: .custom("image.dashspend.shop"),
+            title: String(localized: "In store", comment: "DashSpend"),
+            description: String(localized: "Tell the cashier that you'd like to pay with a gift card and share the card number and pin.", comment: "DashSpend")
+        )
+
+        FeatureSingleItem(
+            iconName: .custom("image.dashspend.online"),
+            title: String(localized: "Online", comment: "DashSpend"),
+            description: String(localized: "In the payment section of your checkout, select \"gift card\" and enter your card number and pin.", comment: "DashSpend")
+        )
     }
 }
 
