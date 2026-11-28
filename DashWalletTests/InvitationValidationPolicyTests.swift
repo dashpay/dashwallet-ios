@@ -386,6 +386,21 @@ final class InvitationValidationPolicyTests: XCTestCase {
         XCTAssertFalse(stillUnnamed, "not the invitation's identity")
     }
 
+    /// The invitation check's blocking contest-list read runs off the main
+    /// actor even when the coordinator, which is main-actor, asks for it,
+    /// and its failure reaches the caller.
+    @MainActor
+    func testTheContestListIsReadOffTheMainActor() async throws {
+        let ranOnMain = try await DWIdentityRegistrationCoordinator.offMainActor { Thread.isMainThread }
+        XCTAssertFalse(ranOnMain)
+
+        struct ReadFailed: Error {}
+        do {
+            _ = try await DWIdentityRegistrationCoordinator.offMainActor { () throws -> Int in throw ReadFailed() }
+            XCTFail("a failed read must throw")
+        } catch is ReadFailed {}
+    }
+
     /// A request is found in any current contest that lists the identity,
     /// and a contest whose vote state cannot be read fails the check
     /// instead of counting as no request.

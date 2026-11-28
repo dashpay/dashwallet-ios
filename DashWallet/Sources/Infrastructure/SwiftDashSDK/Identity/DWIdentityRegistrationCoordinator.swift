@@ -899,9 +899,10 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                 guard let sdk = SwiftDashSDKHost.shared.sdk else { throw CoordinatorError.noSDK }
                 return try await Self.contendsInACurrentContest(
                     identityId,
-                    currentContests: { Array(try await sdk.dpnsGetCurrentContests().keys) },
+                    currentContests: { try await Self.currentContestNames(sdk: sdk) },
                     contenderIds: { name in
-                        let state = try await sdk.dpnsGetContestedVoteState(name: name)
+                        // 0: every contender. The default stops at 100.
+                        let state = try await sdk.dpnsGetContestedVoteState(name: name, limit: 0)
                         guard let contenders = state["contenders"] as? [[String: Any]] else {
                             throw InvitationNameCheckError.unreadableContest
                         }
@@ -911,9 +912,45 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             localFacts: { invitationLocalFacts(wallet: wallet, modelContainer: modelContainer) })
     }
 
-    /// A contest's vote state came back without its contender list.
+    /// A contest's vote state came back without its contender list, or the
+    /// list of current contests could not be read.
     private enum InvitationNameCheckError: Error {
         case unreadableContest
+        case unreadableContestList
+    }
+
+    /// Off the main actor: the Platform reads block until DAPI answers.
+    private static let contestListQueue = DispatchQueue(
+        label: "org.dashfoundation.dash.invitation.contest-list-query", attributes: .concurrent)
+
+    /// Run `body` on ``contestListQueue`` and resume the caller with its
+    /// result, so a blocking read never runs on the caller's actor.
+    nonisolated static func offMainActor<T>(_ body: @escaping () throws -> T) async throws -> T {
+        try await withCheckedThrowingContinuation { continuation in
+            contestListQueue.async { continuation.resume(with: Result { try body() }) }
+        }
+    }
+
+    /// The names of every DPNS contest being voted on now, read in pages
+    /// until none are left. `SDK.dpnsGetCurrentContests()` makes the same
+    /// read on the main actor, which blocks the wallet UI until DAPI answers.
+    /// TODO(invitation-off-main-contests): use the SDK's own off-main read
+    /// once it has one.
+    private nonisolated static func currentContestNames(sdk: SDK) async throws -> [String] {
+        try await offMainActor {
+            // The SDK owns the handle and releases it when it goes.
+            try withExtendedLifetime(sdk) {
+                guard let handle = sdk.handle else { throw CoordinatorError.noSDK }
+                guard let list = dash_sdk_dpns_get_current_contests(handle, 0, 0, 0) else {
+                    throw InvitationNameCheckError.unreadableContestList
+                }
+                defer { dash_sdk_name_timestamp_list_free(list) }
+                guard list.pointee.count > 0, let entries = list.pointee.entries else { return [] }
+                return (0..<Int(list.pointee.count)).compactMap { index in
+                    entries[index].name.map { String(cString: $0) }
+                }
+            }
+        }
     }
 
     /// The wallet's invitation facts as they are now; nil while the current
