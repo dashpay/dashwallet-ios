@@ -1,5 +1,6 @@
 import Combine
 import Foundation
+import UIKit
 import XCTest
 @testable import dashpay
 @testable import SwiftDashSDK
@@ -555,6 +556,26 @@ final class ConnectionsViewModelPurchaseTests: XCTestCase {
         XCTAssertEqual(spy.approveCallCount, 1)
     }
 
+    /// A link that comes while the purchase is out is refused onto its
+    /// sheet; what the purchase then did shows, not that refusal.
+    func testWhatThePurchaseDidSupersedesARefusalThatCameWhileItWasOut() async {
+        let spy = PurchaseApprovalSpy()
+        spy.suspendsUntilReleased = true
+        spy.failure = DashConnectTokenPurchaseFailure.beforeSubmission(PurchaseSpyError.refused)
+        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
+        viewModel.pendingTokenPurchase = PlatformDashConnectDataSourceTests.purchaseRequest(credits: 1)
+
+        viewModel.approvePendingTokenPurchase()
+        await waitUntil { spy.isSuspended }
+        viewModel.onURIReceived("second")
+        XCTAssertEqual(viewModel.anotherRequestNote, ConnectionsViewModel.anotherRequestArrivedText)
+
+        spy.release()
+        await waitUntil { !viewModel.isApprovingPurchase }
+        XCTAssertNil(viewModel.anotherRequestNote)
+        XCTAssertEqual(viewModel.purchaseApproveError?.contains("spy refused"), true)
+    }
+
     func testASecondApproveWhileTheFirstIsInFlightSubmitsOnlyOnce() async {
         let spy = PurchaseApprovalSpy()
         spy.suspendsUntilReleased = true
@@ -1096,6 +1117,32 @@ final class ConnectionsViewModelPurchaseTests: XCTestCase {
         XCTAssertEqual(viewModel.approveError, DashConnectPlatformError.loginUnresolved.localizedDescription)
     }
 
+    /// A link that comes while a failed approval rebuilds the sheet is
+    /// refused onto it; the rebuilt sheet then shows, not that refusal.
+    func testARebuiltSheetSupersedesARefusalThatCameDuringTheRebuild() async {
+        let shown = Self.consent(identityId: "identity-a")
+        var unresolved = shown
+        unresolved.login = .unresolved
+        unresolved.unresolvedLoginReason = "no nodes"
+        let spy = LoginApprovalSpy(shown: [shown, unresolved])
+        spy.approveFailures = [DashConnectPlatformError.loginUnresolved]
+        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
+        viewModel.onQRScanned("login")
+        await waitUntil { viewModel.pendingRequest != nil }
+        spy.holdsRebuild = true
+
+        viewModel.approvePendingRequest()
+        await waitUntil { spy.isRebuildSuspended }
+        viewModel.onURIReceived("second")
+        XCTAssertEqual(viewModel.anotherRequestNote, ConnectionsViewModel.anotherRequestArrivedText)
+
+        spy.releaseRebuild()
+        await waitUntil { !viewModel.isApproving }
+        XCTAssertEqual(viewModel.pendingRequest, unresolved)
+        XCTAssertNil(viewModel.approveError, "the sheet states the unresolved login itself")
+        XCTAssertNil(viewModel.anotherRequestNote)
+    }
+
     private static func consent(identityId: String) -> ConnectionRequest {
         ConnectionRequest(
             loginRequest: MockDashConnectDataSource.sampleLoginRequest,
@@ -1388,8 +1435,35 @@ private final class LoginApprovalSpy: DashConnectDataSource {
         return parsed ?? .login(loginRequest)
     }
 
+    private var storedHoldsRebuild = false
+    private var rebuildGate: CheckedContinuation<Void, Never>?
+
+    /// When true, `makeConnectionRequest` suspends until `releaseRebuild()`.
+    var holdsRebuild: Bool {
+        get { lock.withLock { storedHoldsRebuild } }
+        set { lock.withLock { storedHoldsRebuild = newValue } }
+    }
+
+    /// Whether a rebuild is suspended right now.
+    var isRebuildSuspended: Bool { lock.withLock { rebuildGate != nil } }
+
+    /// Lets a suspended `makeConnectionRequest` finish.
+    func releaseRebuild() {
+        let waiting = lock.withLock { () -> CheckedContinuation<Void, Never>? in
+            let waiting = rebuildGate
+            rebuildGate = nil
+            return waiting
+        }
+        waiting?.resume()
+    }
+
     func makeConnectionRequest(from loginRequest: DashKeyRequest) async -> ConnectionRequest {
-        lock.withLock { shown.count > 1 ? shown.removeFirst() : shown[0] }
+        if holdsRebuild {
+            await withCheckedContinuation { continuation in
+                lock.withLock { rebuildGate = continuation }
+            }
+        }
+        return lock.withLock { shown.count > 1 ? shown.removeFirst() : shown[0] }
     }
 
     func approveLogin(_ request: DashKeyRequest, consent: ConnectionRequest) async throws -> DAppConnection {
@@ -6945,6 +7019,102 @@ final class ConnectionsViewModelTermsTests: XCTestCase {
         XCTAssertEqual(viewModel.approveError, ConnectionsViewModel.usernameUnreadText)
     }
 
+    /// The page's alert cannot show over the approve sheet: a request that
+    /// comes while the sheet is up is refused on the sheet, even when the
+    /// username was lost or became unread meanwhile (#1517).
+    func testARequestOverTheSheetIsRefusedOnItWhateverTheUsername() async {
+        for lost in [ConnectionsViewModel.UsernameState.missing, .unknown] {
+            var username = ConnectionsViewModel.UsernameState.present
+            let shown = Self.request(platformTimeMs: Self.platformNow, expiresAt: Self.platformNow + 3_600_000)
+            let spy = LoginApprovalSpy(shown: [shown])
+            let viewModel = ConnectionsViewModel(
+                dataSource: spy, featureUnavailable: false, usernameState: { username }, now: { Self.phone })
+            viewModel.onQRScanned("login")
+            await waitUntil { viewModel.pendingRequest != nil }
+
+            username = lost
+            viewModel.onURIReceived("second")
+
+            XCTAssertEqual(viewModel.pendingRequest, shown, "\(lost)")
+            XCTAssertEqual(viewModel.anotherRequestNote?.contains("Another DashConnect request arrived"), true, "\(lost)")
+            XCTAssertNil(viewModel.message, "\(lost): nothing goes to the page under the sheet")
+            // A terms sheet over the approval says it too.
+            XCTAssertEqual(viewModel.anotherRequestNote, ConnectionsViewModel.anotherRequestArrivedText, "\(lost)")
+        }
+    }
+
+    /// Only the refusal of another request is repeated on a terms sheet: the
+    /// approval's other notes are about the request under it.
+    func testATermsSheetRepeatsOnlyTheRefusalOfAnotherRequest() async {
+        var username = ConnectionsViewModel.UsernameState.present
+        let spy = LoginApprovalSpy(shown: [Self.request(platformTimeMs: Self.platformNow, expiresAt: Self.platformNow + 3_600_000)])
+        let viewModel = ConnectionsViewModel(
+            dataSource: spy, featureUnavailable: false, usernameState: { username }, now: { Self.phone })
+        viewModel.onQRScanned("login")
+        await waitUntil { viewModel.pendingRequest != nil }
+        XCTAssertNil(viewModel.anotherRequestNote)
+
+        username = .unknown
+        viewModel.approvePendingRequest()
+        XCTAssertEqual(viewModel.approveError, ConnectionsViewModel.usernameUnreadText)
+        XCTAssertNil(viewModel.anotherRequestNote)
+    }
+
+    func testTheRefusalOfAnotherRequestCanBeClosedAndNothingElse() async {
+        var username = ConnectionsViewModel.UsernameState.present
+        let spy = LoginApprovalSpy(shown: [Self.request(platformTimeMs: Self.platformNow, expiresAt: Self.platformNow + 3_600_000)])
+        let viewModel = ConnectionsViewModel(
+            dataSource: spy, featureUnavailable: false, usernameState: { username }, now: { Self.phone })
+        viewModel.onQRScanned("login")
+        await waitUntil { viewModel.pendingRequest != nil }
+        let shown = viewModel.pendingRequest
+        viewModel.onQRScanned("second")
+        await waitUntil { viewModel.anotherRequestNote != nil }
+
+        viewModel.dismissAnotherRequestNote()
+        XCTAssertNil(viewModel.approveError)
+        XCTAssertNil(viewModel.anotherRequestNote)
+        XCTAssertEqual(viewModel.pendingRequest, shown, "closing the note keeps the request on the sheet")
+
+        // Any other note on the sheet stays: it explains why Approve did not go.
+        username = .unknown
+        viewModel.approvePendingRequest()
+        viewModel.dismissAnotherRequestNote()
+        XCTAssertEqual(viewModel.approveError, ConnectionsViewModel.usernameUnreadText)
+    }
+
+    /// Closing the refusal of another request shows the approval's own note
+    /// again: here, the balance refusal that tells the user to top up.
+    func testASheetWithoutACloseShowsBothNotes() {
+        let other = ConnectionsViewModel.anotherRequestArrivedText
+        let own = ConnectionsViewModel.topUpThenAskAgainText
+        XCTAssertEqual(ConnectionsViewModel.sheetNote(anotherRequest: other, own: own), other + "\n" + own)
+        XCTAssertEqual(ConnectionsViewModel.sheetNote(anotherRequest: nil, own: own), own)
+        XCTAssertEqual(ConnectionsViewModel.sheetNote(anotherRequest: other, own: nil), other)
+        XCTAssertNil(ConnectionsViewModel.sheetNote(anotherRequest: nil, own: nil))
+    }
+
+    func testClosingTheRefusalOfAnotherRequestShowsTheApprovalsOwnNoteAgain() async {
+        let spy = LoginApprovalSpy(shown: [Self.request(platformTimeMs: Self.platformNow, expiresAt: Self.platformNow + 3_600_000)])
+        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false, now: { Self.phone })
+        viewModel.onQRScanned("login")
+        await waitUntil { viewModel.pendingRequest != nil }
+        viewModel.approveError = ConnectionsViewModel.topUpThenAskAgainText
+
+        viewModel.onURIReceived("second")
+        XCTAssertEqual(viewModel.anotherRequestNote, ConnectionsViewModel.anotherRequestArrivedText)
+        XCTAssertEqual(viewModel.approveError, ConnectionsViewModel.topUpThenAskAgainText, "not replaced")
+
+        viewModel.dismissAnotherRequestNote()
+        XCTAssertNil(viewModel.anotherRequestNote)
+        XCTAssertEqual(viewModel.approveError, ConnectionsViewModel.topUpThenAskAgainText, "shown again")
+
+        // Gone with the approval.
+        viewModel.onURIReceived("third")
+        viewModel.pendingRequest = nil
+        XCTAssertNil(viewModel.anotherRequestNote)
+    }
+
     func testTheUsernameIsReadAgainOnceTheNamesLoad() async {
         var username = ConnectionsViewModel.UsernameState.unknown
         let center = NotificationCenter()
@@ -6983,9 +7153,13 @@ final class ConnectionsViewModelTermsTests: XCTestCase {
         viewModel.onQRScanned("login")
         await waitUntil { viewModel.pendingRequest != nil }
         XCTAssertNotNil(viewModel.termsAppliedPlan)
+        // A second link left its refusal open on the sheet.
+        viewModel.onURIReceived("second")
+        XCTAssertNotNil(viewModel.anotherRequestNote)
 
         viewModel.approvePendingRequest()
         await waitUntil { spy.approvedConsents.count == 1 && !viewModel.isApproving }
+        XCTAssertNil(viewModel.anotherRequestNote, "what Approve did shows, not the other request's refusal")
 
         // The phone's clock has not moved, but Platform's time is past the
         // expiry: the same terms are not offered again.
@@ -6996,6 +7170,95 @@ final class ConnectionsViewModelTermsTests: XCTestCase {
                 localized: "This expiry has passed. Pick another one, then approve.",
                 comment: "DashConnect approve sheet: the chosen expiry is in the past"))
         XCTAssertNotNil(viewModel.pendingRequest)
+    }
+
+    /// A link that comes while Approve is out is refused onto the sheet;
+    /// what Approve then did shows, not that refusal (here: Platform
+    /// refused the expiry, and the sheet says to pick another one).
+    func testWhatApproveDidSupersedesARefusalThatCameWhileItWasOut() async {
+        let spy = LoginApprovalSpy(shown: [Self.request(platformTimeMs: Self.platformNow, expiresAt: Self.platformNow + 3_600_000)])
+        spy.approveFailures = [DashConnectPlatformError.approvalTermsExpired]
+        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false, now: { Self.phone })
+        viewModel.onQRScanned("login")
+        await waitUntil { viewModel.pendingRequest != nil }
+        spy.suspendsApproval = true
+
+        viewModel.approvePendingRequest()
+        await waitUntil { spy.isApprovalSuspended }
+        viewModel.onURIReceived("second")
+        XCTAssertEqual(viewModel.anotherRequestNote, ConnectionsViewModel.anotherRequestArrivedText)
+
+        spy.releaseApproval()
+        await waitUntil { !viewModel.isApproving }
+        XCTAssertNil(viewModel.anotherRequestNote)
+        XCTAssertNil(viewModel.termsAppliedPlan)
+        XCTAssertNotNil(viewModel.approveDisabledReason)
+    }
+
+    /// The same for "Try again" on a sheet that could not tell which login
+    /// it would run: the rebuilt sheet shows, not the refusal.
+    func testWhatTryAgainDidSupersedesARefusalThatCameWhileItWasOut() async {
+        let spy = LoginApprovalSpy(shown: [Self.request(platformTimeMs: Self.platformNow, expiresAt: Self.platformNow + 3_600_000)])
+        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false, now: { Self.phone })
+        viewModel.onQRScanned("login")
+        await waitUntil { viewModel.pendingRequest != nil }
+        spy.holdsRebuild = true
+
+        viewModel.retryPendingRequest()
+        await waitUntil { spy.isRebuildSuspended }
+        viewModel.onURIReceived("second")
+        XCTAssertEqual(viewModel.anotherRequestNote, ConnectionsViewModel.anotherRequestArrivedText)
+
+        spy.releaseRebuild()
+        await waitUntil { !viewModel.isApproving }
+        XCTAssertNil(viewModel.anotherRequestNote)
+        XCTAssertNotNil(viewModel.pendingRequest)
+    }
+
+    /// Picking a funding limit is acting on the request on screen: the
+    /// refusal of another request goes, and the sheet's own state shows.
+    func testAFundingLimitSetSupersedesTheRefusalOfAnotherRequest() async throws {
+        let spy = LoginApprovalSpy(shown: [Self.request(platformTimeMs: Self.platformNow, expiresAt: Self.platformNow + 3_600_000)])
+        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false, now: { Self.phone })
+        viewModel.onQRScanned("login")
+        await waitUntil { viewModel.pendingRequest != nil }
+        viewModel.onURIReceived("second")
+        XCTAssertNotNil(viewModel.anotherRequestNote)
+
+        let preset = try XCTUnwrap(viewModel.fundingPresets.last?.credits)
+        XCTAssertTrue(viewModel.setFundingLimit(preset))
+        XCTAssertNil(viewModel.anotherRequestNote)
+    }
+
+    /// The same for an expiry: after Platform refused the old one, the
+    /// refusal of another request does not stay over the new choice.
+    func testAnExpirySetSupersedesTheRefusalOfAnotherRequest() async {
+        let spy = LoginApprovalSpy(shown: [Self.request(platformTimeMs: Self.platformNow, expiresAt: Self.platformNow + 3_600_000)])
+        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false, now: { Self.phone })
+        viewModel.onQRScanned("login")
+        await waitUntil { viewModel.pendingRequest != nil }
+        viewModel.onURIReceived("second")
+        XCTAssertNotNil(viewModel.anotherRequestNote)
+
+        XCTAssertTrue(viewModel.setExpiry(days: 30))
+        XCTAssertNil(viewModel.anotherRequestNote)
+    }
+
+    /// The approval and its terms sheets hide their header close while the
+    /// refusal of another request shows its own: two buttons VoiceOver reads
+    /// as "Close", one of them declining the request.
+    func testTheSheetsHeaderCloseIsHiddenWhileTheRefusalShowsItsOwn() async {
+        let spy = LoginApprovalSpy(shown: [Self.request(platformTimeMs: Self.platformNow, expiresAt: Self.platformNow + 3_600_000)])
+        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false, now: { Self.phone })
+        viewModel.onQRScanned("login")
+        await waitUntil { viewModel.pendingRequest != nil }
+        XCTAssertTrue(viewModel.showsSheetCloseButton)
+
+        viewModel.onURIReceived("second")
+        XCTAssertFalse(viewModel.showsSheetCloseButton)
+
+        viewModel.dismissAnotherRequestNote()
+        XCTAssertTrue(viewModel.showsSheetCloseButton)
     }
 
     // MARK: Balance
@@ -7089,10 +7352,13 @@ final class ConnectionsViewModelTermsTests: XCTestCase {
 
         spy.parseFailure = DashConnectPlatformError.noIdentity
         viewModel.onURIReceived("not a request")
-        await waitUntil { viewModel.message != nil }
+        await waitUntil { viewModel.returnStepNote != nil }
         XCTAssertEqual(spy.parseCount, 2)
 
         XCTAssertEqual(viewModel.pendingReturn, asked)
+        // The page's alert cannot show over the return step: the failure is said on it.
+        XCTAssertEqual(viewModel.returnStepNote?.contains("Could not complete the DashConnect request"), true)
+        XCTAssertNil(viewModel.message)
     }
 
     private static var platformNow: UInt64 { AppConnect.milliseconds(phone) }
@@ -7102,5 +7368,152 @@ final class ConnectionsViewModelTermsTests: XCTestCase {
         while !condition(), Date() < deadline {
             try? await Task.sleep(nanoseconds: 2_000_000)
         }
+    }
+}
+
+// MARK: - A link over the Connections screen (#1517)
+
+/// A DashConnect link that reaches an open Connections screen leaves the
+/// screen's own sheet up and answers on it; anything else over the screen is
+/// closed so the request can show. Driven through
+/// `DashConnectHostingController.route`, the path every link takes, in a real
+/// window so the approval sheet is presented the way the app presents it.
+extension ConnectionsViewModelTermsTests {
+    func testALinkOverTheApprovalSheetKeepsItAndSaysWhyOnIt() async throws {
+        try await assertARequestOverTheApprovalSheetKeepsIt(scanned: false)
+    }
+
+    /// A code the Home scanner read takes the same route as a link.
+    func testAHomeScanOverTheApprovalSheetKeepsItAndSaysWhyOnIt() async throws {
+        try await assertARequestOverTheApprovalSheetKeepsIt(scanned: true)
+    }
+
+    private func assertARequestOverTheApprovalSheetKeepsIt(scanned: Bool) async throws {
+        let shown = Self.request(platformTimeMs: Self.platformNow, expiresAt: Self.platformNow + 3_600_000)
+        let spy = LoginApprovalSpy(shown: [shown])
+        let viewModel = ConnectionsViewModel(
+            dataSource: spy, featureUnavailable: false, openURL: { _ in }, now: { Self.phone })
+        let (window, tabBar, menuNav) = try Self.connectionsWindow(viewModel: viewModel)
+        defer { window.isHidden = true }
+
+        viewModel.onURIReceived("login")
+        await waitUntil(timeout: 10) { tabBar.presentedViewController != nil }
+        let sheet = try XCTUnwrap(tabBar.presentedViewController, "the approval sheet never showed")
+        // On screen, not still sliding in: a dismiss during the transition is not carried out.
+        await waitUntil(timeout: 10) {
+            !sheet.isBeingPresented && sheet.transitionCoordinator == nil && sheet.view.window != nil
+        }
+
+        Self.route("second", scanned: scanned, tabBar: tabBar, menuNav: menuNav)
+        await waitUntil { viewModel.approveError != nil }
+        // A sheet closed from UIKit goes after the current pass.
+        try await Task.sleep(nanoseconds: 500_000_000)
+
+        XCTAssertTrue(tabBar.presentedViewController === sheet, "the link closed the approval sheet")
+        XCTAssertEqual(viewModel.pendingRequest, shown)
+        XCTAssertEqual(viewModel.anotherRequestNote?.contains("Another DashConnect request arrived"), true)
+        XCTAssertEqual(spy.parseCount, 1)
+        XCTAssertFalse(viewModel.mayScan(), "the request on screen is still the one being answered")
+
+        // Answered, the screen takes scans again.
+        viewModel.denyPendingRequest(asksToReturn: false)
+        XCTAssertTrue(viewModel.mayScan())
+    }
+
+    func testALinkClosesWhatAnotherFlowPutOverTheScreenAndShowsItsRequest() async throws {
+        try await assertALinkCloses(presentedAs: .pageSheet)
+    }
+
+    /// A full-screen flow takes Connections out of the window; the link
+    /// still closes it rather than waiting for the user to.
+    func testALinkClosesAFullScreenFlowOverTheScreenAndShowsItsRequest() async throws {
+        try await assertALinkCloses(presentedAs: .fullScreen)
+    }
+
+    /// The screen comes back into the window before the dismiss's completion
+    /// runs. The answer the link gets there (here: the username is not read
+    /// yet) stays; only an alert from before the link is cleared.
+    func testALinkThatClosesAFullScreenFlowKeepsTheAnswerItGets() async throws {
+        let spy = LoginApprovalSpy(shown: [Self.request(platformTimeMs: Self.platformNow, expiresAt: Self.platformNow + 3_600_000)])
+        let viewModel = ConnectionsViewModel(
+            dataSource: spy, featureUnavailable: false, usernameState: { .unknown }, now: { Self.phone })
+        let (window, tabBar, menuNav) = try Self.connectionsWindow(viewModel: viewModel)
+        defer { window.isHidden = true }
+
+        let other = UIViewController()
+        other.modalPresentationStyle = .fullScreen
+        await withCheckedContinuation { done in tabBar.present(other, animated: false) { done.resume() } }
+        await waitUntil { menuNav.topViewController?.view.window == nil }
+
+        Self.route("login", tabBar: tabBar, menuNav: menuNav)
+        await waitUntil(timeout: 10) { other.presentingViewController == nil }
+        // Past the dismiss's completion.
+        try await Task.sleep(nanoseconds: 500_000_000)
+
+        XCTAssertNil(other.presentingViewController, "the full-screen flow was not closed")
+        XCTAssertEqual(viewModel.message?.text, ConnectionsViewModel.usernameUnreadText)
+    }
+
+    /// The page's own scanner is presented from the More navigation
+    /// controller, not from the tab bar.
+    func testALinkClosesWhatThePagePresentedFromItsNavigationAndShowsItsRequest() async throws {
+        try await assertALinkCloses(presentedAs: .pageSheet, fromNavigation: true)
+    }
+
+    private func assertALinkCloses(
+        presentedAs style: UIModalPresentationStyle,
+        fromNavigation: Bool = false
+    ) async throws {
+        let shown = Self.request(platformTimeMs: Self.platformNow, expiresAt: Self.platformNow + 3_600_000)
+        let spy = LoginApprovalSpy(shown: [shown])
+        let viewModel = ConnectionsViewModel(
+            dataSource: spy, featureUnavailable: false, openURL: { _ in }, now: { Self.phone })
+        let (window, tabBar, menuNav) = try Self.connectionsWindow(viewModel: viewModel)
+        defer { window.isHidden = true }
+
+        let other = UIViewController()
+        other.modalPresentationStyle = style
+        let presenter: UIViewController = fromNavigation ? menuNav : tabBar
+        await withCheckedContinuation { done in presenter.present(other, animated: false) { done.resume() } }
+        await waitUntil { other.view.window != nil }
+        if style == .fullScreen {
+            await waitUntil { menuNav.topViewController?.view.window == nil }
+            XCTAssertNil(menuNav.topViewController?.view.window, "a full-screen flow takes the screen out of the window")
+        }
+
+        Self.route("login", tabBar: tabBar, menuNav: menuNav)
+        await waitUntil(timeout: 10) {
+            viewModel.pendingRequest != nil && tabBar.presentedViewController.map { $0 !== other } == true
+        }
+
+        XCTAssertEqual(viewModel.pendingRequest, shown)
+        XCTAssertNotNil(tabBar.presentedViewController, "the approval sheet never showed")
+        XCTAssertFalse(tabBar.presentedViewController === other, "the other flow's screen still covers the request")
+        XCTAssertNil(other.presentingViewController, "the other flow's screen was not closed")
+    }
+
+    private static func route(
+        _ uri: String, scanned: Bool = false, tabBar: UITabBarController, menuNav: UINavigationController
+    ) {
+        DashConnectHostingController.route(
+            uri, scanned: scanned, tabBar: tabBar, menuNav: menuNav, moreTabIndex: 0,
+            makeScreen: { XCTFail("a second Connections screen was pushed"); return DashConnectHostingController(navigationController: menuNav) })
+    }
+
+    /// A tab bar whose only tab shows Connections on `viewModel`, in a key window.
+    private static func connectionsWindow(
+        viewModel: ConnectionsViewModel
+    ) throws -> (UIWindow, UITabBarController, UINavigationController) {
+        let menuNav = UINavigationController()
+        let screen = DashConnectHostingController(navigationController: menuNav, viewModel: viewModel)
+        menuNav.viewControllers = [screen]
+        let tabBar = UITabBarController()
+        tabBar.viewControllers = [menuNav]
+        let scene = try XCTUnwrap(UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.first)
+        let window = UIWindow(windowScene: scene)
+        window.rootViewController = tabBar
+        window.makeKeyAndVisible()
+        screen.loadViewIfNeeded()
+        return (window, tabBar, menuNav)
     }
 }

@@ -48,6 +48,7 @@ struct AppConnectApproveSheet: View {
         DashUIKit.BottomSheet(
             showBackButton: .constant(false),
             isDismissalEnabled: .constant(!viewModel.isApproving),
+            showsCloseButton: viewModel.showsSheetCloseButton,
             isCloseButtonEnabled: !viewModel.isApproving,
             onClose: { viewModel.denyPendingRequest(asksToReturn: true) },
             background: Color.dash.secondaryBackground
@@ -99,10 +100,14 @@ struct AppConnectApproveSheet: View {
                 }
                 // Room under the content for the toast, so nothing stays under it.
                 .contentMargins(
-                    .bottom, (viewModel.approveError ?? viewModel.approveDisabledReason) == nil ? 0 : 72,
+                    .bottom, approvalNote == nil ? 0 : 72,
                     for: .scrollContent)
                 // Over the end of the scrolling content, above the buttons.
-                .dashConnectErrorToast(viewModel.approveError ?? viewModel.approveDisabledReason)
+                // The refusal of another request can be closed; a note on
+                // why Approve did not go stays until the user acts on it.
+                .dashConnectErrorToast(
+                    approvalNote,
+                    onDismiss: viewModel.anotherRequestNote == nil ? nil : { viewModel.dismissAnotherRequestNote() })
 
                 footer
             }
@@ -114,24 +119,43 @@ struct AppConnectApproveSheet: View {
         .sheet(item: $termsSheet) { sheet in
             switch sheet {
             case .funding:
-                FundingLimitSheet(viewModel: viewModel, onClose: { termsSheet = nil })
+                withAnotherRequestNote(FundingLimitSheet(viewModel: viewModel, onClose: { termsSheet = nil }))
                     .selfSizingSheet(
                         fallback: .greatestFiniteMagnitude, background: Color.dash.secondaryBackground,
                         animatesHeightChanges: true)
             case .expiry:
-                ExpirySheet(viewModel: viewModel, onClose: { termsSheet = nil })
+                withAnotherRequestNote(ExpirySheet(viewModel: viewModel, onClose: { termsSheet = nil }))
                     .selfSizingSheet(
                         fallback: .greatestFiniteMagnitude, background: Color.dash.secondaryBackground,
                         animatesHeightChanges: true)
             case .fundingInfo:
-                FundingLimitsInfoSheet(onClose: { termsSheet = nil })
+                withAnotherRequestNote(FundingLimitsInfoSheet(onClose: { termsSheet = nil }))
                     .selfSizingSheet(fallback: .greatestFiniteMagnitude, background: Color.dash.secondaryBackground)
                     .presentationDragIndicator(.visible)
             case .spendableInfo:
-                SpendableDashInfoSheet(onClose: { termsSheet = nil })
+                withAnotherRequestNote(SpendableDashInfoSheet(onClose: { termsSheet = nil }))
                     .selfSizingSheet(fallback: .greatestFiniteMagnitude, background: Color.dash.secondaryBackground)
                     .presentationDragIndicator(.visible)
             }
+        }
+    }
+
+    /// A request that came while a terms sheet is up is refused onto the
+    /// approval under it; the sheet on top says so too, and keeps what the
+    /// user was entering. The note goes first: the sheet's height is capped
+    /// and its content is top-aligned, so with large text a note under the
+    /// editor could fall below the sheet, where nothing scrolls to it.
+    private func withAnotherRequestNote(_ content: some View) -> some View {
+        VStack(spacing: 0) {
+            DashConnectInlineErrorToast(
+                message: viewModel.anotherRequestNote,
+                onDismiss: { viewModel.dismissAnotherRequestNote() })
+                // Its whole height, so the sheet grows to the full text
+                // instead of cutting it to one line.
+                .fixedSize(horizontal: false, vertical: true)
+                .padding(.horizontal, 20)
+                .padding(.top, viewModel.anotherRequestNote == nil ? 0 : 20)
+            content
         }
     }
 
@@ -260,6 +284,12 @@ struct AppConnectApproveSheet: View {
         }
     }
 
+    /// The refusal of another request first; the approval's own note is
+    /// under it and shows again once it is closed.
+    private var approvalNote: String? {
+        viewModel.anotherRequestNote ?? viewModel.approveError ?? viewModel.approveDisabledReason
+    }
+
     private var footer: some View {
         VStack(spacing: 10) {
             if viewModel.approveNeedsTopUp, let onTopUp {
@@ -356,6 +386,7 @@ struct FundingLimitSheet: View {
                 : String(localized: "Identity funding limits", comment: "DashConnect funding limit presets"),
             showBackButton: .constant(isTyping),
             onBackButtonPressed: { withAnimation(.smooth(duration: 0.3)) { isTyping = false } },
+            showsCloseButton: viewModel.showsSheetCloseButton,
             onClose: onClose,
             fillsHeight: false,
             background: Color.dash.secondaryBackground
@@ -457,6 +488,7 @@ struct ExpirySheet: View {
                 : String(localized: "Connection expiration period", comment: "DashConnect expiry presets"),
             showBackButton: .constant(isPickingDate),
             onBackButtonPressed: { withAnimation(.smooth(duration: 0.3)) { isPickingDate = false } },
+            showsCloseButton: viewModel.showsSheetCloseButton,
             onClose: onClose,
             fillsHeight: false,
             background: Color.dash.secondaryBackground

@@ -556,22 +556,19 @@ extension MainTabbarController {
     /// The More tab's index moves with the DashPay layout, so it comes from
     /// `moreTabIndex` rather than from the tab enum.
     func openDashConnect(_ uri: String, scanned: Bool) {
-        dismiss(animated: false, completion: nil)
-
-        guard let menuNav = menuNavigationController?.navigationController else { return }
-
-        if let moreTabIndex {
-            selectedIndex = moreTabIndex
-        }
-
-        if let connections = menuNav.topViewController as? DashConnectHostingController {
-            connections.handle(uri: uri, scanned: scanned)
+        guard let menuNav = menuNavigationController?.navigationController else {
+            dismiss(animated: false, completion: nil)
+            DWLogger.log("🔗 DASHCONNECT :: \(scanned ? "scan" : "link") dropped: no More tab")
             return
         }
 
-        let controller = DashConnectHostingController(
-            navigationController: menuNav, uri: uri, scanned: scanned, dashPayModel: homeModel?.dashPayModel)
-        menuNav.pushViewController(controller, animated: true)
+        DashConnectHostingController.route(
+            uri, scanned: scanned, tabBar: self, menuNav: menuNav, moreTabIndex: moreTabIndex,
+            makeScreen: {
+                DashConnectHostingController(
+                    navigationController: menuNav, uri: uri, scanned: scanned,
+                    dashPayModel: homeModel?.dashPayModel)
+            })
     }
 
     @objc

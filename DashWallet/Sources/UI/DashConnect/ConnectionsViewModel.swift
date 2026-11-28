@@ -178,6 +178,7 @@ final class ConnectionsViewModel: ObservableObject {
                 approvalTerms = nil
             }
             approveNeedsTopUp = false
+            if pendingRequest == nil, pendingTokenPurchase == nil { anotherRequestNote = nil }
             smallestFundingLimit = pendingRequest?.login.grantPlan.flatMap(AppConnect.smallestFundingLimit)
         }
     }
@@ -220,9 +221,21 @@ final class ConnectionsViewModel: ObservableObject {
     /// cannot pay to register the keys or to publish the response; the
     /// sheet offers a top-up.
     @Published private(set) var approveNeedsTopUp = false
-    @Published var pendingTokenPurchase: DashConnectTokenPurchaseRequest?
-    @Published var isApproving = false
-    @Published var isApprovingPurchase = false
+    @Published var pendingTokenPurchase: DashConnectTokenPurchaseRequest? {
+        didSet { if pendingTokenPurchase == nil, pendingRequest == nil { anotherRequestNote = nil } }
+    }
+    /// An approval or a retry of the request on screen in flight. Its
+    /// start and its end both clear the refusal of another request: what
+    /// the user's action does shows, including a refusal set while it was
+    /// out.
+    @Published var isApproving = false {
+        didSet { if isApproving != oldValue { anotherRequestNote = nil } }
+    }
+    /// The token purchase on screen in flight; clears the refusal of
+    /// another request as `isApproving` does.
+    @Published var isApprovingPurchase = false {
+        didSet { if isApprovingPurchase != oldValue { anotherRequestNote = nil } }
+    }
     @Published var isProcessingStateTransition = false
     /// A disconnect in progress, from the tap until it has ended and the
     /// local history shows its result, whether or not it signs an identity
@@ -235,7 +248,11 @@ final class ConnectionsViewModel: ObservableObject {
     /// A screen-level `.alert` cannot appear over a presented sheet, so routing this
     /// through `message` would leave the user with no feedback at all.
     @Published var approveError: String? {
-        didSet { approveErrorSubject = .request }
+        didSet {
+            approveErrorSubject = .request
+            // A newer note on the approval is what the user needs now.
+            if approveError != nil { anotherRequestNote = nil }
+        }
     }
 
     /// What `approveError` is about: a change of the terms clears a note
@@ -248,7 +265,9 @@ final class ConnectionsViewModel: ObservableObject {
     private var approveErrorSubject = ApproveErrorSubject.request
     /// Failure of the last token-purchase approve attempt, rendered inside
     /// the purchase sheet for the same reason as `approveError`.
-    @Published var purchaseApproveError: String?
+    @Published var purchaseApproveError: String? {
+        didSet { if purchaseApproveError != nil { anotherRequestNote = nil } }
+    }
 
     private let dataSource: any DashConnectDataSource
     private let usernameState: @MainActor () -> UsernameState
@@ -420,6 +439,16 @@ final class ConnectionsViewModel: ObservableObject {
     /// Something that signs, or touches the records a disconnect does, is
     /// running or about to show: a disconnect waits for it.
     private var isBusyWithAnotherRequest: Bool { isBusySigning || isResolvingRequest }
+
+    /// Whether the screen has a sheet of its own up: an approval or its
+    /// return step, a purchase, or a connection's sheet. A link for the
+    /// screen is answered on that sheet. Closed from outside, the sheet
+    /// would go the way a swipe-down takes it: the request on it declined
+    /// without a word, and the newcomer's refusal written to a sheet that
+    /// is gone.
+    var showsOwnSheet: Bool {
+        pendingRequest != nil || pendingReturn != nil || pendingTokenPurchase != nil || shownConnection != nil
+    }
 
     /// Something signs, or an approval is on screen. A request still
     /// resolving is not counted here: a newer scan supersedes it.
@@ -610,19 +639,6 @@ final class ConnectionsViewModel: ObservableObject {
         // Read before the request: the page shows whether to create a
         // username, and a request needs one unless it is a state transition.
         refreshUsername()
-        // Without a username only a `dash-st:` request goes on. A key
-        // registration runs: it completes a two-QR login this wallet
-        // approved already, and fails without that approved row
-        // (`pendingApprovedConnectionForKeyRegistration`). A token purchase
-        // is refused once parsed, before the network is read for it
-        // (`handleStateTransition`). Any other request is not approved
-        // (`answerWithoutUsername`).
-        if needsUsername || usernameUnknown,
-           !DashConnectUri.isStUri(content.trimmingCharacters(in: .whitespacesAndNewlines)) {
-            answerWithoutUsername()
-            return
-        }
-
         // A request the user is already looking at owns the screen until they
         // answer it. Both sheets count: `pendingRequest` presents the connection
         // approval (and stays set while an approval is in flight), and
@@ -634,22 +650,35 @@ final class ConnectionsViewModel: ObservableObject {
         //
         // The refusal has to appear where the user is looking: the sheet
         // covers the screen, and a screen-level `.alert` cannot show over it.
+        // So this comes before the username check, whose answer goes to the
+        // page: a username lost or unread while a sheet is up still gets the
+        // newcomer refused on that sheet.
         guard pendingRequest == nil, pendingTokenPurchase == nil else {
-            let refusal = String(localized: "Another DashConnect request arrived. Finish this one first, then try again.",
-                                            comment: "DashConnect: a second request arrived while one was on screen")
-            // Onto the sheet that is actually up: the purchase sheet reads
-            // `purchaseApproveError` alone, so a refusal parked in
-            // `approveError` while a purchase is on screen is invisible — the
-            // request would look silently dropped.
-            if pendingTokenPurchase != nil {
-                purchaseApproveError = refusal
-            } else {
-                approveError = refusal
-            }
+            DWLogger.log("🔗 DASHCONNECT :: request not taken: another one is on screen")
+            // Its own note, shown first by whichever sheet is up (approval,
+            // purchase, or a terms sheet over the approval): it does not
+            // replace the sheet's own note, which shows again once it is
+            // closed.
+            anotherRequestNote = Self.anotherRequestArrivedText
+            return
+        }
+
+        // Without a username only a `dash-st:` request goes on. A key
+        // registration runs: it completes a two-QR login this wallet
+        // approved already, and fails without that approved row
+        // (`pendingApprovedConnectionForKeyRegistration`). A token purchase
+        // is refused once parsed, before the network is read for it
+        // (`handleStateTransition`). Any other request is not approved
+        // (`answerWithoutUsername`).
+        if needsUsername || usernameUnknown,
+           !DashConnectUri.isStUri(content.trimmingCharacters(in: .whitespacesAndNewlines)) {
+            DWLogger.log("🔗 DASHCONNECT :: request not taken: \(needsUsername ? "no username" : "username not read yet")")
+            answerWithoutUsername()
             return
         }
 
         guard !isProcessingStateTransition, !isDisconnecting else {
+            DWLogger.log("🔗 DASHCONNECT :: request not taken: \(isDisconnecting ? "a disconnect" : "a key registration") is running")
             let refusal = ConnectionsScreenMessage(
                 kind: .error,
                 text: String(localized: "Finish the current DashConnect request first, then try again.",
@@ -657,11 +686,7 @@ final class ConnectionsViewModel: ObservableObject {
             )
             // A disconnect runs from its connection's sheet, which the
             // page's alert cannot show over.
-            if shownConnection != nil {
-                connectionSheetMessage = refusal
-            } else {
-                message = refusal
-            }
+            answerWhereShown(refusal)
             return
         }
 
@@ -700,6 +725,7 @@ final class ConnectionsViewModel: ObservableObject {
                     messageAfterApproveSheet = nil
                     pendingFailureStatus = nil
                     pendingRequest = connectionRequest
+                    DWLogger.log("🔗 DASHCONNECT :: login request shown (\(byLink ? "link" : "scan"))")
                 case let .stateTransition(request):
                     guard generation == requestGeneration else { return }
                     await closeConnectionSheet()
@@ -734,17 +760,14 @@ final class ConnectionsViewModel: ObservableObject {
                 }
             } catch {
                 guard generation == requestGeneration else { return }
+                DWLogger.log("🔗 DASHCONNECT :: request not read: \(type(of: error))")
                 let failure = ConnectionsScreenMessage(
                     kind: .error,
                     text: String(localized: "Could not complete the DashConnect request: \(error.localizedDescription)", comment: "DashConnect")
                 )
                 // A request that did not read leaves an open connection's
-                // sheet up, and says so on it.
-                if shownConnection != nil {
-                    connectionSheetMessage = failure
-                } else {
-                    message = failure
-                }
+                // sheet, or the return step, up, and says so on it.
+                answerWhereShown(failure)
             }
         }
     }
@@ -756,16 +779,57 @@ final class ConnectionsViewModel: ObservableObject {
     /// request's sheet, so its return address was not shown to anyone.
     private func answerWithoutUsername() {
         guard let refusal = usernameRefusal else { return }
-        guard pendingReturn == nil else {
-            returnStepNote = refusal
-            return
+        // The create-username page says it by itself; the return step and a
+        // page that may show connections say it where the user is looking.
+        if pendingReturn != nil || usernameUnknown || hasConnectedOrHistory || !hasReadRows {
+            answerWhereShown(ConnectionsScreenMessage(kind: .error, text: refusal))
         }
-        // The create-username page says it by itself; a page that may show
-        // connections says it where the user is looking.
-        if usernameUnknown || hasConnectedOrHistory || !hasReadRows {
-            let note = ConnectionsScreenMessage(kind: .error, text: refusal)
-            if shownConnection != nil { connectionSheetMessage = note } else { message = note }
+    }
+
+    /// An answer to a request goes where the user is looking: the page's
+    /// alert cannot show over the return step or a connection's sheet. The
+    /// approve and purchase sheets have their own notes (`receive`).
+    private func answerWhereShown(_ note: ConnectionsScreenMessage) {
+        if pendingReturn != nil {
+            returnStepNote = note.text
+        } else if shownConnection != nil {
+            connectionSheetMessage = note
+        } else {
+            message = note
         }
+    }
+
+    static var anotherRequestArrivedText: String {
+        String(
+            localized: "Another DashConnect request arrived. Finish this one first, then try again.",
+            comment: "DashConnect: a second request arrived while one was on screen")
+    }
+
+    /// The refusal of a request that came while the approval was up, for a
+    /// sheet over the approval (its funding limit, expiry or an info sheet)
+    /// to say too: the approval's own note is under that sheet.
+    @Published private(set) var anotherRequestNote: String?
+
+    /// The user closed the refusal of another request. It only tells them
+    /// why a link did nothing, so it may go; the approval's own note (why
+    /// Approve did not go through) is under it and shows again.
+    func dismissAnotherRequestNote() {
+        anotherRequestNote = nil
+    }
+
+    /// Whether the approval and its terms sheets show their header close.
+    /// Not while the refusal of another request shows its own close: VoiceOver
+    /// would read two buttons named "Close", and the approval's declines the
+    /// request. Deny (or Back and swiping down) stays; closing the refusal
+    /// brings the header close back.
+    var showsSheetCloseButton: Bool { anotherRequestNote == nil }
+
+    /// For a sheet with one note line and no way to close it: the refusal
+    /// of another request and the approval's own note both show, so neither
+    /// hides the other.
+    static func sheetNote(anotherRequest: String?, own: String?) -> String? {
+        let notes = [anotherRequest, own].compactMap { $0 }
+        return notes.isEmpty ? nil : notes.joined(separator: "\n")
     }
 
     static var usernameNeededText: String {
@@ -801,6 +865,10 @@ final class ConnectionsViewModel: ObservableObject {
         // `retryPendingRequest` for it instead.
         guard var consent = pendingRequest, consent.login.isApprovable,
               let pendingLoginRequest, !isApproving, !isResolvingRequest, !approveNeedsTopUp else { return }
+        // The user acts on the request on screen: what Approve does next
+        // shows, not the refusal of another one. Here too, not only in
+        // `isApproving`: a tap stopped before the approval starts shows why.
+        anotherRequestNote = nil
         // Read again: the active identity may have lost its username, or
         // another one become active, since the request came.
         refreshUsername()
@@ -1116,8 +1184,10 @@ final class ConnectionsViewModel: ObservableObject {
               let plan = pendingRequest?.login.grantPlan,
               AppConnect.keyBudgets(for: plan, limit: credits) != nil else { return false }
         approvalTerms?.fundingLimit = credits
-        // A note on the terms before is out of date.
+        // A note on the terms before is out of date, and so is the refusal
+        // of another request: the user acts on the request on screen.
         if approveErrorSubject == .terms { approveError = nil }
+        anotherRequestNote = nil
         return true
     }
 
@@ -1217,8 +1287,10 @@ final class ConnectionsViewModel: ObservableObject {
             return false
         }
         approvalTerms?.expiresAt = expiresAt
-        // A note on the terms before is out of date.
+        // A note on the terms before is out of date, and so is the refusal
+        // of another request: the user acts on the request on screen.
         if approveErrorSubject == .terms { approveError = nil }
+        anotherRequestNote = nil
         return true
     }
 

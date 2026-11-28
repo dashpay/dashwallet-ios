@@ -89,21 +89,22 @@ struct DashConnectCollapsibleCard<Content: View>: View {
 extension View {
     /// An error shown as a DashUIKit toast at the bottom of this view while
     /// `message` is set, and read out by VoiceOver when it appears or
-    /// changes.
-    func dashConnectErrorToast(_ message: String?) -> some View {
-        modifier(DashConnectErrorToast(message: message))
+    /// changes. With `onDismiss` it has a close button.
+    func dashConnectErrorToast(_ message: String?, onDismiss: (() -> Void)? = nil) -> some View {
+        modifier(DashConnectErrorToast(message: message, onDismiss: onDismiss))
     }
 }
 
 private struct DashConnectErrorToast: ViewModifier {
     let message: String?
+    let onDismiss: (() -> Void)?
     /// The last message, kept while the toast fades out so it does not go
     /// blank on its way.
     @State private var shown = ""
 
     func body(content: Content) -> some View {
         content
-            .conditionToast(isVisible: message != nil, style: .error, message: message ?? shown)
+            .conditionToast(isVisible: message != nil, style: .error, message: message ?? shown, onDismiss: onDismiss)
             .onAppear {
                 guard let message else { return }
                 shown = message
@@ -120,14 +121,15 @@ private struct DashConnectErrorToast: ViewModifier {
 /// An error as a DashUIKit toast in its own place in a layout (under an
 /// amount, above a button), where an overlay would cover what the user is
 /// correcting; nothing while `message` is `nil`. VoiceOver reads it out
-/// when it appears or changes.
+/// when it appears or changes. With `onDismiss` it has a close button.
 struct DashConnectInlineErrorToast: View {
     let message: String?
+    var onDismiss: (() -> Void)?
 
     var body: some View {
         Group {
             if let message {
-                DashUIKit.Toast(style: .error, message: message)
+                DashUIKit.Toast(style: .error, message: message, onDismiss: onDismiss)
                     .transition(.opacity)
             }
         }
