@@ -59,7 +59,8 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
     private let dependencies: Dependencies
     private let exchangeRate: (String) -> GiftCardPaymentGuard.ExchangeRate
     private let ratesAreFetching: () -> Bool
-    private var reconnectRetry: Task<Void, Never>?
+    private var reconnectRetries: Task<Void, Never>?
+    private var isReconnectRetryPending = false
     private let now: () -> Date
 
     /// What a purchase goes through: the provider repositories, the send service and the
@@ -1260,20 +1261,26 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
     private func handleNetworkStatusChange(_ status: NetworkStatus) {
         // Re-check errors when network status changes
         checkAmountForErrors()
-        // One retry at a time, however often the network comes back meanwhile.
-        if status == .online, provider == .ctx, cardCurrency == nil, reconnectRetry == nil {
-            reconnectRetry = Task { [weak self] in
-                await self?.loadMerchantOnceTheRunningLoadEnds()
-                self?.reconnectRetry = nil
+        if status == .online, provider == .ctx, cardCurrency == nil {
+            isReconnectRetryPending = true
+            if reconnectRetries == nil {
+                reconnectRetries = Task { [weak self] in
+                    await self?.runReconnectRetries()
+                    self?.reconnectRetries = nil
+                }
             }
         }
     }
 
-    /// Loads the merchant again if the load now running, which may have begun without the
-    /// network, ends without a confirmed currency.
-    private func loadMerchantOnceTheRunningLoadEnds() async {
-        for await loading in $isLoading.values where !loading { break }
-        if cardCurrency == nil {
+    /// Serves the pending retry, one load at a time: the load now running, which may have
+    /// begun without the network, ends first, and the merchant is loaded again only if that
+    /// left the currency unconfirmed. The network coming back during any of these loads
+    /// leaves one retry pending again, so a load follows a reconnect and nothing else.
+    private func runReconnectRetries() async {
+        while isReconnectRetryPending {
+            for await loading in $isLoading.values where !loading { break }
+            isReconnectRetryPending = false
+            guard cardCurrency == nil else { return }
             await updateMerchantInfo()
         }
     }

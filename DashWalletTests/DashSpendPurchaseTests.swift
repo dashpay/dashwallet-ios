@@ -779,6 +779,67 @@ final class DashSpendPurchaseTests: XCTestCase {
         XCTAssertEqual(ctx.heldMerchantCalls.count, 2)
     }
 
+    /// The network coming back during the load that followed a reconnect leaves one more
+    /// retry, taken when that load too ends without a currency. Without a reconnect an
+    /// unconfirmed load is followed by nothing.
+    func testTheNetworkComingBackDuringTheFollowUpLoadIsFollowedByOneMore() async {
+        let viewModel = ctxViewModel()
+        ctx.holdsMerchantCalls = true
+        let unconfirmed = StubCTXRepository.merchantJSON(currency: nil)
+
+        let first = Task { await viewModel.updateMerchantInfo() }
+        await waitForHeldMerchantCalls(1)
+        viewModel.networkStatusDidChange?(.online)
+        ctx.answerMerchantCall(0, with: unconfirmed)
+        await first.value
+        await waitForHeldMerchantCalls(2)
+
+        for _ in 0..<3 { viewModel.networkStatusDidChange?(.online) }
+        for _ in 0..<200 { await Task.yield() }
+        XCTAssertEqual(ctx.heldMerchantCalls.count, 2)
+
+        ctx.answerMerchantCall(1, with: unconfirmed)
+        await waitForHeldMerchantCalls(3)
+        for _ in 0..<200 { await Task.yield() }
+        guard ctx.heldMerchantCalls.count == 3 else {
+            return XCTFail("\(ctx.heldMerchantCalls.count) loads, not three")
+        }
+
+        ctx.answerMerchantCall(2, with: unconfirmed)
+        for _ in 0..<400 { await Task.yield() }
+        XCTAssertEqual(ctx.heldMerchantCalls.count, 3)
+        XCTAssertNil(viewModel.cardCurrency)
+        XCTAssertTrue(viewModel.canRetryMerchantLoad)
+
+        viewModel.networkStatusDidChange?(.online)
+        await waitForHeldMerchantCalls(4)
+        guard ctx.heldMerchantCalls.count == 4 else { return XCTFail("a later reconnect loaded nothing") }
+        ctx.answerMerchantCall(3, with: StubCTXRepository.merchantJSON(currency: "USD"))
+        let deadline = Date().addingTimeInterval(Self.patience)
+        while viewModel.cardCurrency == nil || viewModel.isLoading, Date() < deadline { await Task.yield() }
+        XCTAssertEqual(viewModel.cardCurrency, "USD")
+    }
+
+    /// A follow-up load that confirms the currency clears the retry left during it.
+    func testAFollowUpLoadThatConfirmsTheCurrencyClearsThePendingRetry() async {
+        let viewModel = ctxViewModel()
+        ctx.holdsMerchantCalls = true
+
+        let first = Task { await viewModel.updateMerchantInfo() }
+        await waitForHeldMerchantCalls(1)
+        viewModel.networkStatusDidChange?(.online)
+        ctx.answerMerchantCall(0, with: StubCTXRepository.merchantJSON(currency: nil))
+        await first.value
+        await waitForHeldMerchantCalls(2)
+        guard ctx.heldMerchantCalls.count == 2 else { return XCTFail("no follow-up load") }
+
+        viewModel.networkStatusDidChange?(.online)
+        ctx.answerMerchantCall(1, with: StubCTXRepository.merchantJSON(currency: "USD"))
+        for _ in 0..<400 { await Task.yield() }
+        XCTAssertEqual(viewModel.cardCurrency, "USD")
+        XCTAssertEqual(ctx.heldMerchantCalls.count, 2)
+    }
+
     /// A running load that confirms the currency is not followed by another.
     func testTheNetworkComingBackDuringALoadThatConfirmsTheCurrencyLoadsNothingMore() async {
         let viewModel = ctxViewModel()
