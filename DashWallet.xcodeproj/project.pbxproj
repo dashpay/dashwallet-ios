@@ -961,6 +961,7 @@ F992AE17D040F0C0E6E79AF7 /* QuickVotingSheet.swift in Sources */ = {isa = PBXBui
 		75FFD6C82BF495800032879E /* HomeViewController+Shortcuts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75FFD6C62BF495800032879E /* HomeViewController+Shortcuts.swift */; };
 		76766A50AFDB7BC138F569DC /* NetworkUnavailableStateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 487C4C2E6AC61005536FF85E /* NetworkUnavailableStateView.swift */; };
 		7A30000230A1000000000002 /* TransactionDirectionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A30000130A1000000000001 /* TransactionDirectionTests.swift */; };
+		7A30000230A1000000001469 /* GiftCardPollLogTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A30000130A1000000001469 /* GiftCardPollLogTests.swift */; };
 		7A30000230A1000000000092 /* TXDetailAccessibilityEscapeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A30000130A1000000000091 /* TXDetailAccessibilityEscapeTests.swift */; };
 		7A30000230A1000000000097 /* InSheetPushStackTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A30000130A1000000000096 /* InSheetPushStackTests.swift */; };
 		7A32000230A3000000000002 /* PooledSendableBalanceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A32000130A3000000000001 /* PooledSendableBalanceTests.swift */; };
@@ -3081,6 +3082,7 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 		7708BBFDD14AFF237FB72D71 /* MayaConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaConstants.swift; sourceTree = "<group>"; };
 		797D9070BF54A3533190584E /* libPods-dashwallet.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-dashwallet.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		7A30000130A1000000000001 /* TransactionDirectionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionDirectionTests.swift; sourceTree = "<group>"; };
+		7A30000130A1000000001469 /* GiftCardPollLogTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GiftCardPollLogTests.swift; sourceTree = "<group>"; };
 		7A30000130A1000000000091 /* TXDetailAccessibilityEscapeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TXDetailAccessibilityEscapeTests.swift; sourceTree = "<group>"; };
 		7A30000130A1000000000096 /* InSheetPushStackTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InSheetPushStackTests.swift; sourceTree = "<group>"; };
 		7A32000130A3000000000001 /* PooledSendableBalanceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PooledSendableBalanceTests.swift; sourceTree = "<group>"; };
@@ -7174,6 +7176,7 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				9C3E5A7B2D4F6081B3D5F7A9 /* WiperRemovesCrowdNodeKeysTests.swift */,
 				AB5926ED1241DB3E76CB54FC /* ShortcutActionTypeTests.swift */,
 				7A30000130A1000000000001 /* TransactionDirectionTests.swift */,
+				7A30000130A1000000001469 /* GiftCardPollLogTests.swift */,
 				7A30000130A1000000000091 /* TXDetailAccessibilityEscapeTests.swift */,
 				7A30000130A1000000000096 /* InSheetPushStackTests.swift */,
 				7A32000130A3000000000001 /* PooledSendableBalanceTests.swift */,
@@ -10315,6 +10318,7 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				6E2A8C4B1D3F5A7092C4E6B8 /* WiperRemovesCrowdNodeKeysTests.swift in Sources */,
 				59CF738341C10A1296F632DC /* ShortcutActionTypeTests.swift in Sources */,
 				7A30000230A1000000000002 /* TransactionDirectionTests.swift in Sources */,
+				7A30000230A1000000001469 /* GiftCardPollLogTests.swift in Sources */,
 				7A30000230A1000000000092 /* TXDetailAccessibilityEscapeTests.swift in Sources */,
 				7A30000230A1000000000097 /* InSheetPushStackTests.swift in Sources */,
 				7A32000230A3000000000002 /* PooledSendableBalanceTests.swift in Sources */,
