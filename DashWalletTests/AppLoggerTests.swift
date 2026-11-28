@@ -415,9 +415,9 @@ final class AppLoggerTests: XCTestCase {
         }
     }
 
-    /// Lines past an SDK wallet, a Platform address sync or an invitation
-    /// fetch in the test host.
-    func testPlatformCoinJoinAndInvitationAmountsAreMarkedPrivate() throws {
+    /// Lines past an SDK wallet or a Platform address sync in the test host.
+    /// The invitation status line carries no amount at all.
+    func testPlatformAndCoinJoinAmountsAreMarkedPrivate() throws {
         let platform = "DashWallet/Sources/Infrastructure/SwiftDashSDK/PlatformAddressSyncCoordinator.swift"
         try assertPrivate(platform, line: "PLATFORM-SEND :: →", values: ["amount"])
         try assertPrivate(platform, line: "PLATFORM-WITHDRAW :: partial amount=", values: ["amountCredits"])
@@ -426,9 +426,6 @@ final class AppLoggerTests: XCTestCase {
         try assertPrivate(
             "DashWallet/Sources/Models/CoinJoin/CoinJoinRecovery.swift",
             line: "CJRECOV :: sweep prompt deferred at", values: ["balanceDuffs"])
-        try assertPrivate(
-            "DashWallet/Sources/Infrastructure/SwiftDashSDK/Invitations/InvitationValidation.swift",
-            line: "INVITE :: status amount=", values: ["status.amountDuffs"])
     }
 
     /// Written before the coordinator runs, so also for a name that is never

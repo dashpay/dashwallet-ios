@@ -304,8 +304,8 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
     private static let logger = AppLogger(category: "identity-registration")
 
     /// v1 pins identityIndex to 0; dashwallet only ever has one
-    /// DashPay identity per wallet.
-    private static let pinnedIdentityIndex: UInt32 = 0
+    /// DashPay identity per wallet. The invitation check reads it too.
+    static let pinnedIdentityIndex: UInt32 = 0
 
     /// Number of SDK base keys to pre-derive: AUTHENTICATION/MASTER,
     /// AUTHENTICATION/CRITICAL, AUTHENTICATION/HIGH, and
@@ -551,6 +551,24 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         case topUpExceedsConfirmed(neededDuffs: UInt64, confirmedDuffs: UInt64)
         /// The identity needs a top-up, but no amount was confirmed for it.
         case topUpNotConfirmed(neededDuffs: UInt64)
+        /// The wallet has an identity this invitation did not create.
+        case invitationOtherIdentity
+        /// The invitation's keys belong to another identity of this wallet's
+        /// seed (`PlatformWalletError.invitationKeysAlreadyRegistered`).
+        case invitationKeysTaken
+        /// A paid Core registration with no identity yet: it is finished
+        /// first, never mixed with the invitation.
+        case invitationRegistrationPending
+        /// The local data could not tell whether the invitation may be
+        /// claimed. Nothing was claimed or resumed.
+        case invitationUndetermined
+        /// Platform's answers could not be verified yet
+        /// (`PlatformWalletError.invitationNotReady`). Nothing was sent.
+        case invitationNotSynced
+        /// The wallet already records the invitation's identity
+        /// (`PlatformWalletError.invitationClaimedByThisWallet`): the card's
+        /// next check finishes it as this wallet's own.
+        case invitationOwnClaimRecorded
 
         var isCompletedPurchase: Bool {
             if case .purchaseCompletedInOriginalContext = self { return true }
@@ -646,6 +664,16 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                 return String(localized: "Registering this name needs \(neededDuffs.dashAmount.formattedDashAmountWithoutCurrencySymbol) DASH from your wallet to top up your identity, and that amount was not confirmed. Nothing was sent. Try again to confirm it.", comment: "DashPay: existing identity top-up before a username")
             case .topUpExceedsConfirmed(let neededDuffs, let confirmedDuffs):
                 return String(localized: "Registering this name now needs \(neededDuffs.dashAmount.formattedDashAmountWithoutCurrencySymbol) DASH from your wallet, more than the \(confirmedDuffs.dashAmount.formattedDashAmountWithoutCurrencySymbol) DASH you confirmed. Nothing was sent. Try again to confirm the new amount.", comment: "DashPay: existing identity top-up before a username")
+            case .invitationOtherIdentity, .invitationKeysTaken:
+                return String(localized: "You cannot claim this invite since this wallet already has a Dash identity", comment: "DashPay Invitations")
+            case .invitationRegistrationPending:
+                return String(localized: "This wallet has a paid registration that hasn't finished yet. Finish it first; the invitation can't be used for it.", comment: "DashPay Invitations")
+            case .invitationUndetermined:
+                return String(localized: "Couldn't verify the invitation. Check your connection and try again.", comment: "DashPay Invitations")
+            case .invitationNotSynced:
+                return String(localized: "The wallet is still syncing with the network. Try again in a few minutes.", comment: "DashPay Invitations")
+            case .invitationOwnClaimRecorded:
+                return String(localized: "This wallet already claimed this invitation. Check it on the Home screen to finish your username.", comment: "DashPay Invitations")
             }
         }
     }
@@ -709,7 +737,6 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         guard !isAttemptActive else {
             throw CoordinatorError.alreadyInFlight
         }
-        pendingVerificationURL = verificationURL
 
         // A companion label only makes sense next to a contested main
         // label, and must itself be non-contested — registering a second
@@ -741,17 +768,21 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         guard DWCurrentUserIdentityInfo.shared.isCurrentNetworkContextReady else {
             throw CoordinatorError.noWallet
         }
+        if fundingSource == .invitation {
+            return try await startInvitationClaim(
+                username, invitationURI: invitationURI, temporaryUsername: temporaryUsername,
+                verificationURL: verificationURL, wallet: wallet, network: network,
+                modelContainer: modelContainer)
+        }
         let identitySnapshot = DWCurrentUserIdentityInfo.shared.refreshedSnapshot()
         guard !identitySnapshot.isLoading else { throw CoordinatorError.noWallet }
+        pendingVerificationURL = verificationURL
         return try await UsernameRegistrationRecoveryFlow.route(
             identityId: identitySnapshot.identityId,
             resume: { identityId in
-                // An invitation voucher funds a NEW identity; it can never top
-                // up this one, so that entry registers on the existing credits.
                 try await self.resumeUsernameRegistration(
                     identityId: identityId, username: username, temporaryUsername: temporaryUsername,
-                    topUpSource: fundingSource == .invitation ? nil : fundingSource,
-                    authorizedTopUpDuffs: authorizedTopUpDuffs)
+                    topUpSource: fundingSource, authorizedTopUpDuffs: authorizedTopUpDuffs)
             },
             create: {
                 try await self.createIdentityAndUsername(
@@ -762,12 +793,226 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             })
     }
 
+    /// The invitation path. Only the invitation's own identity is ever
+    /// finished here, and only a wallet with no identity and no paid
+    /// registration claims: an identity or a Core lock this invitation did
+    /// not create is never picked up, so the username cannot land on an
+    /// identity the voucher did not fund.
+    private func startInvitationClaim(
+        _ username: String, invitationURI: String?, temporaryUsername: String?, verificationURL: URL?,
+        wallet: ManagedPlatformWallet, network: Network, modelContainer: ModelContainer
+    ) async throws -> Identifier {
+        guard let invitationURI else { throw CoordinatorError.missingInvitation }
+        let decision = try await invitationClaimDecision(
+            invitationURI: invitationURI, wallet: wallet, network: network, modelContainer: modelContainer)
+        Self.logger.info("🪪 IDENT-COORD :: invitation decision=\(decision.logLabel, privacy: .public)")
+        switch decision {
+        case .resumeOwnClaim(let identityId):
+            pendingVerificationURL = verificationURL
+            // The voucher funded this identity; it can never top it up, so
+            // the name registers on the identity's own credits.
+            let finished = try await resumeUsernameRegistration(
+                identityId: identityId, username: username, temporaryUsername: temporaryUsername,
+                topUpSource: nil, requiresUnnamed: true)
+            // The voucher was spent by this wallet's own claim: every copy goes.
+            PendingInvitationStore.shared.retireConsumed(normalizedURI: invitationURI)
+            return finished
+        case .claim:
+            pendingVerificationURL = verificationURL
+            return try await createIdentityAndUsername(
+                username, fundingSource: .invitation, invitationURI: invitationURI,
+                temporaryUsername: temporaryUsername, wallet: wallet,
+                network: network, modelContainer: modelContainer)
+        case .otherIdentity, .registrationPending, .undetermined:
+            throw Self.invitationRefusal(decision) ?? CoordinatorError.invitationUndetermined
+        }
+    }
+
+    /// After the PIN, before an invitation's username is written: the
+    /// invitation's identity gets it only when its names and name requests,
+    /// read from Platform now, show none, and the wallet would resume it.
+    /// An earlier local read is not enough: another device may have named
+    /// the identity since. A failed read stops the claim.
+    static func invitationIdentityStillUnnamed(
+        _ identityId: Identifier,
+        readNamesFromPlatform: () async throws -> Void,
+        hasNameRequestOnPlatform: () async throws -> Bool,
+        localFacts: () -> InvitationClaimFacts?
+    ) async -> Bool {
+        do {
+            try await readNamesFromPlatform()
+            if try await hasNameRequestOnPlatform() { return false }
+        } catch {
+            Self.logger.warning("🪪 IDENT-COORD :: invitation name check — Platform read failed (\(String(describing: type(of: error)), privacy: .public))")
+            return false
+        }
+        guard let facts = localFacts() else { return false }
+        return InvitationClaimEligibility.decide(
+            facts, prospectiveIdentityId: identityId, pinnedIndex: pinnedIdentityIndex)
+            == .resumeOwnClaim(identityId)
+    }
+
+    /// Whether `identityId` is a contender in any DPNS contest being voted
+    /// on now. Every contest's vote state must be read: one that cannot be
+    /// read throws instead of counting as no request. The SDK's contested
+    /// sync leaves such a contest out and still succeeds, so it cannot
+    /// answer this on its own.
+    nonisolated static func contendsInACurrentContest(
+        _ identityId: Identifier,
+        currentContests: () async throws -> [String],
+        contenderIds: @escaping @Sendable (String) async throws -> [String]
+    ) async throws -> Bool {
+        let wanted = identityId.toBase58String()
+        let names = try await currentContests()
+        return try await withThrowingTaskGroup(of: Bool.self) { group in
+            var next = names.makeIterator()
+            func addNext() -> Bool {
+                guard let name = next.next() else { return false }
+                group.addTask { try await contenderIds(name).contains(wanted) }
+                return true
+            }
+            for _ in 0..<contestReadConcurrency where !addNext() { break }
+            while let contends = try await group.next() {
+                if contends {
+                    group.cancelAll()
+                    return true
+                }
+                _ = addNext()
+            }
+            return false
+        }
+    }
+
+    /// How many contest vote states the invitation check reads at once.
+    private static let contestReadConcurrency = 8
+
+    private func invitationIdentityStillUnnamed(
+        _ identityId: Identifier, wallet: ManagedPlatformWallet, network: Network, modelContainer: ModelContainer
+    ) async -> Bool {
+        await Self.invitationIdentityStillUnnamed(
+            identityId,
+            readNamesFromPlatform: {
+                try await DWCurrentUserIdentityInfo.shared.refreshNames(
+                    wallet: wallet, network: network, container: modelContainer, identityId: identityId)
+            },
+            hasNameRequestOnPlatform: {
+                guard let sdk = SwiftDashSDKHost.shared.sdk else { throw CoordinatorError.noSDK }
+                return try await Self.contendsInACurrentContest(
+                    identityId,
+                    currentContests: { try await Self.currentContestNames(sdk: sdk) },
+                    contenderIds: { name in
+                        // 0: every contender. The default stops at 100.
+                        let state = try await sdk.dpnsGetContestedVoteState(name: name, limit: 0)
+                        guard let contenders = state["contenders"] as? [[String: Any]] else {
+                            throw InvitationNameCheckError.unreadableContest
+                        }
+                        return contenders.compactMap { $0["identifier"] as? String }
+                    })
+            },
+            localFacts: { invitationLocalFacts(wallet: wallet, modelContainer: modelContainer) })
+    }
+
+    /// A contest's vote state came back without its contender list, or the
+    /// list of current contests could not be read.
+    private enum InvitationNameCheckError: Error {
+        case unreadableContest
+        case unreadableContestList
+    }
+
+    /// Off the main actor: the Platform reads block until DAPI answers.
+    private static let contestListQueue = DispatchQueue(
+        label: "org.dashfoundation.dash.invitation.contest-list-query", attributes: .concurrent)
+
+    /// Run `body` on ``contestListQueue`` and resume the caller with its
+    /// result, so a blocking read never runs on the caller's actor.
+    nonisolated static func offMainActor<T>(_ body: @escaping () throws -> T) async throws -> T {
+        try await withCheckedThrowingContinuation { continuation in
+            contestListQueue.async { continuation.resume(with: Result { try body() }) }
+        }
+    }
+
+    /// The names of every DPNS contest being voted on now, read in pages
+    /// until none are left. `SDK.dpnsGetCurrentContests()` makes the same
+    /// read on the main actor, which blocks the wallet UI until DAPI answers.
+    /// TODO(invitation-off-main-contests): use the SDK's own off-main read
+    /// once it has one.
+    private nonisolated static func currentContestNames(sdk: SDK) async throws -> [String] {
+        try await offMainActor {
+            // The SDK owns the handle and releases it when it goes.
+            try withExtendedLifetime(sdk) {
+                guard let handle = sdk.handle else { throw CoordinatorError.noSDK }
+                guard let list = dash_sdk_dpns_get_current_contests(handle, 0, 0, 0) else {
+                    throw InvitationNameCheckError.unreadableContestList
+                }
+                defer { dash_sdk_name_timestamp_list_free(list) }
+                guard list.pointee.count > 0, let entries = list.pointee.entries else { return [] }
+                return (0..<Int(list.pointee.count)).compactMap { index in
+                    entries[index].name.map { String(cString: $0) }
+                }
+            }
+        }
+    }
+
+    /// The wallet's invitation facts as they are now; nil while the current
+    /// identity's names are still loading or the store cannot answer.
+    private func invitationLocalFacts(
+        wallet: ManagedPlatformWallet, modelContainer: ModelContainer
+    ) -> InvitationClaimFacts? {
+        let snapshot = DWCurrentUserIdentityInfo.shared.refreshedSnapshot()
+        guard !snapshot.isLoading else { return nil }
+        return try? InvitationClaimEligibility.localFacts(
+            walletId: wallet.walletId, pinnedIndex: Self.pinnedIdentityIndex,
+            modelContainer: modelContainer, snapshot: snapshot)
+    }
+
+    /// The error for a decision that stops an invitation claim; nil for the
+    /// two that go ahead. The same before and after the PIN.
+    nonisolated static func invitationRefusal(_ decision: InvitationClaimDecision) -> CoordinatorError? {
+        switch decision {
+        case .resumeOwnClaim, .claim:
+            return nil
+        case .otherIdentity:
+            return .invitationOtherIdentity
+        case .registrationPending:
+            return .invitationRegistrationPending
+        case .undetermined:
+            return .invitationUndetermined
+        }
+    }
+
+    /// `InvitationClaimEligibility.decide` over the wallet as it is after
+    /// every await. The invitation's identity is fetched only when the
+    /// wallet has one to compare it with.
+    private func invitationClaimDecision(
+        invitationURI: String, wallet: ManagedPlatformWallet, network: Network, modelContainer: ModelContainer
+    ) async throws -> InvitationClaimDecision {
+        func readFacts() -> InvitationClaimFacts? {
+            invitationLocalFacts(wallet: wallet, modelContainer: modelContainer)
+        }
+        guard let before = readFacts() else { return .undetermined }
+        var prospectiveIdentityId: Data?
+        if !before.identities.isEmpty {
+            prospectiveIdentityId = try? await wallet.invitationProspectiveIdentityId(uri: invitationURI)
+            // Another start may have begun while the fetch ran: it owns the
+            // attempt's state, so this one leaves it alone.
+            guard !isAttemptActive else { throw CoordinatorError.alreadyInFlight }
+            guard collaborators.isActiveContext(wallet.walletId, network) else {
+                throw CoordinatorError.contextChanged
+            }
+        }
+        guard let facts = readFacts() else { return .undetermined }
+        return InvitationClaimEligibility.decide(
+            facts, prospectiveIdentityId: prospectiveIdentityId, pinnedIndex: Self.pinnedIdentityIndex)
+    }
+
     private func createIdentityAndUsername(
         _ username: String, fundingSource: DWIdentityFundingSource,
         invitationURI: String?, temporaryUsername: String?, wallet: ManagedPlatformWallet,
         network: Network, modelContainer: ModelContainer, authorizedTopUpDuffs: UInt64? = nil
     ) async throws -> Identifier {
-        let recoveryLock = lookupRegistrationRecoveryLock(
+        // An invitation funds a new identity only: a paid Core lock is never
+        // resumed under it (the eligibility check stops before this).
+        let recoveryLock = fundingSource == .invitation ? nil : lookupRegistrationRecoveryLock(
             walletId: wallet.walletId,
             modelContainer: modelContainer)
         if let recoveryLock {
@@ -901,6 +1146,29 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         // strong reference here for the duration of the awaits.
         let signer = KeychainSigner(modelContainer: modelContainer)
 
+        // The PIN prompt and the key derivation leave a window in which an
+        // identity or a paid lock can appear (a discovery, a recovery): the
+        // claim goes ahead only on the wallet still as empty as it was.
+        if fundingSource == .invitation {
+            let snapshot = DWCurrentUserIdentityInfo.shared.refreshedSnapshot()
+            let facts = snapshot.isLoading ? nil : try? InvitationClaimEligibility.localFacts(
+                walletId: wallet.walletId, pinnedIndex: Self.pinnedIdentityIndex,
+                modelContainer: modelContainer, snapshot: snapshot)
+            // Without P an existing identity decides `.undetermined`, never
+            // a resume: only an empty wallet claims here.
+            let decision = facts.map {
+                InvitationClaimEligibility.decide($0, prospectiveIdentityId: nil, pinnedIndex: Self.pinnedIdentityIndex)
+            } ?? .undetermined
+            if decision != .claim {
+                Self.logger.info("🪪 IDENT-COORD :: invitation — wallet changed before the claim (\(decision.logLabel, privacy: .public)); not claiming")
+                let refusal = Self.invitationRefusal(decision) ?? .invitationUndetermined
+                failedAtPhase = .creatingID
+                lastErrorMessage = refusal.localizedDescription
+                newController.enterFailed(refusal.localizedDescription)
+                throw refusal
+            }
+        }
+
         // Step 2: IdentityCreate. Funding-source path, crash-resume
         // against the original Core asset lock, OR skipped entirely
         // if a prior attempt at this identity index already landed an
@@ -918,12 +1186,17 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         let identityId: Identifier
         let fundedNow: Bool
         do {
-            (identityId, fundedNow) = try await createOrRecoverIdentity(
-                IdentityCreationContext(wallet: wallet, network: network, modelContainer: modelContainer,
-                                        signer: signer, pubkeys: pubkeys, fundingSource: fundingSource,
-                                        username: username, invitationURI: invitationURI,
-                                        requiredIdentityFundingDuffs: requiredIdentityFundingDuffs),
-                recoveryLock: recoveryLock)
+            let creation = IdentityCreationContext(
+                wallet: wallet, network: network, modelContainer: modelContainer,
+                signer: signer, pubkeys: pubkeys, fundingSource: fundingSource,
+                username: username, invitationURI: invitationURI,
+                requiredIdentityFundingDuffs: requiredIdentityFundingDuffs)
+            // An invitation never reuses a local identity or resumes a lock:
+            // it claims. Only a repeated claim probes the pinned slot (see
+            // `createFundedIdentity`).
+            (identityId, fundedNow) = fundingSource == .invitation
+                ? (try await createFundedIdentity(creation), true)
+                : try await createOrRecoverIdentity(creation, recoveryLock: recoveryLock)
             Self.logger.info("🪪 IDENT-COORD :: identity created, id=\(identityId.map { String(format: "%02x", $0) }.joined().prefix(8), privacy: .public)…")
         } catch {
             Self.logger.error("🪪 IDENT-COORD :: identity creation failed: \(error)")
@@ -1047,24 +1320,33 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                     nowUnix: UInt32(Date().timeIntervalSince1970))
                 identityId = try managed.getId()
             } catch let claimError {
-                // The SDK refuses a repeated claim instead of adopting the
-                // identity an earlier claim created. When that earlier claim
-                // was this wallet's and its result was lost before the
-                // identity was stored, the identity sits at the pinned slot:
-                // probe it and continue as an existing-identity recovery.
-                guard let landed = InvitationClaimFailure.earlierClaim(claimError),
-                      let existingId = try? await wallet.loadIdentity(atIndex: Self.pinnedIdentityIndex)
+                // The SDK refuses a repeated claim instead of returning the
+                // identity an earlier claim created. When this wallet's own
+                // earlier claim lost its result before the identity was
+                // stored, that identity sits at the pinned slot. It is taken
+                // only when it is the invitation's own identity: any other
+                // identity at the slot must not get the invitation's username.
+                // The probe stores whatever identity it finds (one of this
+                // seed's own); only the comparison decides what continues.
+                guard InvitationClaimFailure.isRepeatedClaim(claimError),
+                      let prospectiveId = try? await wallet.invitationProspectiveIdentityId(uri: invitationURI),
+                      let existingId = try? await wallet.loadIdentity(atIndex: Self.pinnedIdentityIndex),
+                      existingId == prospectiveId
                 else {
-                    throw claimError
+                    throw Self.invitationClaimFailure(claimError)
                 }
-                Self.logger.info("🪪 IDENT-COORD :: invitation claim refused, identity found at index \(Self.pinnedIdentityIndex) — recovering it")
-                // Only the wallet's own record says this voucher paid for the
-                // identity. A bare "consumed" report leaves the invitation to
-                // the Home card's status query.
-                if landed == .recordedByThisWallet {
-                    PendingInvitationStore.shared.retireConsumed(normalizedURI: invitationURI)
+                // The same rule as a resume after the PIN: the name goes on
+                // only while Platform, read now, shows the identity has none
+                // and no request. Another device may have named it already;
+                // when that cannot be read, the card's next check decides.
+                guard await invitationIdentityStillUnnamed(
+                    existingId, wallet: wallet, network: context.network, modelContainer: modelContainer)
+                else {
+                    Self.logger.info("🪪 IDENT-COORD :: invitation claim refused; the invitation's identity is not known to need a name — not registering")
+                    throw CoordinatorError.invitationOwnClaimRecorded
                 }
-                return existingId
+                Self.logger.info("🪪 IDENT-COORD :: invitation claim refused, the invitation's identity found at index \(Self.pinnedIdentityIndex) — recovering it")
+                identityId = existingId
             }
             // The voucher is spent now, whatever happens to the username
             // next: from here on this is an ordinary "identity exists,
@@ -1141,6 +1423,27 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         return (identityId, false)
     }
 
+    /// The claim's refusals that decide what happens to the invitation, as
+    /// the coordinator's own cases. Nothing else is renamed: a spent voucher
+    /// (`assetLockAlreadyConsumed`) and one not chain-locked yet keep their
+    /// typed SDK errors for `InvitationClaimFailure.classify`.
+    nonisolated static func invitationClaimFailure(_ error: Error) -> Error {
+        switch error {
+        case PlatformWalletError.invitationKeysAlreadyRegistered(identityId: _, consensus: nil):
+            // The claim's proved lookup found the keys' owner and sent
+            // nothing. With a consensus error Platform refused the broadcast
+            // instead: not proof-verified, so the error stays as it is and
+            // the card's status query decides.
+            return CoordinatorError.invitationKeysTaken
+        case PlatformWalletError.invitationClaimedByThisWallet:
+            return CoordinatorError.invitationOwnClaimRecorded
+        case PlatformWalletError.invitationNotReady:
+            return CoordinatorError.invitationNotSynced
+        default:
+            return error
+        }
+    }
+
     /// Preserve payment/creation failure phases independently of funding dispatch.
     private static func preservingUnconfirmedOutcome(_ error: Error) -> Error {
         switch error {
@@ -1163,9 +1466,18 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         let error = Self.preservingUnconfirmedOutcome(error)
         if let coordError = error as? CoordinatorError {
             switch coordError {
-            case .shieldedCreateUnconfirmed, .platformWriteUnconfirmed:
+            case .shieldedCreateUnconfirmed, .platformWriteUnconfirmed,
+                 .invitationKeysTaken, .invitationOwnClaimRecorded, .invitationNotSynced,
+                 .invitationOtherIdentity, .invitationRegistrationPending, .invitationUndetermined:
+                // An invitation pays nothing: its refusals fail the creation.
                 failedAtPhase = .creatingID
-            default:
+            case .noWallet, .noNetwork, .noModelContainer, .noSDK, .authCancelled, .authFailed, .keyDerivation,
+                 .identityRegistration, .dpnsRegistration, .availabilityCheck, .purchase,
+                 .purchaseCompletedInOriginalContext, .insufficientPlatformCredits, .insufficientShieldedBalance,
+                 .shieldedBalanceImmature, .shieldedPoolTooSmall, .noShieldedFallbackAddress,
+                 .missingInvitation, .alreadyInFlight, .invalidTemporaryUsername,
+                 .contextChanged, .usernameUnavailable, .identityTopUp, .identityBalanceUnavailable,
+                 .insufficientCoreBalanceForTopUp, .shieldedTopUpUnavailable, .topUpExceedsConfirmed, .topUpNotConfirmed:
                 failedAtPhase = .processingPayment
             }
             lastErrorMessage = coordError.localizedDescription
@@ -1193,7 +1505,10 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         username: String,
         temporaryUsername: String? = nil,
         topUpSource: DWIdentityFundingSource? = nil,
-        authorizedTopUpDuffs: UInt64? = nil
+        authorizedTopUpDuffs: UInt64? = nil,
+        /// An invitation's identity: after the PIN it must still have no
+        /// name and no request (names loaded), or nothing is registered.
+        requiresUnnamed: Bool = false
     ) async throws -> Identifier {
         guard !isAttemptActive else {
             throw CoordinatorError.alreadyInFlight
@@ -1241,6 +1556,15 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             lastErrorMessage = CoordinatorError.authFailed.localizedDescription
             newController.enterFailed(lastErrorMessage ?? "")
             throw CoordinatorError.authFailed
+        }
+        if requiresUnnamed, !(await invitationIdentityStillUnnamed(
+            identityId, wallet: wallet, network: network, modelContainer: container)) {
+            // A name or request appeared on Platform (another device), or it
+            // could not be read: the invitation's username does not go on.
+            Self.logger.info("🪪 IDENT-COORD :: invitation resume — the identity is no longer known to need a name; not registering")
+            lastErrorMessage = CoordinatorError.invitationOwnClaimRecorded.localizedDescription
+            newController.enterFailed(lastErrorMessage ?? "")
+            throw CoordinatorError.invitationOwnClaimRecorded
         }
         do {
             try validateRegistrationContext(walletId: wallet.walletId, network: network)
@@ -2844,36 +3168,26 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         }
     }
 
-    /// Oldest unfinished IdentityRegistration lock for the pinned slot.
-    /// Choosing the original payment is deliberate: a wallet already
-    /// affected by BUG-2 may contain two rows, and retrying the newer one
-    /// would leave the first payment stranded yet again.
+    /// Oldest unfinished IdentityRegistration lock for the pinned slot
+    /// (`IdentityRegistrationLocks.unfinished`); nil also when the store
+    /// cannot be read.
+    ///
+    /// A lock at 5 (RecoveredFromChain) with no identity is a genuinely
+    /// incomplete registration — a stranded broadcast whose block
+    /// chain-locked after an app kill, or a restored wallet whose
+    /// registration never finished — and the SDK resume path explicitly
+    /// supports consuming it (Platform rejects an already-spent outpoint
+    /// with a typed error). Restored wallets whose registration DID complete
+    /// never resume from this lock: `hasPendingRegistrationRecovery` checks
+    /// the identity row first, and the start flow probes the local row and
+    /// then the Platform slot (reconciling this lock to Consumed) before any
+    /// resume.
     private func lookupRegistrationRecoveryLock(
         walletId: Data,
         modelContainer: ModelContainer
     ) -> RegistrationRecoveryLock? {
-        let context = modelContainer.mainContext
-        let pinnedIndex = Int32(bitPattern: Self.pinnedIdentityIndex)
-        let descriptor = FetchDescriptor<PersistentAssetLock>(
-            predicate: #Predicate { row in
-                row.walletId == walletId
-                    && row.identityIndexRaw == pinnedIndex
-                    && row.fundingTypeRaw == 0
-            },
-            sortBy: [SortDescriptor(\.createdAt, order: .forward)])
-        // Unfinished = anything but the Consumed (4) tombstone. That
-        // includes 5 (RecoveredFromChain): a registration lock at 5 with
-        // no identity is a genuinely incomplete registration — a stranded
-        // broadcast whose block chain-locked after an app kill, or a
-        // restored wallet whose registration never finished — and the SDK
-        // resume path explicitly supports consuming it (Platform rejects
-        // an already-spent outpoint with a typed error). Restored wallets
-        // whose registration DID complete never resume from this lock:
-        // `hasPendingRegistrationRecovery` checks the identity row first,
-        // and the start flow probes the local row and then the Platform
-        // slot (reconciling this lock to Consumed) before any resume.
-        guard let rows = try? context.fetch(descriptor),
-              let row = rows.first(where: { $0.statusRaw != 4 })
+        guard let row = try? IdentityRegistrationLocks.unfinished(
+            walletId: walletId, identityIndex: Self.pinnedIdentityIndex, in: modelContainer.mainContext)
         else {
             return nil
         }

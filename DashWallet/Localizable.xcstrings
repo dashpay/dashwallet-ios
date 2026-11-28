@@ -253184,6 +253184,9 @@
         }
       }
     },
+    "If this wallet claimed it before, turn on Advanced mode in Settings, then open More › Identities and tap Find identities to restore your identity." : {
+      "comment" : "DashPay Invitations"
+    },
     "If you choose to grant permissions at a later time and you are not in the UK, you can use Coinbase" : {
       "comment" : "Geoblock",
       "localizations" : {
@@ -558478,6 +558481,9 @@
         }
       }
     },
+    "The wallet is still syncing with the network. Try again in a few minutes." : {
+      "comment" : "DashPay Invitations"
+    },
     "The wallet isn't ready yet. Please try again in a moment." : {
       "comment" : "BIP70 payment error",
       "localizations" : {
@@ -589013,6 +589019,12 @@
         }
       }
     },
+    "This wallet already claimed this invitation, but its identity isn't loaded. Turn on Advanced mode in Settings, open More › Identities and tap Find identities, then try again." : {
+      "comment" : "DashPay Invitations"
+    },
+    "This wallet already claimed this invitation. Check it on the Home screen to finish your username." : {
+      "comment" : "DashPay Invitations"
+    },
     "This wallet cannot approve the scanned request (%@)." : {
       "comment" : "DashConnect: the placeholder is the kind of the scanned state transition",
       "localizations" : {
@@ -591905,6 +591917,9 @@
           }
         }
       }
+    },
+    "This wallet has a paid registration that hasn't finished yet. Finish it first; the invitation can't be used for it." : {
+      "comment" : "DashPay Invitations"
     },
     "This wallet has no identity to top up." : {
       "comment" : "Asset-lock retry: identity top-up with no identity",

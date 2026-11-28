@@ -15,6 +15,9 @@ struct AcceptInvitationCard: View {
     var isSyncing: Bool
     /// The invitation and what its voucher funds.
     var onCreate: (PendingInvitation, UInt64) -> Void
+    /// Opens the ordinary registration form, which finishes a paid
+    /// registration without the invitation.
+    var onFinishRegistration: () -> Void
 
     private var isCreateEnabled: Bool {
         if case .valid = viewModel.cardState { return !isSyncing }
@@ -85,6 +88,15 @@ struct AcceptInvitationCard: View {
                 hintWithRetry(String(localized: "Couldn't verify the invitation. Check your connection and try again.", comment: "DashPay Invitations"))
             case .awaitingChainLock:
                 hintWithRetry(String(localized: "The invitation is still confirming on the network. Try again in a few minutes.", comment: "DashPay Invitations"))
+            case .pendingPaidRegistration:
+                hintWithAction(
+                    String(localized: "This wallet has a paid registration that hasn't finished yet. Finish it first; the invitation can't be used for it.", comment: "DashPay Invitations"),
+                    action: String(localized: "Finish registration", comment: "DashPay registration recovery"),
+                    perform: onFinishRegistration)
+            case .ownClaimNotLoaded:
+                hintWithRetry(String(localized: """
+                    This wallet already claimed this invitation, but its identity isn't loaded. Turn on Advanced mode in Settings, open More › Identities and tap Find identities, then try again.
+                    """, comment: "DashPay Invitations"))
             case .syncing, .valid:
                 EmptyView()
             }
@@ -92,13 +104,17 @@ struct AcceptInvitationCard: View {
     }
 
     private func hintWithRetry(_ text: String) -> some View {
+        hintWithAction(text, action: String(localized: "Retry", comment: ""), perform: { viewModel.retry() })
+    }
+
+    private func hintWithAction(_ text: String, action: String, perform: @escaping () -> Void) -> some View {
         HStack(alignment: .firstTextBaseline, spacing: 8) {
             hintText(text)
             DashUIKit.DashButton(
-                text: String(localized: "Retry", comment: ""),
+                text: action,
                 size: .extraSmall,
                 style: .tintedBlue,
-                action: { viewModel.retry() })
+                action: perform)
         }
     }
 

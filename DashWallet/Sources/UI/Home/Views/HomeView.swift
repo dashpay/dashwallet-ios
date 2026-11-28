@@ -384,7 +384,8 @@ struct HomeViewContent<Content: View>: View {
                             isSyncing: viewModel.isSyncing,
                             onCreate: { invitation, amountDuffs in
                                 delegate?.homeViewCreateUsername(with: invitation, amountDuffs: amountDuffs)
-                            })
+                            },
+                            onFinishRegistration: { delegate?.homeViewRequestUsername() })
                         .padding(.horizontal, 20)
                     } else if viewModel.showJoinDashpay {
                         JoinDashPayMenuItem(

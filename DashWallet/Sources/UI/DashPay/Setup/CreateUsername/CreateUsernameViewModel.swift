@@ -1074,12 +1074,11 @@ class CreateUsernameViewModel: ObservableObject {
                 // `DWCurrentUserIdentityInfo.reconcileRecoveredIdentity()` does
                 // for identities that arrive outside the bridge's flow.
                 // This wallet has its username, so its copy of the
-                // invitation is done with. A claim that created the identity
-                // already retired every copy; one that finished on an identity
-                // the wallet already had (an earlier claim, or a paid Core
-                // lock) removes nothing, and the card would then read the new
-                // username as "already has one". Only this wallet's copy: on
-                // that route the voucher may still be unspent.
+                // invitation is done with. The coordinator already retired
+                // every copy, both after a new claim and after finishing the
+                // invitation's own earlier claim; this removes this wallet's
+                // copy if that removal failed, so the card does not read the
+                // new username as "already has one".
                 if let pendingInvitation {
                     PendingInvitationStore.shared.retireFinished(pendingInvitation)
                 }
@@ -1090,6 +1089,29 @@ class CreateUsernameViewModel: ObservableObject {
             } catch DWIdentityRegistrationCoordinator.CoordinatorError.authCancelled {
                 return .cancelled
             } catch {
+                // The coordinator stopped the claim on what this wallet holds
+                // or on the claim's typed refusal: caught before `classify`,
+                // which would call it a generic refusal.
+                if let stopped = error as? DWIdentityRegistrationCoordinator.CoordinatorError,
+                   let outcome = Self.invitationOutcome(of: stopped) {
+                    DWLogger.log("CreateUsername: invitation not claimed (\(outcome))")
+                    switch outcome {
+                    case .endsThisWalletsCopy:
+                        // Final for this wallet, and decided before anything
+                        // was broadcast: by its own identities, or by the
+                        // claim's proved lookup of the keys' owner.
+                        if let pendingInvitation {
+                            PendingInvitationViewModel.shared.concludeClaimRefusal(
+                                .alreadyHasOtherIdentity, for: pendingInvitation)
+                        }
+                    case .recheck:
+                        // The card's next check says what to do (finish the
+                        // paid registration, finish this wallet's own claim,
+                        // retry).
+                        PendingInvitationViewModel.shared.recheck()
+                    }
+                    return .failure(stopped.localizedDescription)
+                }
                 // A failure about the invitation itself, in its own words;
                 // anything else keeps the generic wording and the invitation.
                 // The registration-activity sink of the Home card re-checks
@@ -1135,6 +1157,35 @@ class CreateUsernameViewModel: ObservableObject {
                     }
                 }
             }
+        }
+    }
+
+    /// What an invitation claim the coordinator stopped means for the stored
+    /// invitation; nil for every other failure.
+    enum InvitationClaimOutcome: Equatable {
+        /// This wallet cannot take the invitation: its copy goes.
+        case endsThisWalletsCopy
+        /// The invitation stays; the card checks it again.
+        case recheck
+    }
+
+    nonisolated static func invitationOutcome(
+        of error: DWIdentityRegistrationCoordinator.CoordinatorError
+    ) -> InvitationClaimOutcome? {
+        switch error {
+        case .invitationOtherIdentity, .invitationKeysTaken:
+            return .endsThisWalletsCopy
+        case .invitationRegistrationPending, .invitationUndetermined, .invitationNotSynced,
+             .invitationOwnClaimRecorded:
+            return .recheck
+        case .noWallet, .noNetwork, .noModelContainer, .noSDK, .authCancelled, .authFailed, .keyDerivation,
+             .identityRegistration, .dpnsRegistration, .availabilityCheck, .purchase,
+             .purchaseCompletedInOriginalContext, .insufficientPlatformCredits, .insufficientShieldedBalance,
+             .shieldedBalanceImmature, .shieldedPoolTooSmall, .noShieldedFallbackAddress, .shieldedCreateUnconfirmed,
+             .platformWriteUnconfirmed, .missingInvitation, .alreadyInFlight, .invalidTemporaryUsername,
+             .contextChanged, .usernameUnavailable, .identityTopUp, .identityBalanceUnavailable,
+             .insufficientCoreBalanceForTopUp, .shieldedTopUpUnavailable, .topUpExceedsConfirmed, .topUpNotConfirmed:
+            return nil
         }
     }
 
@@ -1760,7 +1811,12 @@ class CreateUsernameViewModel: ObservableObject {
     private func refreshRegistrationRecoverySnapshot() {
         let snapshot = DWCurrentUserIdentityInfo.shared.refreshedSnapshot()
         isIdentityLoading = snapshot.isLoading
-        registrationRecovery = DWIdentityRegistrationCoordinator.shared.registrationRecovery()
+        // An invitation never finishes another registration: the coordinator
+        // finishes only the invitation's own identity, so the form offers no
+        // recovery of its own (no banner, no "Finish registration").
+        registrationRecovery = isInvitationMode
+            ? .none
+            : DWIdentityRegistrationCoordinator.shared.registrationRecovery()
         existingIdentityCredits = snapshot.hasIdentity && !isInvitationMode
             ? (snapshot.balanceCredits ?? 0)
             : nil

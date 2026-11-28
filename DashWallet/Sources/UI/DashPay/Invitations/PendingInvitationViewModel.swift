@@ -27,6 +27,11 @@ final class PendingInvitationViewModel: ObservableObject {
         case undetermined
         /// A ChainLock-only invitation still waiting for its ChainLock.
         case awaitingChainLock
+        /// A paid registration with no identity yet is finished first.
+        case pendingPaidRegistration
+        /// This wallet's claim landed, but the wallet has not loaded its
+        /// identity; Find identities does.
+        case ownClaimNotLoaded
         case valid(amountDuffs: UInt64)
     }
 
@@ -267,6 +272,22 @@ final class PendingInvitationViewModel: ObservableObject {
         }
     }
 
+    /// The claim itself proved that this wallet cannot take `invitation`
+    /// (its keys belong to the wallet's other identity, or the wallet has
+    /// one): ends this wallet's copy the way the card's own check would.
+    /// `invitation` is the very one `create(proceed:)` handed to the form;
+    /// nothing happens unless it is still the pending invitation of the
+    /// active wallet and network.
+    func concludeClaimRefusal(_ verdict: InvitationValidation, for invitation: PendingInvitation) {
+        // Only the invitation still pending: one the card already ended has
+        // shown its outcome, and its replacement keeps its own verdict.
+        guard verdict.isDefinitive, isActive(invitation.scope), store.pending == invitation else { return }
+        DWLogger.log("Invitations: the claim ended this wallet's invitation")
+        lastVerdict = (verdict, Date(), invitation)
+        concludeDefinitive(verdict, for: invitation)
+        refreshCardState()
+    }
+
     /// A wipe: a verdict reached for the old wallet is not shown after it.
     func discardUndeliveredOutcome() {
         undeliveredOutcomes.removeAll()
@@ -375,30 +396,36 @@ final class PendingInvitationViewModel: ObservableObject {
         notReadyAttempts = 0
         lastVerdict = (verdict, Date(), invitation)
         if verdict.isDefinitive {
-            // The shown copy decides what the user sees. Other copies of the
-            // same voucher (other wallets, a pre-onboarding copy assigned to
-            // this one) are cleaned up too, but a failure there does not hide
-            // this verdict.
-            store.remove(invitation, reason: .definitiveOutcome)
-            if verdict.clearsEverywhere, let uri = invitation.normalizedURI {
-                store.removeEverywhere(normalizedURI: uri, reason: .definitiveOutcome)
-            }
-            // Whether the shown copy is gone — not the aggregate result, which
-            // also covers leftovers elsewhere. A leftover whose removal failed
-            // comes back as its own card and gets the same verdict again.
-            if store.pending != invitation {
-                undeliveredOutcomes[invitation.scope] = (verdict, invitation.normalizedURI)
-                if isActive(invitation.scope) {
-                    definitiveOutcomes.send(verdict)
-                }
-            } else {
-                // The invitation is still stored. Say nothing final; the card
-                // offers Retry, which repeats the check and the removal.
-                lastVerdict = (.undetermined, Date(), invitation)
-            }
+            concludeDefinitive(verdict, for: invitation)
         }
         refreshCardState()
         return verdict
+    }
+
+    /// Removes the invitation a definitive verdict ended and hands the
+    /// verdict to Home.
+    private func concludeDefinitive(_ verdict: InvitationValidation, for invitation: PendingInvitation) {
+        // The shown copy decides what the user sees. Other copies of the
+        // same voucher (other wallets, a pre-onboarding copy assigned to
+        // this one) are cleaned up too, but a failure there does not hide
+        // this verdict.
+        store.remove(invitation, reason: .definitiveOutcome)
+        if verdict.clearsEverywhere, let uri = invitation.normalizedURI {
+            store.removeEverywhere(normalizedURI: uri, reason: .definitiveOutcome)
+        }
+        // Whether the shown copy is gone — not the aggregate result, which
+        // also covers leftovers elsewhere. A leftover whose removal failed
+        // comes back as its own card and gets the same verdict again.
+        if store.pending != invitation {
+            undeliveredOutcomes[invitation.scope] = (verdict, invitation.normalizedURI)
+            if isActive(invitation.scope) {
+                definitiveOutcomes.send(verdict)
+            }
+        } else {
+            // The invitation is still stored. Say nothing final; the card
+            // offers Retry, which repeats the check and the removal.
+            lastVerdict = (.undetermined, Date(), invitation)
+        }
     }
 
     private func scheduleDelayedRetry() {
@@ -424,7 +451,14 @@ final class PendingInvitationViewModel: ObservableObject {
             cardState = .undetermined
         case .awaitingChainLock?:
             cardState = .awaitingChainLock
-        default:
+        case .pendingPaidRegistration?:
+            cardState = .pendingPaidRegistration
+        case .ownClaimNotLoaded?:
+            cardState = .ownClaimNotLoaded
+        case nil, .invalid?, .alreadyClaimed?, .alreadyHasIdentity?, .alreadyHasOtherIdentity?,
+             .alreadyRequestedUsername?:
+            // No verdict yet, or one that ended the invitation (the card is
+            // about to go).
             cardState = isSynced() ? .verifying : .syncing
         }
     }
