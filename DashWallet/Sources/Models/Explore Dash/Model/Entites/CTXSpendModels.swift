@@ -54,7 +54,7 @@ struct RefreshTokenResponse: Codable {
 struct GiftCardResponse: Codable {
     // Required fields
     let id: String
-    let status: String // unpaid, paid, fulfilled, rejected
+    let status: String // unpaid, paid, fulfilled, rejected, expired
     let paymentId: String
 
     // Optional fields

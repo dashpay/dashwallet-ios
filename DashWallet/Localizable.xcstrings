@@ -235831,6 +235831,15 @@
         }
       }
     },
+    "Gift card order expired. Please contact support." : {
+
+    },
+    "Gift card order failed. Please contact support." : {
+      "comment" : "DashSpend"
+    },
+    "Gift card order was cancelled" : {
+      "comment" : "DashSpend"
+    },
     "Gift card purchase successful" : {
       "comment" : "DashSpend",
       "localizations" : {

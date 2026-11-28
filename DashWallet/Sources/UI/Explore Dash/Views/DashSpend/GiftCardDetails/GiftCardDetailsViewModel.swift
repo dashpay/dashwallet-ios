@@ -41,6 +41,9 @@ struct GiftCardDetailsUIState {
     var purchaseDate: Date? = nil
     var isLoadingCardDetails: Bool = false
     var loadingError: Error? = nil
+    /// Why the order will not produce a card (rejected, expired). Written by the app, never by
+    /// the provider, so the sheets show it as is; nil leaves them on their generic failure text.
+    var orderEndedMessage: String? = nil
     var transaction: Transaction? = nil
     var isClaimLink: Bool = false
     var hasBeenPollingForLongTime: Bool = false
@@ -213,6 +216,7 @@ class GiftCardDetailsViewModel: ObservableObject {
 
         uiState.isLoadingCardDetails = true
         uiState.loadingError = nil
+        uiState.orderEndedMessage = nil
         uiState.canRetryLoading = false
 
         Task {
@@ -248,6 +252,54 @@ class GiftCardDetailsViewModel: ObservableObject {
         errorStreak = 0
         pollInterval = basePollInterval
         startTicker()
+    }
+
+    /// The provider ended the order without a card. `message` must be app-written: both sheets
+    /// show it to the user as is.
+    private func endOrder(message: String) {
+        uiState.loadingError = DashSpendError.customError(message)
+        uiState.orderEndedMessage = message
+        stopTicker()
+    }
+
+    /// A CTX order status as it may appear in the exported log: an app-owned label for a status
+    /// the app knows, `<unrecognized>` for anything else the provider sends.
+    nonisolated static func loggableCTXStatus(_ status: String) -> String {
+        switch status.lowercased() {
+        case "unpaid": return "unpaid"
+        case "paid": return "paid"
+        case "fulfilled": return "fulfilled"
+        case "rejected": return "rejected"
+        case "expired": return "expired"
+        default: return "<unrecognized>"
+        }
+    }
+
+    /// A PiggyCards order status as it may appear in the exported log: an app-owned label for a
+    /// status the app knows, `<unrecognized>` for anything else the provider sends.
+    nonisolated static func loggablePiggyCardsStatus(_ status: String) -> String {
+        switch status.lowercased() {
+        case "payment pending": return "payment_pending"
+        case "paid": return "paid"
+        case "processing": return "processing"
+        case "complete", "completed": return "complete"
+        case "rejected": return "rejected"
+        case "cancelled": return "cancelled"
+        case "failed": return "failed"
+        default: return "<unrecognized>"
+        }
+    }
+
+    /// A poll failure as it may appear in the exported log: the error's kind only, never the
+    /// text a provider put into it.
+    nonisolated static func loggableError(_ error: Error) -> String {
+        if let error = error as? DashSpendError {
+            // A case with a payload reports its label only; one without prints just its name.
+            let label = Mirror(reflecting: error).children.first?.label ?? String(describing: error)
+            return "DashSpendError.\(label)"
+        }
+        let nsError = error as NSError
+        return "\(nsError.domain) \(nsError.code)"
     }
 
     private func stopTicker() {
@@ -286,8 +338,12 @@ class GiftCardDetailsViewModel: ObservableObject {
     }
 
     private func fetchCTXGiftCardInfo() async {
-        guard let giftCard = await giftCardsDAO.get(byTxId: txId),
-              ctxSpendRepository.isUserSignedIn else {
+        guard let giftCard = await giftCardsDAO.get(byTxId: txId) else {
+            stopTicker()
+            return
+        }
+        guard ctxSpendRepository.isUserSignedIn else {
+            DWLogger.log("DashSpend: Stopped polling CTX gift card - user is not signed in to CTX")
             stopTicker()
             return
         }
@@ -308,6 +364,11 @@ class GiftCardDetailsViewModel: ObservableObject {
             // An answered poll — whatever the order status — ends the failure streak and
             // returns the ticker to its base cadence.
             noteSuccessfulPoll()
+
+            DWLogger.log("DashSpend: CTX gift card status: \(Self.loggableCTXStatus(response.status)), "
+                + "number: \(response.cardNumber?.isEmpty == false), "
+                + "redeemUrl: \(response.redeemUrl?.isEmpty == false), "
+                + "barcodeUrl: \(response.barcodeUrl?.isEmpty == false)")
 
             switch response.status {
             case "fulfilled":
@@ -340,12 +401,10 @@ class GiftCardDetailsViewModel: ObservableObject {
                 }
 
             case "rejected":
-                await MainActor.run {
-                    self.uiState.loadingError = DashSpendError.customError(
-                        String(localized: "Gift card purchase was rejected", comment: "")
-                    )
-                }
-                stopTicker()
+                endOrder(message: String(localized: "Gift card purchase was rejected", comment: ""))
+
+            case "expired":
+                endOrder(message: String(localized: "Gift card order expired. Please contact support.", comment: ""))
 
             default:
                 break
@@ -364,14 +423,18 @@ class GiftCardDetailsViewModel: ObservableObject {
             } else {
                 pollInterval = min(pollInterval * 2, maxPollInterval)
             }
-            DWLogger.log("DashSpend: Failed to fetch gift card info (attempt \(attempt)): \(error)")
+            DWLogger.log("DashSpend: Failed to fetch gift card info (attempt \(attempt)): \(Self.loggableError(error))")
         }
     }
 
     private func fetchPiggyCardsGiftCardInfo() async {
         guard let giftCard = await giftCardsDAO.get(byTxId: txId),
-              let note = giftCard.note,
-              piggyCardsRepository.isUserSignedIn else {
+              let note = giftCard.note else {
+            stopTicker()
+            return
+        }
+        guard piggyCardsRepository.isUserSignedIn else {
+            DWLogger.log("DashSpend: Stopped polling PiggyCards gift card - user is not signed in to PiggyCards")
             stopTicker()
             return
         }
@@ -383,6 +446,9 @@ class GiftCardDetailsViewModel: ObservableObject {
             let orderStatus = try await piggyCardsRepository.getOrderStatus(orderId: metadata.orderId)
             noteSuccessfulPoll()
 
+            DWLogger.log("DashSpend: PiggyCards order status: \(Self.loggablePiggyCardsStatus(orderStatus.data.status)), "
+                + "cards: \(orderStatus.data.cards.count)")
+
             switch orderStatus.data.status.lowercased() {
             case "complete", "completed":
                 let payload = await buildPayloadEntries(
@@ -392,12 +458,10 @@ class GiftCardDetailsViewModel: ObservableObject {
                 )
 
                 guard !payload.isEmpty else {
-                    await MainActor.run {
-                        self.uiState.loadingError = DashSpendError.customError(
-                            String(localized: "Gift card details are unavailable. Please contact support.", comment: "")
-                        )
-                    }
-                    stopTicker()
+                    endOrder(message: String(
+                        localized: "Gift card details are unavailable. Please contact support.",
+                        comment: ""
+                    ))
                     return
                 }
 
@@ -426,19 +490,21 @@ class GiftCardDetailsViewModel: ObservableObject {
                 await giftCardsDAO.update(dto: updatedCard)
                 stopTicker()
 
-            case "failed", "rejected", "cancelled":
-                await MainActor.run {
-                    self.uiState.loadingError = DashSpendError.customError(
-                        String(localized: "Gift card purchase was rejected", comment: "")
-                    )
-                }
-                stopTicker()
+            case "rejected":
+                endOrder(message: String(localized: "Gift card purchase was rejected", comment: ""))
+
+            case "cancelled":
+                endOrder(message: String(localized: "Gift card order was cancelled", comment: "DashSpend"))
+
+            case "failed":
+                endOrder(message: String(localized: "Gift card order failed. Please contact support.", comment: "DashSpend"))
 
             default:
                 break
             }
         } catch {
             errorStreak += 1
+            let attempt = errorStreak
             if errorStreak >= maxErrorStreak {
                 await MainActor.run {
                     self.uiState.loadingError = error
@@ -448,6 +514,7 @@ class GiftCardDetailsViewModel: ObservableObject {
             } else {
                 pollInterval = min(pollInterval * 2, maxPollInterval)
             }
+            DWLogger.log("DashSpend: Failed to fetch PiggyCards order status (attempt \(attempt)): \(Self.loggableError(error))")
         }
     }
 

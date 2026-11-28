@@ -24,6 +24,8 @@ struct GiftCardDetailsInfoCard: View {
     let isLoadingCardDetails: Bool
     let hasBeenPollingForLongTime: Bool
     let loadingError: Error?
+    /// Shown instead of the generic failure text when the order ended without a card.
+    var orderEndedMessage: String? = nil
     /// Offered when the poller gave up on a run of failures; nil hides the affordance.
     var onRetryLoading: (() -> Void)? = nil
     let onOpenClaimLink: (String) -> Void
@@ -70,9 +72,11 @@ struct GiftCardDetailsInfoCard: View {
                     }
                 } else if loadingError != nil {
                     VStack(spacing: 6) {
-                        Text(String(localized: "Failed to load barcode", comment: "DashSpend"))
+                        Text(orderEndedMessage ?? String(localized: "Failed to load barcode", comment: "DashSpend"))
                             .font(.footnote)
                             .foregroundColor(.dash.red)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, 24)
 
                         if let onRetryLoading {
                             Button(action: onRetryLoading) {
@@ -283,6 +287,36 @@ struct GiftCardDetailsInfoCard: View {
         isLoadingCardDetails: true,
         hasBeenPollingForLongTime: true,
         loadingError: nil,
+        onOpenClaimLink: { _ in },
+        onCopy: { _ in }
+    )
+    .padding()
+    .background(Color.dash.primaryBackground)
+}
+
+#Preview("Order ended") {
+    GiftCardDetailsInfoCard(
+        formattedPrice: "$100.00",
+        card: nil,
+        isLoadingCardDetails: false,
+        hasBeenPollingForLongTime: false,
+        loadingError: DashSpendError.customError("Gift card order expired. Please contact support."),
+        orderEndedMessage: "Gift card order expired. Please contact support.",
+        onOpenClaimLink: { _ in },
+        onCopy: { _ in }
+    )
+    .padding()
+    .background(Color.dash.primaryBackground)
+}
+
+#Preview("Failed with retry") {
+    GiftCardDetailsInfoCard(
+        formattedPrice: "$100.00",
+        card: nil,
+        isLoadingCardDetails: false,
+        hasBeenPollingForLongTime: false,
+        loadingError: DashSpendError.networkError,
+        onRetryLoading: {},
         onOpenClaimLink: { _ in },
         onCopy: { _ in }
     )
