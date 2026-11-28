@@ -32,9 +32,8 @@ protocol RequestAmountHostingControllerDelegate: AnyObject {
 /// The request-amount sheet the payments landing presents once an amount is
 /// specified.
 ///
-/// The chrome is `DashUIKit.BottomSheet` rather than the ObjC
-/// `DWBaseModalViewController`: grabber, title and background all come from the
-/// design system, so this holds nothing but the model wiring.
+/// The chrome is `DashUIKit.BottomSheet`: grabber, title and background all
+/// come from the design system, so this holds nothing but the model wiring.
 ///
 /// It still owns the model, because `DWReceiveModelProtocol` pushes updates
 /// through a delegate rather than publishing them — `State` below is what turns
