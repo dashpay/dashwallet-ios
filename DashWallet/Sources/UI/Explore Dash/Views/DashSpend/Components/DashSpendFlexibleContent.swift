@@ -51,7 +51,7 @@ struct DashSpendFlexibleContent: View {
     }
 
     private var multipleShowCost: Bool {
-        guard !quantities.isEmpty, viewModel.error == nil else { return false }
+        guard !quantities.isEmpty, viewModel.canShowCost else { return false }
         guard viewModel.hasValidLimits else { return false }
         return multipleTotalAmount >= viewModel.minimumAmount && multipleTotalAmount <= multipleMaxAmount
     }

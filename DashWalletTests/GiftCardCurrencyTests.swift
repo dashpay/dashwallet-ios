@@ -239,6 +239,25 @@ final class GiftCardCurrencyTests: XCTestCase {
         XCTAssertEqual(dollars?.allows(500), true)
         XCTAssertEqual(dollars?.allows(decimal("25.5")), false)
         XCTAssertEqual(dollars?.allows(501), false)
+        // The server sends whole limits for this type; fractional ones stay valid for `min-max`.
+        for limits in [["10.50", "20.50"], ["10", "20.50"], ["10.50", "20"]] {
+            XCTAssertNil(CTXMerchantTerms(currency: "USD", denominationsType: "min-max-major", denominations: limits))
+            XCTAssertNotNil(CTXMerchantTerms(currency: "USD", denominationsType: "min-max", denominations: limits))
+        }
+        XCTAssertNotNil(CTXMerchantTerms(currency: "USD", denominationsType: "min-max-major", denominations: ["10.00", "20.0"]))
+    }
+
+    /// A price the currency cannot hold is not sold, as an order for it would be refused.
+    func testTermsAllowOnlyAPriceTheCurrencyCanHold() {
+        let dollars = CTXMerchantTerms(currency: "USD", denominationsType: "min-max", denominations: ["10", "100"])
+        XCTAssertEqual(dollars?.allows(decimal("25.01")), true)
+        XCTAssertEqual(dollars?.allows(decimal("25.001")), false)
+        let yen = CTXMerchantTerms(currency: "JPY", denominationsType: "min-max", denominations: ["100", "5000"])
+        XCTAssertEqual(yen?.allows(250), true)
+        XCTAssertEqual(yen?.allows(decimal("250.5")), false)
+        let dinars = CTXMerchantTerms(currency: "KWD", denominationsType: "min-max", denominations: ["1", "50"])
+        XCTAssertEqual(dinars?.allows(decimal("1.125")), true)
+        XCTAssertEqual(dinars?.allows(decimal("1.1255")), false)
         XCTAssertNil(CTXMerchantTerms(currency: "USD", denominationsType: "min-max-major", denominations: ["1", "500", "5"]))
         XCTAssertNil(CTXMerchantTerms(currency: "USD", denominationsType: "min-max-major", denominations: ["1"]))
         // A whole amount is ordered with the currency's decimals, which the server accepts.

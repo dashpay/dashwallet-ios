@@ -69,7 +69,7 @@ struct DashSpendFixedContent: View {
                 actionEnabled: actionEnabled,
                 inProgress: viewModel.isProcessingPayment,
                 error: viewModel.error,
-                showCost: !quantities.isEmpty && viewModel.error == nil,
+                showCost: !quantities.isEmpty && viewModel.canShowCost,
                 costMessage: viewModel.costMessage,
                 inventoryLimits: viewModel.denominationInventory.reduce(into: [:]) { $0[Decimal($1.key)] = $1.value },
                 onContinue: onAction,

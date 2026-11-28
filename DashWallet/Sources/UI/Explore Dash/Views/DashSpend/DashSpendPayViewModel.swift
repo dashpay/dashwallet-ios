@@ -267,8 +267,12 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
 
         return String(localized: "You are buying a \(originalPrice) gift card for \(formattedDiscountedPrice) (\(discountText)% discount)", comment: "DashSpend")
     }
+    /// Whether a price line can be shown at all: not over an error, and not before the
+    /// card currency is confirmed. Every panel's own condition comes on top of this.
+    var canShowCost: Bool { error == nil && cardCurrency != nil }
+
     var showCost: Bool {
-        if error != nil || cardCurrency == nil { return false }
+        if !canShowCost { return false }
 
         // For fixed denominations, show cost when a valid denomination is selected
         if isFixedDenomination {
@@ -1255,7 +1259,8 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
     private func handleNetworkStatusChange(_ status: NetworkStatus) {
         // Re-check errors when network status changes
         checkAmountForErrors()
-        if status == .online, canRetryMerchantLoad {
+        // Also while a load is in flight: it began offline, and a later load supersedes it.
+        if status == .online, provider == .ctx, cardCurrency == nil {
             Task { await updateMerchantInfo() }
         }
     }

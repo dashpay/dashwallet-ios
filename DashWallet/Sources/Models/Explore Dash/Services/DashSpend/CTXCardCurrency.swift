@@ -32,7 +32,8 @@ struct CTXMerchantTerms: Equatable {
     /// Nil when the answer cannot be used to buy a card: it names no usable currency, one of
     /// its amounts is not a plain number the currency can hold, or the amounts do not make
     /// the terms of its type: at least one card value above zero for `fixed`; a minimum and
-    /// a maximum above zero and not below it for `min-max` and `min-max-major`.
+    /// a maximum above zero and not below it for `min-max` and `min-max-major`, both whole
+    /// amounts for the latter.
     init?(currency: String?, denominationsType: String, denominations: [String]) {
         guard let currency = GiftCardCurrency.normalize(currency) else { return nil }
 
@@ -56,11 +57,13 @@ struct CTXMerchantTerms: Equatable {
             wholeAmountsOnly = false
         case "min-max", "min-max-major":
             guard amounts.count == 2, amounts[1] > 0, amounts[0] <= amounts[1] else { return nil }
+            let isMajor = denominationsType == "min-max-major"
+            guard !isMajor || amounts.allSatisfy(GiftCardCurrency.isWhole) else { return nil }
             isFixed = false
             self.denominations = []
             minimum = amounts[0]
             maximum = amounts[1]
-            wholeAmountsOnly = denominationsType == "min-max-major"
+            wholeAmountsOnly = isMajor
         default:
             return nil
         }
@@ -69,7 +72,7 @@ struct CTXMerchantTerms: Equatable {
 
     /// Whether CTX sells a card of `price` under these terms.
     func allows(_ price: Decimal) -> Bool {
-        guard price > 0 else { return false }
+        guard price > 0, GiftCardCurrency.isRepresentable(price, in: currency) else { return false }
         if isFixed { return denominations.contains(price) }
         guard let minimum, let maximum, price >= minimum, price <= maximum else { return false }
         return !wholeAmountsOnly || GiftCardCurrency.isWhole(price)

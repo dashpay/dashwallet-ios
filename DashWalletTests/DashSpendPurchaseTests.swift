@@ -720,12 +720,15 @@ final class DashSpendPurchaseTests: XCTestCase {
         XCTAssertNil(viewModel.error)
         XCTAssertFalse(viewModel.showCost)
 
+        XCTAssertFalse(viewModel.canShowCost)
+
         ctx.merchantAnswer = .success(StubCTXRepository.merchantJSON(currency: "USD"))
         await viewModel.updateMerchantInfo()
         viewModel.sendableDuffs = .max
         viewModel.input = "25"
         XCTAssertNil(viewModel.error)
         XCTAssertTrue(viewModel.showCost)
+        XCTAssertTrue(viewModel.canShowCost)
     }
 
     /// A merchant that could not be loaded is loaded again when the network is back.
@@ -743,6 +746,31 @@ final class DashSpendPurchaseTests: XCTestCase {
         for _ in 0..<1000 where viewModel.cardCurrency == nil { await Task.yield() }
         XCTAssertEqual(viewModel.cardCurrency, "USD")
         XCTAssertFalse(viewModel.canRetryMerchantLoad)
+    }
+
+    /// The network coming back while a load that began without it is still running starts a
+    /// load of its own, which is the one that counts.
+    func testTheNetworkComingBackDuringALoadLoadsTheMerchantAgain() async {
+        let viewModel = ctxViewModel()
+        ctx.holdsMerchantCalls = true
+
+        let first = Task { await viewModel.updateMerchantInfo() }
+        await waitForHeldMerchantCalls(1)
+        viewModel.networkStatusDidChange?(.online)
+        await waitForHeldMerchantCalls(2)
+        guard ctx.heldMerchantCalls.count == 2 else { return XCTFail("no load followed the network coming back") }
+
+        ctx.answerMerchantCall(0, with: StubCTXRepository.merchantJSON(currency: nil))
+        await first.value
+        ctx.answerMerchantCall(1, with: StubCTXRepository.merchantJSON(currency: "USD"))
+        let deadline = Date().addingTimeInterval(Self.patience)
+        while viewModel.cardCurrency == nil || viewModel.isLoading, Date() < deadline { await Task.yield() }
+        XCTAssertEqual(viewModel.cardCurrency, "USD")
+        XCTAssertFalse(viewModel.isLoading)
+
+        viewModel.networkStatusDidChange?(.online)
+        for _ in 0..<50 { await Task.yield() }
+        XCTAssertEqual(ctx.heldMerchantCalls.count, 2)
     }
 
     /// Just after launch the wallet has no rates yet: that is said as such, and goes when

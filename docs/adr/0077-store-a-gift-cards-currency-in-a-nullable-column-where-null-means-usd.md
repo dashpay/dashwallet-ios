@@ -63,7 +63,10 @@ PiggyCards sells in USD and stores `USD`.
 - The column holds what the wallet ordered, not what the provider reported. The purchase stops
   before payment when the provider's answer names another currency, so the two cannot differ for a
   paid card.
-- A downgrade keeps the column and its values; the older version shows such a card in dollars.
+- A downgrade keeps the column, and the older version shows such a card in dollars. It keeps a
+  card's value only until the older version saves that card again: its whole-row
+  `insert(or: .replace)` does not name the column, so the currency becomes NULL. After an upgrade
+  such a card reads as USD until the CTX refetch of its details records the currency again.
 
 ## Links
 
