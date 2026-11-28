@@ -118,7 +118,7 @@ struct AddContactScreen: View {
                                         alignment: .top)
                                 } header: {
                                     ContactsSearchField(
-                                        placeholder: NSLocalizedString("Search by username", comment: "DashPay Contacts"),
+                                        placeholder: String(localized: "Search by username", comment: "DashPay Contacts"),
                                         text: $query,
                                         height: Layout.searchFieldHeight,
                                         focus: $isSearchFocused)
@@ -169,12 +169,12 @@ struct AddContactScreen: View {
                 isVerifyingScan = false
             }
             .alert(
-                NSLocalizedString("Error", comment: ""),
+                String(localized: "Error", comment: ""),
                 isPresented: Binding(
                     get: { errorMessage != nil },
                     set: { if !$0 { errorMessage = nil } })
             ) {
-                Button(NSLocalizedString("OK", comment: ""), role: .cancel) {}
+                Button(String(localized: "OK", comment: ""), role: .cancel) {}
             } message: {
                 Text(errorMessage ?? "")
             }
@@ -193,7 +193,7 @@ struct AddContactScreen: View {
                 if isVerifyingScan {
                     VStack(spacing: 12) {
                         SwiftUI.ProgressView()
-                        Text(NSLocalizedString("Verifying user…", comment: "DashPay Contacts: spinner after scanning a user QR code"))
+                        Text(String(localized: "Verifying user…", comment: "DashPay Contacts: spinner after scanning a user QR code"))
                             .font(.system(size: 14, weight: .medium))
                             .foregroundColor(.dash.secondaryText)
                     }
@@ -207,9 +207,7 @@ struct AddContactScreen: View {
                         Image(systemName: "checkmark.circle.fill")
                             .font(.system(size: 44))
                             .foregroundColor(.dashGreen)
-                        Text(String(
-                            format: NSLocalizedString("Contact request sent to %@", comment: "DashPay Contacts: success card after sending a request"),
-                            username))
+                        Text(String(localized: "Contact request sent to \(username)", comment: "DashPay Contacts: success card after sending a request"))
                             .font(.system(size: 15, weight: .semibold))
                             .foregroundColor(.dash.primaryText)
                             .multilineTextAlignment(.center)
@@ -233,13 +231,13 @@ struct AddContactScreen: View {
         HStack(spacing: 10) {
             if myUserLink != nil {
                 qrActionButton(
-                    NSLocalizedString("My QR", comment: "DashPay Contacts: shows the user's own contact QR code"),
+                    String(localized: "My QR", comment: "DashPay Contacts: shows the user's own contact QR code"),
                     systemImage: "qrcode") {
                     showMyQR = true
                 }
             }
             qrActionButton(
-                NSLocalizedString("Scan QR", comment: ""),
+                String(localized: "Scan QR", comment: ""),
                 systemImage: "qrcode.viewfinder") {
                 showScanner = true
             }
@@ -271,10 +269,10 @@ struct AddContactScreen: View {
                 .font(.system(size: 56, weight: .light))
                 .foregroundColor(.dash.blue)
                 .padding(.bottom, 14)
-            Text(NSLocalizedString("Add a New Contact", comment: "DashPay Contacts"))
+            Text(String(localized: "Add a New Contact", comment: "DashPay Contacts"))
                 .font(.system(size: 20, weight: .bold))
                 .foregroundColor(.dash.primaryText)
-            Text(NSLocalizedString("Find a User", comment: "DashPay Contacts"))
+            Text(String(localized: "Find a User", comment: "DashPay Contacts"))
                 .font(.system(size: 16))
                 .foregroundColor(.dash.secondaryText)
         }
@@ -288,12 +286,12 @@ struct AddContactScreen: View {
                 SwiftUI.ProgressView()
                     .padding(.top, 32)
             } else if results.isEmpty && trimmedQuery.count >= 2 {
-                Text(NSLocalizedString("No usernames found", comment: "DashPay Contacts"))
+                Text(String(localized: "No usernames found", comment: "DashPay Contacts"))
                     .font(.system(size: 14))
                     .foregroundColor(.dash.secondaryText)
                     .padding(.top, 32)
             } else if trimmedQuery.count < 2 && !trimmedQuery.isEmpty {
-                Text(NSLocalizedString("Type at least 2 characters to search usernames", comment: "DashPay Contacts"))
+                Text(String(localized: "Type at least 2 characters to search usernames", comment: "DashPay Contacts"))
                     .font(.system(size: 14))
                     .foregroundColor(.dash.secondaryText)
                     .padding(.top, 32)
@@ -382,11 +380,11 @@ struct AddContactScreen: View {
     private func collisionText(_ state: Collision) -> String? {
         switch state {
         case .none: return nil
-        case .established: return NSLocalizedString("Already a contact", comment: "DashPay Contacts")
-        case .alreadyRequested: return NSLocalizedString("Contact Request Pending", comment: "DashPay Contacts")
-        case .theyAskedUs: return NSLocalizedString("Sent you a request", comment: "DashPay Contacts")
-        case .isSelf: return NSLocalizedString("This is you", comment: "DashPay Contacts")
-        case .missingDashPayKeys: return NSLocalizedString("Can't receive contact requests", comment: "DashPay Contacts")
+        case .established: return String(localized: "Already a contact", comment: "DashPay Contacts")
+        case .alreadyRequested: return String(localized: "Contact Request Pending", comment: "DashPay Contacts")
+        case .theyAskedUs: return String(localized: "Sent you a request", comment: "DashPay Contacts")
+        case .isSelf: return String(localized: "This is you", comment: "DashPay Contacts")
+        case .missingDashPayKeys: return String(localized: "Can't receive contact requests", comment: "DashPay Contacts")
         }
     }
 
@@ -408,7 +406,7 @@ struct AddContactScreen: View {
                                 .fill(Color.dash.blue.opacity(0.1)))
                 }
                 .buttonStyle(.plain)
-                .accessibilityLabel(NSLocalizedString("Send Contact Request", comment: "DashPay Contacts"))
+                .accessibilityLabel(String(localized: "Send Contact Request", comment: "DashPay Contacts"))
             case .theyAskedUs:
                 AcceptPillButton { accept(candidate(result)) }
             case .established:
@@ -461,7 +459,7 @@ struct AddContactScreen: View {
         isVerifyingScan = false
 
         guard let link = DashPayUserLink.parse(value) else {
-            errorMessage = NSLocalizedString("This isn't a DashPay user QR code.", comment: "DashPay Contacts: scanned QR is a payment/invitation/foreign code")
+            errorMessage = String(localized: "This isn't a DashPay user QR code.", comment: "DashPay Contacts: scanned QR is a payment/invitation/foreign code")
             return
         }
         isVerifyingScan = true
@@ -476,9 +474,7 @@ struct AddContactScreen: View {
                 let ownerId = try await service.resolveUsername(link.username)
                 guard !Task.isCancelled else { return }
                 guard ownerId == link.identityId else {
-                    errorMessage = String(
-                        format: NSLocalizedString("%@ couldn't be verified on the Dash network. The QR code may be outdated.", comment: "DashPay Contacts: scanned username doesn't resolve to the scanned identity"),
-                        link.username)
+                    errorMessage = String(localized: "\(link.username) couldn't be verified on the Dash network. The QR code may be outdated.", comment: "DashPay Contacts: scanned username doesn't resolve to the scanned identity")
                     return
                 }
                 checkEligibilityIfNeeded(id: link.identityId)
@@ -574,8 +570,8 @@ struct AddContactScreen: View {
             case .none:
                 send(to: target)
             case .missingDashPayKeys:
-                errorMessage = NSLocalizedString(
-                    "This user hasn't set up the keys needed to receive contact requests yet.",
+                errorMessage = String(
+                    localized: "This user hasn't set up the keys needed to receive contact requests yet.",
                     comment: "DashPay Contacts")
             default:
                 return
@@ -712,19 +708,15 @@ struct AddContactPreviewSheet: View {
     private var rationale: String {
         switch collision {
         case .none, .alreadyRequested:
-            return String(
-                format: NSLocalizedString("Add %@ as a contact to pay them directly by username and keep a shared history of your payments.", comment: "DashPay Contacts"),
-                username)
+            return String(localized: "Add \(username) as a contact to pay them directly by username and keep a shared history of your payments.", comment: "DashPay Contacts")
         case .theyAskedUs:
-            return String(
-                format: NSLocalizedString("%@ wants to connect. Accept to pay each other directly by username.", comment: "DashPay Contacts"),
-                username)
+            return String(localized: "\(username) wants to connect. Accept to pay each other directly by username.", comment: "DashPay Contacts")
         case .established:
-            return NSLocalizedString("You're already connected — you can pay each other directly by username.", comment: "DashPay Contacts")
+            return String(localized: "You're already connected — you can pay each other directly by username.", comment: "DashPay Contacts")
         case .isSelf:
-            return NSLocalizedString("This is your own identity.", comment: "DashPay Contacts")
+            return String(localized: "This is your own identity.", comment: "DashPay Contacts")
         case .missingDashPayKeys:
-            return NSLocalizedString("This user hasn't set up the keys needed to receive contact requests yet.", comment: "DashPay Contacts")
+            return String(localized: "This user hasn't set up the keys needed to receive contact requests yet.", comment: "DashPay Contacts")
         }
     }
 
@@ -732,21 +724,21 @@ struct AddContactPreviewSheet: View {
     private var cta: some View {
         switch collision {
         case .none:
-            primaryButton(NSLocalizedString("Send Contact Request", comment: "DashPay Contacts"), color: .dash.blue) {
+            primaryButton(String(localized: "Send Contact Request", comment: "DashPay Contacts"), color: .dash.blue) {
                 onSend()
             }
         case .theyAskedUs:
-            primaryButton(NSLocalizedString("Accept", comment: "DashPay Contacts"), color: .dashGreen) {
+            primaryButton(String(localized: "Accept", comment: "DashPay Contacts"), color: .dashGreen) {
                 onAccept()
             }
         case .alreadyRequested:
-            statusLabel(NSLocalizedString("Contact Request Pending", comment: "DashPay Contacts"), systemImage: "hourglass", color: .dashGolden)
+            statusLabel(String(localized: "Contact Request Pending", comment: "DashPay Contacts"), systemImage: "hourglass", color: .dashGolden)
         case .established:
-            statusLabel(NSLocalizedString("Already a contact", comment: "DashPay Contacts"), systemImage: "checkmark.circle.fill", color: .dashGreen)
+            statusLabel(String(localized: "Already a contact", comment: "DashPay Contacts"), systemImage: "checkmark.circle.fill", color: .dashGreen)
         case .isSelf:
             EmptyView()
         case .missingDashPayKeys:
-            statusLabel(NSLocalizedString("Can't receive contact requests", comment: "DashPay Contacts"), systemImage: "lock.slash", color: .dash.tertiaryText)
+            statusLabel(String(localized: "Can't receive contact requests", comment: "DashPay Contacts"), systemImage: "lock.slash", color: .dash.tertiaryText)
         }
     }
 
@@ -819,7 +811,7 @@ struct MyDashPayUserQRSheet: View {
                             .fill(Color.white)
                             .shadow(color: Color.dash.shadow, radius: 16, x: 0, y: 4))
                     .padding(.top, 14)
-                    Text(NSLocalizedString("Let another Dash Wallet user scan this code to add you as a contact.", comment: "DashPay Contacts: caption under the user's own QR code"))
+                    Text(String(localized: "Let another Dash Wallet user scan this code to add you as a contact.", comment: "DashPay Contacts: caption under the user's own QR code"))
                         .font(.system(size: 14))
                         .foregroundColor(.dash.tertiaryText)
                         .multilineTextAlignment(.center)

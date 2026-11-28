@@ -47,16 +47,14 @@ struct EvonodeStatusScreen: View {
                     }
                 },
                 central: {
-                    Text(NSLocalizedString("Node status", comment: "Evonode status"))
+                    Text(String(localized: "Node status", comment: "Evonode status"))
                         .dashFont(.subheadMedium)
                         .foregroundColor(.dash.primaryText)
-                        .lineLimit(1)
-                        .padding(.horizontal, 60)
                 },
                 trailing: {
                     DashUIKit.NavigationBarCircleButton(
                         .system("arrow.clockwise"),
-                        accessibilityLabel: Text(NSLocalizedString("Refresh", comment: "")),
+                        accessibilityLabel: Text(String(localized: "Refresh", comment: "")),
                         action: { Task { await viewModel.request() } })
                         .disabled(viewModel.isLoading)
                 })
@@ -102,7 +100,7 @@ struct EvonodeStatusScreen: View {
             // Explicitly SwiftUI's — the app declares its own `ProgressView`
             // UIKit class that shadows it here.
             SwiftUI.ProgressView()
-            Text(NSLocalizedString("Asking the evonode…", comment: "Evonode status"))
+            Text(String(localized: "Asking the evonode…", comment: "Evonode status"))
                 .font(.subheadline)
                 .foregroundColor(Color.dash.secondaryText)
             if let address = viewModel.address {
@@ -140,7 +138,7 @@ struct EvonodeStatusScreen: View {
 
             if viewModel.address != nil {
                 DashButton(
-                    text: NSLocalizedString("Try again", comment: ""),
+                    text: String(localized: "Try again", comment: ""),
                     style: .filled,
                     stretch: false,
                     action: { Task { await viewModel.request() } })

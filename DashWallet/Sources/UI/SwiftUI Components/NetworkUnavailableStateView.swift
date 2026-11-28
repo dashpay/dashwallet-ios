@@ -77,11 +77,11 @@ struct NetworkUnavailableStateView: View {
             Image("network.unavailable")
 
             VStack(spacing: Layout.textSpacing) {
-                Text(NSLocalizedString("Network Unavailable", comment: "Network Unavailable"))
+                Text(String(localized: "Network Unavailable", comment: "Network Unavailable"))
                     .font(.system(size: 17, weight: .medium))
                     .foregroundColor(.dash.primaryText)
 
-                Text(NSLocalizedString("Please check your network connection", comment: "Network Unavailable"))
+                Text(String(localized: "Please check your network connection", comment: "Network Unavailable"))
                     .font(.footnote)
                     .foregroundColor(.dash.secondaryText)
             }

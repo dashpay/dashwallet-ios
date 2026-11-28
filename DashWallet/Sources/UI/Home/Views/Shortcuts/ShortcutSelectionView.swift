@@ -32,7 +32,7 @@ struct ShortcutSelectionView: View {
         ScrollView(.vertical, showsIndicators: false) {
             VStack(alignment: .leading, spacing: 2) {
                 if availableActions.isEmpty {
-                    Text(NSLocalizedString("All shortcuts are already in use", comment: "Shortcut selection empty state"))
+                    Text(String(localized: "All shortcuts are already in use", comment: "Shortcut selection empty state"))
                         .font(.subheadline)
                         .foregroundColor(.dash.secondaryText)
                         .padding(.vertical, 16)
@@ -75,7 +75,7 @@ struct ShortcutSelectionView: View {
     VStack {
         Color.dash.secondaryBackground.ignoresSafeArea()
             .sheet(isPresented: .constant(true)) {
-                let sheet = DashUIKit.BottomSheet(title: NSLocalizedString("Select option", comment: ""), showBackButton: .constant(false)) {
+                let sheet = DashUIKit.BottomSheet(title: String(localized: "Select option", comment: ""), showBackButton: .constant(false)) {
                     ShortcutSelectionView(usedTypes: [.receive, .send, .spend]) { _ in }
                 }
 

@@ -75,7 +75,8 @@ See [BUILD.md](BUILD.md) for more details.
 
 #### Localization
 
-- Localized files helper tool [BartyCrouch](https://github.com/Flinesoft/BartyCrouch). Install via `brew install bartycrouch`.
+- No extra tool: the build's "Sync String Catalog" phase keeps `DashWallet/Localizable.xcstrings` in step with the code (commit it with the code). Swift uses `String(localized:)`, Objective-C keeps `NSLocalizedString`.
+- Translation sync pause: the main-app texts are not pushed to or pulled from the translation service until the owner decides how the Catalog travels; only the Watch and App Store texts sync (see `DEVELOPER-NOTES.md`).
 
 ## Contribution Guidelines
 

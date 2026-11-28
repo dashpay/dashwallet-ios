@@ -19,17 +19,55 @@ import Foundation
 
 public final class SendCoinsService: NSObject {
     private let walletSendService = WalletSendService.shared
+    private let makeBIP70Service: () -> BIP70PaymentService
+    private let sendToAddress: AddressSend
 
+    /// A send to a plain address. `sessionAuthSufficient` is `WalletSendService`'s flag:
+    /// `false` asks for the PIN or biometrics even when the app was just unlocked.
+    typealias AddressSend = (_ address: String, _ amount: UInt64, _ sessionAuthSufficient: Bool) async throws -> Data
+
+    /// - Parameters:
+    ///   - makeBIP70Service: builds the service `payWithDashUrl` pays through.
+    ///   - sendToAddress: the send `payGiftCardOrder` pays through; `nil` for
+    ///     `WalletSendService.sendCarryingUnknownOutcome`.
+    init(makeBIP70Service: @escaping () -> BIP70PaymentService = {
+        // The headless gift-card purchase keeps its own transport rule; https is required
+        // only on the interactive path (`BIP70InteractiveCoordinator`).
+        BIP70PaymentService.makeForCurrentWallet(requiresHTTPS: false)
+    }, sendToAddress: AddressSend? = nil) {
+        self.makeBIP70Service = makeBIP70Service
+        self.sendToAddress = sendToAddress ?? { address, amount, sessionAuthSufficient in
+            try await WalletSendService.shared.sendCarryingUnknownOutcome(
+                address: address, amount: amount, sessionAuthSufficient: sessionAuthSufficient)
+        }
+        super.init()
+    }
+
+    /// Pays a gift card order that names a plain address and an amount (PiggyCards). The send
+    /// is asked with `sessionAuthSufficient: false`, so `WalletSendService` prompts for the
+    /// PIN or biometrics even when the app was just unlocked.
+    ///
+    /// An unknown broadcast outcome is thrown as `DashSpendError.paymentStatusUnknown` with
+    /// the txid, as `payWithDashUrl` does, so the caller can record the order against the
+    /// transaction it just handed to the network. Every other failure is thrown as
+    /// `WalletSendService.send` throws it.
+    ///
     /// - Returns: the wire-order txid of the broadcast transaction
     ///   (`Transaction.txHashData` convention).
-    func sendCoins(address: String, amount: UInt64,
-                   sessionAuthSufficient: Bool = false) async throws
-        -> Data {
-        return try await walletSendService.send(
-            address: address,
-            amount: amount,
-            sessionAuthSufficient: sessionAuthSufficient
-        )
+    func payGiftCardOrder(address: String, amount: UInt64) async throws -> Data {
+        do {
+            return try await sendToAddress(address, amount, false)
+        } catch let unknown as WalletSendService.BroadcastOutcomeUnknown {
+            throw Self.paymentStatusUnknown(from: unknown)
+        }
+    }
+
+    /// The gift card error for a payment whose broadcast outcome is unknown. The reason is the
+    /// SDK's diagnostic when the send error carries one; it is logged, never shown.
+    static func paymentStatusUnknown(from unknown: WalletSendService.BroadcastOutcomeUnknown) -> DashSpendError {
+        let reason = unknown.underlying.userInfo[WalletSendService.diagnosticKey] as? String
+        return .paymentStatusUnknown(
+            txIdWire: unknown.txidWire, reason: reason ?? unknown.underlying.localizedDescription)
     }
 
     /// Submits a DashDEX (SwapKit) deposit. Memo-less routes remain a plain send to the
@@ -68,28 +106,34 @@ public final class SendCoinsService: NSObject {
 
     // MARK: - BIP70
 
-    /// Pays a `dash:`/BIP72 payment-request URL headlessly (CTX gift cards): parse → authorize →
-    /// fetch + verify → build → broadcast → POST the Payment. Routes entirely through the
-    /// app-side BIP70 stack (`BIP70PaymentService`) — no DashSync, no `DWPaymentProcessor`.
+    /// Pays a `dash:`/BIP72 payment-request URL headlessly (CTX gift cards): parse → fetch +
+    /// verify → the caller's `validate` → authorize → build → POST the Payment → broadcast.
+    /// Routes entirely through the app-side BIP70 stack (`BIP70PaymentService`) — no DashSync,
+    /// no `DWPaymentProcessor`.
     ///
+    /// - Parameter validate: the caller's acceptance check on the fetched request, run before
+    ///   the PIN prompt. It may suspend to ask the user. A throw ends the payment with no
+    ///   prompt and nothing built. This method holds no acceptance policy of its own.
     /// - Returns: the wire-order txid of the broadcast transaction
     ///   (`Transaction.txHashData` convention — the caller's metadata key).
     /// - Parameter awaitAcceptance: `false` returns once the merchant has acknowledged the
     ///   Payment and the broadcast is under way, without waiting out the SDK's network-acceptance
     ///   window (30 s). The gift-card flow uses it: CTX fulfils the order from the bytes it just
     ///   acknowledged, so the verdict decides nothing the buyer is standing by for.
-    func payWithDashUrl(url paymentUrlString: String, awaitAcceptance: Bool = true) async throws -> Data {
+    func payWithDashUrl(url paymentUrlString: String, awaitAcceptance: Bool = true,
+                        validate: @escaping (Confirmation) async throws -> Void) async throws -> Data {
         guard let uri = BIP70URI(paymentUrlString), let requestURL = uri.r else {
-            throw DashSpendError.paymentProcessingError(NSLocalizedString("Invalid payment request", comment: "DashSpend"))
+            throw DashSpendError.paymentProcessingError(String(localized: "Invalid payment request", comment: "DashSpend"))
         }
 
         let network = try PaymentNetworkResolver.current()
-        let service = BIP70PaymentService.makeForCurrentWallet()
+        let service = makeBIP70Service()
         let result: SendResult
         do {
             result = try await service.confirmAndSendHeadless(
                 from: requestURL, scheme: uri.scheme, network: network,
-                callbackScheme: uri.callbackScheme, awaitAcceptance: awaitAcceptance)
+                callbackScheme: uri.callbackScheme, awaitAcceptance: awaitAcceptance,
+                validate: validate)
         } catch BIP70Error.paymentNotAcknowledged(let txHashDisplay, let reason) {
             // The merchant may already hold the signed bytes; hand the caller the txid so the
             // order is recorded rather than dropped on the floor.

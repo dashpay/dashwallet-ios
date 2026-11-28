@@ -22,7 +22,7 @@ import UIKit
 final class CustodialSwapsViewController: CoinbaseAmountViewController {
 
     override var actionButtonTitle: String? {
-        NSLocalizedString("Get Quote", comment: "Coinbase/Convert Crypto")
+        String(localized: "Get Quote", comment: "Coinbase/Convert Crypto")
     }
 
     override var amountInputStyle: AmountInputControl.Style { .basic }
@@ -51,7 +51,7 @@ final class CustodialSwapsViewController: CoinbaseAmountViewController {
 
         view.backgroundColor = .dw_secondaryBackground()
 
-        navigationItem.title = NSLocalizedString("Convert Crypto", comment: "Coinbase")
+        navigationItem.title = String(localized: "Convert Crypto", comment: "Coinbase")
         navigationItem.backButtonDisplayMode = .minimal
         navigationItem.largeTitleDisplayMode = .never
 

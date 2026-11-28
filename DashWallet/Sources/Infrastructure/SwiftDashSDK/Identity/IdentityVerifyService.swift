@@ -16,7 +16,6 @@
 //
 
 import Foundation
-import OSLog
 import SwiftDashSDK
 import SwiftData
 
@@ -35,7 +34,7 @@ import SwiftData
 /// transition this app sends.
 @MainActor
 final class IdentityVerifyService {
-    private static let logger = Logger(subsystem: "org.dash.wallet", category: "identity-verify")
+    private static let logger = AppLogger(category: "identity-verify")
 
     enum ServiceError: LocalizedError {
         case noIdentity
@@ -51,21 +50,21 @@ final class IdentityVerifyService {
         var errorDescription: String? {
             switch self {
             case .contextChanged:
-                return NSLocalizedString(
-                    "The active wallet or identity changed. Please try again.",
+                return String(
+                    localized: "The active wallet or identity changed. Please try again.",
                     comment: "DashPay registration recovery")
             case .noIdentity:
-                return NSLocalizedString("This wallet has no Platform identity yet.", comment: "Usernames")
+                return String(localized: "This wallet has no Platform identity yet.", comment: "Usernames")
             case .unsupportedNetwork:
-                return NSLocalizedString("Identity verification is not available on this network.", comment: "Usernames")
+                return String(localized: "Identity verification is not available on this network.", comment: "Usernames")
             case .invalidURL:
-                return NSLocalizedString("Enter a link starting with http:// or https://", comment: "Usernames")
+                return String(localized: "Enter a link starting with http:// or https://", comment: "Usernames")
             case .lookupFailed:
-                return NSLocalizedString("Could not check whether a link was already published. Try again.", comment: "Usernames")
+                return String(localized: "Could not check whether a link was already published. Try again.", comment: "Usernames")
             case .authCancelled:
                 return nil
             case .authFailed:
-                return NSLocalizedString("Authentication failed.", comment: "Usernames")
+                return String(localized: "Authentication failed.", comment: "Usernames")
             }
         }
     }
@@ -316,7 +315,7 @@ final class IdentityVerifyService {
                     limit: Self.lookupPageSize)
             }.value
         } catch {
-            Self.logger.error("🔗 IDENT-VERIFY :: lookup failed: \(String(describing: error), privacy: .public)")
+            Self.logger.error("🔗 IDENT-VERIFY :: lookup failed: \(error)")
             throw ServiceError.lookupFailed
         }
 

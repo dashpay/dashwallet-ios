@@ -1,0 +1,95 @@
+//
+//  PlatformRefusalTests.swift
+//  DashWalletTests
+//
+
+import SwiftDashSDK
+import XCTest
+@testable import dashpay
+
+final class PlatformRefusalTests: XCTestCase {
+    private func consensus(_ code: UInt32, _ kind: PlatformConsensusError.Kind = .state) -> PlatformConsensusError {
+        PlatformConsensusError(code: code, kind: kind)
+    }
+
+    func testEveryCodeInTheTableMapsToItsCase() {
+        let table: [(UInt32, PlatformRefusal)] = [
+            (10_504, .assetLockOutPointConsumed),
+            (40_101, .documentNotFound),
+            (40_105, .duplicateUniqueIndex),
+            (40_210, .identityBalanceTooLow),
+            (40_300, .voterNotFound),
+            (40_301, .votePollNotFound),
+            (40_302, .votePollNotAvailable),
+            (40_303, .votedTooManyTimes),
+            (40_304, .voteAlreadyPresent),
+            (40_305, .incorrectVotingAddress),
+            (40_306, .incorrectVoterIdentityId),
+            (40_601, .addressBalanceTooLow),
+            (40_602, .combinedAddressBalanceTooLow)
+        ]
+        for (code, expected) in table {
+            XCTAssertEqual(PlatformRefusal(code: code), expected, "\(code)")
+        }
+    }
+
+    func testACodeOutsideTheTableKeepsItsNumberAndIsNoNamedCase() {
+        for code: UInt32 in [10_000, 40_100, 40_106, 40_722, 49_999] {
+            XCTAssertEqual(PlatformRefusal(code: code), .other(code: code))
+        }
+    }
+
+    func testTheCodeIsReadFromEitherSDKErrorType() {
+        XCTAssertEqual(
+            PlatformRefusal.of(SDKError.consensusRejection(consensus(40_105), "rendered text")),
+            .duplicateUniqueIndex)
+        XCTAssertEqual(
+            PlatformRefusal.of(PlatformWalletError.consensusRejection(consensus(40_105), "rendered text")),
+            .duplicateUniqueIndex)
+        XCTAssertEqual(
+            PlatformRefusal.consensusError(in: SDKError.consensusRejection(consensus(10_504, .basic), "rendered text")),
+            consensus(10_504, .basic))
+    }
+
+    func testAnErrorWithoutAConsensusCodeIsNoRefusalWhateverItsTextSays() {
+        let text = "Asset lock transaction abc output 0 already completely used; duplicate unique properties"
+        let errors: [Error] = [
+            SDKError.internalError(text),
+            SDKError.protocolError(text),
+            SDKError.notFound(text),
+            SDKError.unknown(text),
+            SDKError.stateTransitionResultUnconfirmed(text),
+            PlatformWalletError.unknown(text),
+            PlatformWalletError.walletOperation(text),
+            PlatformWalletError.assetLockAlreadyConsumed(text),
+            URLError(.timedOut),
+            CancellationError(),
+            NSError(domain: "test", code: 40_105, userInfo: [NSLocalizedDescriptionKey: text])
+        ]
+        for error in errors {
+            XCTAssertNil(PlatformRefusal.of(error), "\(error)")
+            XCTAssertNil(PlatformRefusal.consensusError(in: error), "\(error)")
+        }
+    }
+
+    func testTheTextOfAnUnconfirmedResultOrOfACodedErrorNamesNoRefusal() {
+        let unconfirmed: [Error] = [
+            SDKError.stateTransitionResultUnconfirmed("duplicate unique"),
+            PlatformWalletError.transactionBroadcastUnconfirmed("duplicate unique"),
+            PlatformWalletError.shieldedSpendUnconfirmed("x"),
+            PlatformWalletError.shieldedBroadcastUnconfirmed("x"),
+            PlatformWalletError.masternodeWithdrawalUnconfirmed("x"),
+            PlatformWalletError.publicContactRequestUnconfirmed("x")
+        ]
+        for error in unconfirmed {
+            XCTAssertTrue(PlatformRefusal.isUnconfirmedOutcome(error), "\(error)")
+            XCTAssertFalse(PlatformRefusal.textMayNameRefusal(error), "\(error)")
+        }
+        let coded = PlatformWalletError.consensusRejection(PlatformConsensusError(code: 40_210, kind: .state), "x")
+        XCTAssertFalse(PlatformRefusal.isUnconfirmedOutcome(coded))
+        XCTAssertFalse(PlatformRefusal.textMayNameRefusal(coded))
+
+        XCTAssertFalse(PlatformRefusal.isUnconfirmedOutcome(PlatformWalletError.unknown("x")))
+        XCTAssertTrue(PlatformRefusal.textMayNameRefusal(PlatformWalletError.unknown("x")))
+    }
+}

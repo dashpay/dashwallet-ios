@@ -110,7 +110,7 @@ struct UsernameVotingScreen: View {
     private var store: VotingStore { viewModel.store }
     private var list: VotingListViewModel { viewModel.list }
 
-    private var screenTitle: String { NSLocalizedString("Username Voting", comment: "Voting") }
+    private var screenTitle: String { String(localized: "Username Voting", comment: "Voting") }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -133,8 +133,8 @@ struct UsernameVotingScreen: View {
         .safeAreaInset(edge: .bottom, spacing: 0) {
             DashUIKit.FilterBar(
                 value: list.filter.sort.title,
-                title: NSLocalizedString("Filtered by", comment: "Voting"),
-                filterAccessibilityLabel: NSLocalizedString("Filter", comment: "Voting")) {
+                title: String(localized: "Filtered by", comment: "Voting"),
+                filterAccessibilityLabel: String(localized: "Filter", comment: "Voting")) {
                 showingFilters = true
             }
         }
@@ -234,11 +234,11 @@ struct UsernameVotingScreen: View {
             LazyVStack(alignment: .leading, spacing: 0) {
                 DashUIKit.TopIntroView(
                     title: screenTitle,
-                    mainDescription: NSLocalizedString(
-                        "As a masternode owner you can vote to approve requested usernames before users will be able to create it.",
+                    mainDescription: String(
+                        localized: "As a masternode owner you can vote to approve requested usernames before users will be able to create it.",
                         comment: "Voting"),
-                    secondaryDescription: NSLocalizedString(
-                        "You can block the creation of the usernames that you feel inappropriate.",
+                    secondaryDescription: String(
+                        localized: "You can block the creation of the usernames that you feel inappropriate.",
                         comment: "Voting"),
                     descriptionColor: Color.dash.secondaryText)
                     .padding(.top, 10)
@@ -248,7 +248,7 @@ struct UsernameVotingScreen: View {
 
                 DashUIKit.SearchBar(
                     text: Binding(get: { list.searchQuery }, set: { list.searchQuery = $0 }),
-                    placeholder: NSLocalizedString("Search by username", comment: "Voting"))
+                    placeholder: String(localized: "Search by username", comment: "Voting"))
                     .padding(.top, 20)
 
                 lastingMessage
@@ -277,9 +277,7 @@ struct UsernameVotingScreen: View {
                 // No count while the type reads this wallet's votes and they
                 // are not known for every contest: it would not be a count.
                 if !list.filter.type.readsMyVotes || list.myVotesKnownForList {
-                    Text(String.localizedStringWithFormat(
-                        NSLocalizedString("%d usernames", comment: "Voting"),
-                        list.filterMatchCount))
+                    Text(String(localized: "\(list.filterMatchCount) usernames", comment: "Voting"))
                         .dashFont(.footnote)
                         .foregroundStyle(Color.dash.tertiaryText)
                 }
@@ -287,7 +285,7 @@ struct UsernameVotingScreen: View {
             .accessibilityElement(children: .combine)
             Spacer(minLength: 0)
             DashUIKit.DashButton(
-                text: NSLocalizedString("Filter", comment: "Voting"),
+                text: String(localized: "Filter", comment: "Voting"),
                 leadingIcon: DashUIKit.DashIcon.Common.filterS.source,
                 size: .small,
                 style: .plainBlack,
@@ -300,19 +298,19 @@ struct UsernameVotingScreen: View {
     private var votingMenu: some View {
         DashUIKit.NavigationBarCircleMenu(
             .system("ellipsis"),
-            accessibilityLabel: Text(NSLocalizedString("Voting options", comment: "Voting"))) {
+            accessibilityLabel: Text(String(localized: "Voting options", comment: "Voting"))) {
             // Named as on Android; it opens the Quick voting sheet (AC-18).
             Button {
                 Task { await viewModel.quickVoting.start() }
             } label: {
-                Label(NSLocalizedString("Quick voting", comment: "Voting"), systemImage: "checkmark.circle")
+                Label(String(localized: "Quick voting", comment: "Voting"), systemImage: "checkmark.circle")
             }
             .disabled(!canVoteForAll)
             Button {
                 viewModel.refreshVotableNodes()
                 showsKeyFlow = true
             } label: {
-                Label(NSLocalizedString("Voting keys", comment: "Voting"), systemImage: "key")
+                Label(String(localized: "Voting keys", comment: "Voting"), systemImage: "key")
             }
             // A vote reads the ticked nodes after its history read; a change
             // made meanwhile would slip into it.
@@ -332,7 +330,7 @@ struct UsernameVotingScreen: View {
             DashUIKit.SystemMessageView(
                 title: message.title,
                 subtitle: message.subtitle,
-                buttonName: message.offersTryAgain ? NSLocalizedString("Try again", comment: "Voting") : nil,
+                buttonName: message.offersTryAgain ? String(localized: "Try again", comment: "Voting") : nil,
                 onAction: message.offersTryAgain ? { Task { await list.tryAgain() } } : nil)
                 .disabled(list.isTryingAgain)
                 .padding(.top, 12)
@@ -350,7 +348,7 @@ struct UsernameVotingScreen: View {
                 showsKeyFlow = true
             } label: {
                 HStack(spacing: 8) {
-                    Text(NSLocalizedString("Voting with", comment: "Voting"))
+                    Text(String(localized: "Voting with", comment: "Voting"))
                         .dashFont(.footnote)
                         .foregroundStyle(Color.dash.tertiaryText)
                     Text(viewModel.votingWithSummary)
@@ -388,65 +386,65 @@ struct UsernameVotingScreen: View {
             // nothing is being contested — that was never checked.
             VotingEmptyState(
                 icon: "exclamationmark.triangle",
-                title: NSLocalizedString("Couldn't load the contests", comment: "Voting"),
-                message: NSLocalizedString("Pull down to try again.", comment: "Voting"),
+                title: String(localized: "Couldn't load the contests", comment: "Voting"),
+                message: String(localized: "Pull down to try again.", comment: "Voting"),
                 action: (
-                    title: NSLocalizedString("Try again", comment: "Voting"),
+                    title: String(localized: "Try again", comment: "Voting"),
                     perform: { retryLoad() }))
                 .padding(.vertical, 40)
         case .cannotFilterByMyVotes(let reason):
             VotingEmptyState(
                 icon: "exclamationmark.triangle",
-                title: NSLocalizedString("Can't filter by your votes right now", comment: "Voting"),
+                title: String(localized: "Can't filter by your votes right now", comment: "Voting"),
                 message: reason,
                 action: (
-                    title: NSLocalizedString("Reset filters", comment: "Voting"),
+                    title: String(localized: "Reset filters", comment: "Voting"),
                     perform: { list.filter = .default }))
                 .padding(.vertical, 40)
         case .noVotingKeys:
             VotingEmptyState(
                 icon: "line.3.horizontal.decrease.circle",
-                title: NSLocalizedString("No votes to filter by", comment: "Voting"),
-                message: NSLocalizedString(
-                    "This wallet has no masternode voting keys, so it has no votes to filter by.",
+                title: String(localized: "No votes to filter by", comment: "Voting"),
+                message: String(
+                    localized: "This wallet has no masternode voting keys, so it has no votes to filter by.",
                     comment: "Voting"),
                 action: (
-                    title: NSLocalizedString("Reset filters", comment: "Voting"),
+                    title: String(localized: "Reset filters", comment: "Voting"),
                     perform: { list.filter = .default }))
                 .padding(.vertical, 40)
         case .cannotFilterByLinks:
             VotingEmptyState(
                 icon: "exclamationmark.triangle",
-                title: NSLocalizedString("Can't filter by links right now", comment: "Voting"),
-                message: NSLocalizedString(
-                    "Some links couldn't be checked. Apply the filter again to retry, or reset it.",
+                title: String(localized: "Can't filter by links right now", comment: "Voting"),
+                message: String(
+                    localized: "Some links couldn't be checked. Apply the filter again to retry, or reset it.",
                     comment: "Voting"),
                 action: (
-                    title: NSLocalizedString("Reset filters", comment: "Voting"),
+                    title: String(localized: "Reset filters", comment: "Voting"),
                     perform: { list.filter = .default }))
                 .padding(.vertical, 40)
         case .filterMatchesNothing:
             VotingEmptyState(
                 icon: "line.3.horizontal.decrease.circle",
-                title: NSLocalizedString("No usernames match this filter", comment: "Voting"),
-                message: NSLocalizedString("Change the filter or reset it to see every open contest.", comment: "Voting"),
+                title: String(localized: "No usernames match this filter", comment: "Voting"),
+                message: String(localized: "Change the filter or reset it to see every open contest.", comment: "Voting"),
                 action: (
-                    title: NSLocalizedString("Reset filters", comment: "Voting"),
+                    title: String(localized: "Reset filters", comment: "Voting"),
                     perform: { list.filter = .default }))
                 .padding(.vertical, 40)
         case .noContests:
             VotingEmptyState(
                 icon: "checkmark.seal",
-                title: NSLocalizedString("No open contests", comment: "Voting"),
-                message: NSLocalizedString(
-                    "No usernames are being contested right now. Contests open when two or more people request the same name.",
+                title: String(localized: "No open contests", comment: "Voting"),
+                message: String(
+                    localized: "No usernames are being contested right now. Contests open when two or more people request the same name.",
                     comment: "Voting"))
                 .padding(.vertical, 40)
         case .searchMatchesNothing:
             VotingEmptyState(
                 icon: "checkmark.seal",
-                title: NSLocalizedString("No matching contests", comment: "Voting"),
-                message: NSLocalizedString("No open contest matches that search.", comment: "Voting"))
+                title: String(localized: "No matching contests", comment: "Voting"),
+                message: String(localized: "No open contest matches that search.", comment: "Voting"))
                 .padding(.vertical, 40)
         case nil:
             ForEach(list.sections) { section in
@@ -510,14 +508,14 @@ struct ContestDeadlineLabel: View {
         Group {
             if let endTime {
                 if endTime <= Date() {
-                    Text(NSLocalizedString("Closing", comment: "Voting"))
+                    Text(String(localized: "Closing", comment: "Voting"))
                         .foregroundColor(.orange)
                 } else {
                     Text(endTime, style: .relative)
                         .foregroundColor(Color.dash.secondaryText)
                 }
             } else {
-                Text(NSLocalizedString("Deadline unknown", comment: "Voting"))
+                Text(String(localized: "Deadline unknown", comment: "Voting"))
                     .foregroundColor(Color.dash.tertiaryText)
             }
         }

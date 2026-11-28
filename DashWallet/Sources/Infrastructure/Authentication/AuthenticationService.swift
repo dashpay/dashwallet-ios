@@ -24,7 +24,6 @@
 
 import Foundation
 import LocalAuthentication
-import os.log
 import UIKit
 
 // MARK: - Protocol
@@ -71,9 +70,7 @@ final class AuthenticationService: NSObject, AuthenticationServiceProtocol {
     /// biometric re-enable window. Same literal (`PIN_UNLOCK_TIME_KEY`).
     private static let pinUnlockTimeKey = "PIN_UNLOCK_TIME"
 
-    private static let logger = Logger(
-        subsystem: "org.dashfoundation.dash",
-        category: "authentication")
+    private static let logger = AppLogger(category: "authentication")
 
     private let secureTimeService: SecureTimeService
     private let userDefaults: UserDefaults
@@ -271,12 +268,12 @@ final class AuthenticationService: NSObject, AuthenticationServiceProtocol {
         }
         let remaining = LockoutPolicy.maxFailCount - count
         if count > 0, remaining <= LockoutPolicy.permanentLockWarningThreshold {
-            let message = String.localizedStringWithFormat(NSLocalizedString("%ld attempt(s) left before your wallet is disabled", comment: ""), Int(remaining))
+            let message = String(localized: "\(Int(remaining)) attempt(s) left before your wallet is disabled", comment: "")
             return Precheck(shouldContinueAuthentication: true, shouldLockout: false, attemptsMessage: message)
         }
         if count > 0, count < LockoutPolicy.allowedFailCount {
             let untilCooldown = LockoutPolicy.allowedFailCount - count
-            let message = String.localizedStringWithFormat(NSLocalizedString("%ld attempt(s) remaining", comment: "PIN attempts before temporary lockout"), Int(untilCooldown))
+            let message = String(localized: "\(Int(untilCooldown)) attempt(s) remaining", comment: "PIN attempts before temporary lockout")
             return Precheck(shouldContinueAuthentication: true, shouldLockout: false, attemptsMessage: message)
         }
         return Precheck(shouldContinueAuthentication: true, shouldLockout: false, attemptsMessage: nil)
@@ -356,15 +353,13 @@ final class AuthenticationService: NSObject, AuthenticationServiceProtocol {
 
     @objc var lockoutErrorMessage: String {
         if failCount >= LockoutPolicy.maxFailCount {
-            return NSLocalizedString(
-                "Wallet disabled. Recover with your recovery phrase.",
+            return String(
+                localized: "Wallet disabled. Recover with your recovery phrase.",
                 comment: "PIN permanent lockout")
         }
 
         let formatted = DWDurationFormatter.string(from: lockoutWaitTime)
-        return String(
-            format: NSLocalizedString("Try again in %@", comment: "PIN lockout"),
-            formatted)
+        return String(localized: "Try again in \(formatted)", comment: "PIN lockout")
     }
 
     // MARK: Biometric policy
@@ -529,7 +524,7 @@ final class AuthenticationService: NSObject, AuthenticationServiceProtocol {
 
     @MainActor
     private func evaluateBiometrics(
-        reason: String = NSLocalizedString("Authenticate to access your wallet", comment: "Biometric prompt")
+        reason: String = String(localized: "Authenticate to access your wallet", comment: "Biometric prompt")
     ) async -> BiometricResult {
         let context = LAContext()
         return await withTaskCancellationHandler {

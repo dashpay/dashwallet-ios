@@ -31,13 +31,13 @@ struct CoinbaseEntryPointItem: IntegrationEntryPointItem {
     var description: String {
         switch type {
         case .buyDash:
-            return NSLocalizedString("Receive directly into Dash Wallet", comment: "Coinbase Entry Point")
+            return String(localized: "Receive directly into Dash Wallet", comment: "Coinbase Entry Point")
         case .sellDash:
-            return NSLocalizedString("Receive directly into Coinbase", comment: "Coinbase Entry Point")
+            return String(localized: "Receive directly into Coinbase", comment: "Coinbase Entry Point")
 //        case .convertCrypto:
 //            return NSLocalizedString("Between Dash Wallet and Coinbase", comment: "Coinbase Entry Point")
         case .transferDash:
-            return NSLocalizedString("Between Dash Wallet and Coinbase", comment: "Coinbase Entry Point")
+            return String(localized: "Between Dash Wallet and Coinbase", comment: "Coinbase Entry Point")
         }
     }
 }
@@ -67,22 +67,22 @@ final class CoinbaseEntryPointModel: BaseIntegrationModel {
         if let fiatAmount = try? CurrencyExchanger.shared.convertDash(amount: balance.dashAmount, to: App.fiatCurrency) {
             fiat = NumberFormatter.fiatFormatter.string(from: fiatAmount as NSNumber)!
         } else {
-            fiat = NSLocalizedString("Syncing...", comment: "Balance")
+            fiat = String(localized: "Syncing...", comment: "Balance")
         }
 
         return fiat
     }
     
     override var balanceTitle: String {
-        NSLocalizedString("Dash balance on Coinbase", comment: "Coinbase Entry Point")
+        String(localized: "Dash balance on Coinbase", comment: "Coinbase Entry Point")
     }
     
     override var signInTitle: String {
-        NSLocalizedString("Link Uphold Account", comment: "Uphold Entry Point")
+        String(localized: "Link Uphold Account", comment: "Uphold Entry Point")
     }
     
     override var signOutTitle: String {
-        NSLocalizedString("Disconnect Coinbase Account", comment: "Coinbase Entry Point")
+        String(localized: "Disconnect Coinbase Account", comment: "Coinbase Entry Point")
     }
     
     override var shouldPopOnLogout: Bool { true }

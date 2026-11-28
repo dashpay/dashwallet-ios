@@ -14,7 +14,6 @@
 //
 
 import Foundation
-import OSLog
 import SwiftDashSDK
 
 /// Why a caller is allowed to request a global wallet wipe. Requiring an
@@ -89,20 +88,20 @@ enum SwiftDashSDKWalletDeletionError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .invalidMnemonic:
-            return NSLocalizedString(
-                "The wallet recovery phrase is invalid. Please try again.",
+            return String(
+                localized: "The wallet recovery phrase is invalid. Please try again.",
                 comment: "Wallets")
         case .managerUnavailable:
-            return NSLocalizedString(
-                "The wallet manager is not available. Please try again.",
+            return String(
+                localized: "The wallet manager is not available. Please try again.",
                 comment: "Wallets")
         case .unrecognizedWalletNetwork:
-            return NSLocalizedString(
-                "The wallet network could not be determined. Please try again.",
+            return String(
+                localized: "The wallet network could not be determined. Please try again.",
                 comment: "Wallets")
         case .walletDeletionIncomplete:
-            return NSLocalizedString(
-                "The wallet could not be fully removed. Please try again.",
+            return String(
+                localized: "The wallet could not be fully removed. Please try again.",
                 comment: "Wallets")
         }
     }
@@ -176,9 +175,7 @@ final class SwiftDashSDKWalletWiper: NSObject {
 
     // MARK: - Logging
 
-    private static let logger = Logger(
-        subsystem: "org.dashfoundation.dash",
-        category: "swift-sdk-migration.wallet-wiper")
+    private static let logger = AppLogger(category: "swift-sdk-migration.wallet-wiper")
 
     private static let wipeExecutor = WalletWipeSerialExecutor()
 
@@ -263,7 +260,7 @@ final class SwiftDashSDKWalletWiper: NSObject {
                 walletIdsByNetwork = afterCleanup.walletIdsByNetwork
             } catch {
                 logger.error(
-                    "matching legacy mnemonic cleanup failed; refusing SDK wipe: \(String(describing: error), privacy: .public)")
+                    "matching legacy mnemonic cleanup failed; refusing SDK wipe: \(error)")
                 return false
             }
         } else {
@@ -274,7 +271,7 @@ final class SwiftDashSDKWalletWiper: NSObject {
                     try SwiftDashSDKKeyMigrator.removeAllLegacyMnemonicAccounts()
                 } catch {
                     logger.error(
-                        "legacy mnemonic cleanup failed; refusing SDK wipe: \(String(describing: error), privacy: .public)")
+                        "legacy mnemonic cleanup failed; refusing SDK wipe: \(error)")
                     return false
                 }
             }
@@ -287,7 +284,7 @@ final class SwiftDashSDKWalletWiper: NSObject {
                     storage: storage).walletIdsByNetwork
             } catch {
                 logger.error(
-                    "failed to classify wallet inventory: \(String(describing: error), privacy: .public)")
+                    "failed to classify wallet inventory: \(error)")
                 return false
             }
         }
@@ -312,7 +309,7 @@ final class SwiftDashSDKWalletWiper: NSObject {
             try CoreShieldedDrainFileStore().clear()
         } catch {
             logger.error(
-                "Core drain marker cleanup failed; preserving app state for retry: \(String(describing: error), privacy: .public)")
+                "Core drain marker cleanup failed; preserving app state for retry: \(error)")
             return false
         }
 
@@ -591,7 +588,7 @@ final class SwiftDashSDKWalletWiper: NSObject {
             guard network == .devnet else { throw error }
             logger.error(
                 """
-                devnet manager unavailable for deletion                 (\(String(describing: error), privacy: .public));                 deleting devnet material from the store directly
+                devnet manager unavailable for deletion                 (\(error));                 deleting devnet material from the store directly
                 """)
             backend = .offline(try await host.storeOnlyPersistenceHandler(for: network))
         }
@@ -703,7 +700,7 @@ final class SwiftDashSDKWalletWiper: NSObject {
                 } catch {
                     result.recordFailure()
                     logger.error(
-                        "failed to prepare \(network.networkName, privacy: .public) manager for wipe: \(String(describing: error), privacy: .public)")
+                        "failed to prepare \(network.networkName, privacy: .public) manager for wipe: \(error)")
                 }
             }
 
@@ -717,7 +714,7 @@ final class SwiftDashSDKWalletWiper: NSObject {
             } catch {
                 result.recordFailure()
                 logger.error(
-                    "failed to verify empty SDK wallet inventory: \(String(describing: error), privacy: .public)")
+                    "failed to verify empty SDK wallet inventory: \(error)")
             }
 
             finished.signal()
@@ -777,7 +774,7 @@ final class SwiftDashSDKWalletWiper: NSObject {
             } catch {
                 result.recordFailure()
                 logger.error(
-                    "failed to open devnet scope \(scope, privacy: .public) for wipe: \(String(describing: error), privacy: .public)")
+                    "failed to open devnet scope \(scope, privacy: .public) for wipe: \(error)")
             }
         }
     }
@@ -791,7 +788,7 @@ final class SwiftDashSDKWalletWiper: NSObject {
             .map { String(format: "%02x", $0) }
             .joined()
         logger.error(
-            "deleteWallet failed for \(network.networkName, privacy: .public)/\(walletLabel, privacy: .public)…: \(String(describing: error), privacy: .public)")
+            "deleteWallet failed for \(network.networkName, privacy: .public)/\(walletLabel, privacy: .public)…: \(error)")
     }
 
     /// Delete every SDK representation (mainnet/testnet, plus devnet when
@@ -993,7 +990,7 @@ final class SwiftDashSDKWalletWiper: NSObject {
         do {
             try deleteWallet(walletId)
         } catch {
-            logger.error("deleteWallet failed: \(String(describing: error), privacy: .public)")
+            logger.error("deleteWallet failed: \(error)")
             throw error
         }
 
@@ -1023,7 +1020,7 @@ final class SwiftDashSDKWalletWiper: NSObject {
             do { try drainStore.clear(context: .init(walletId: walletId, networkScope: scope)) }
             catch {
                 logger.error(
-                    "Core drain marker cleanup failed: \(String(describing: error), privacy: .public)")
+                    "Core drain marker cleanup failed: \(error)")
             }
             AssetLockProbeStore.shared.clearForWallet(walletIdHex: walletIdHex)
             // DashConnect connection history, intents and legacy grants of

@@ -21,7 +21,6 @@
 //
 
 import Foundation
-import OSLog
 import SwiftDashSDK
 import SwiftData
 
@@ -57,9 +56,7 @@ extension DpnsNameStateRow: Identifiable {
 @MainActor
 struct UsernameMarketplaceService {
 
-    private static let logger = Logger(
-        subsystem: "org.dashfoundation.dash",
-        category: "swift-sdk-migration.username-marketplace")
+    private static let logger = AppLogger(category: "swift-sdk-migration.username-marketplace")
 
     enum ServiceError: LocalizedError {
         case noIdentity
@@ -75,19 +72,19 @@ struct UsernameMarketplaceService {
         var errorDescription: String? {
             switch self {
             case .noIdentity:
-                return NSLocalizedString("No DashPay identity is registered", comment: "DashPay")
+                return String(localized: "No DashPay identity is registered", comment: "DashPay")
             case .noNetwork:
-                return NSLocalizedString("Network is not configured", comment: "DashPay")
+                return String(localized: "Network is not configured", comment: "DashPay")
             case .contestedName:
-                return NSLocalizedString("Short names are decided by a network vote — use Request Username instead.", comment: "Username marketplace")
+                return String(localized: "Short names are decided by a network vote — use Request Username instead.", comment: "Username marketplace")
             case .invalidRecipient:
-                return NSLocalizedString("The recipient identity couldn't be resolved.", comment: "Username marketplace")
+                return String(localized: "The recipient identity couldn't be resolved.", comment: "Username marketplace")
             case .invalidPrice:
-                return NSLocalizedString("This price is too high to list.", comment: "Username marketplace: listing price exceeds the representable maximum")
+                return String(localized: "This price is too high to list.", comment: "Username marketplace: listing price exceeds the representable maximum")
             case .authCancelled:
-                return NSLocalizedString("Authentication cancelled", comment: "DashPay")
+                return String(localized: "Authentication cancelled", comment: "DashPay")
             case .authFailed:
-                return NSLocalizedString("Authentication failed", comment: "DashPay")
+                return String(localized: "Authentication failed", comment: "DashPay")
             }
         }
     }
@@ -364,7 +361,7 @@ struct UsernameMarketplaceService {
             name: name,
             expectedPriceCredits: expectedPriceCredits,
             signer: KeychainSigner(modelContainer: container))
-        Self.logger.info("🏷️ MARKET :: purchased \(name, privacy: .public) for \(expectedPriceCredits, privacy: .public) credits")
+        Self.logger.info("🏷️ MARKET :: purchased \(name, privacy: .public) for \(expectedPriceCredits, privacy: .private) credits")
         // Bought now: an earlier lost contest for it no longer hides it.
         DWContestedNameStatusService.shared.clearRejected(
             label: name, for: network, identityId: buyerId, walletId: wallet.walletId)
@@ -434,7 +431,7 @@ struct UsernameMarketplaceService {
         do {
             _ = try await wallet.syncContestedDpnsNames(identityId: identityId)
         } catch {
-            Self.logger.warning("🏷️ MARKET :: syncContestedDpnsNames failed: \(String(describing: error), privacy: .public)")
+            Self.logger.warning("🏷️ MARKET :: syncContestedDpnsNames failed: \(error)")
         }
         var endTime: Date?
         if let state = try? await wallet.fetchContestVoteState(identityId: identityId, label: label) {
@@ -489,8 +486,30 @@ struct UsernameMarketplaceService {
         // verbatim, so the typed form must be normalized here or "Greg"
         // reports fresh while "greg" is mid-vote.
         let normalized = (try? sdk.dpnsNormalizeLabel(label)) ?? label.lowercased()
+        let voteState: Result<[String: Any], Error>
         do {
-            let state = try await sdk.dpnsGetContestedVoteState(name: normalized)
+            voteState = .success(try await sdk.dpnsGetContestedVoteState(name: normalized))
+        } catch {
+            Self.logger.info("🏷️ MARKET :: contest precheck unavailable: \(error)")
+            voteState = .failure(error)
+        }
+        let precheck = Self.contestPrecheck(voteState: voteState)
+        guard case .activeContest(let contenders, _) = precheck else { return precheck }
+        // The vote-state payload carries no deadline, so ask the
+        // current-contests listing (normalized name → TimestampMillis)
+        // for it. Best-effort: a failed or incomplete listing just
+        // leaves the deadline unknown.
+        let endsAt = (try? await sdk.dpnsGetCurrentContests())?[normalized]
+            .map { Date(timeIntervalSince1970: Double($0) / 1000) }
+        return .activeContest(contenders: contenders, endsAt: endsAt)
+    }
+
+    /// What the vote-state query's answer, or its failure, says about a
+    /// label. An active contest comes back with no deadline: the payload
+    /// carries none, so the caller adds it.
+    nonisolated static func contestPrecheck(voteState: Result<[String: Any], Error>) -> ContestPrecheck {
+        switch voteState {
+        case .success(let state):
             if state["winner"] is String {
                 // "LOCKED" or a winning identity's base58 id. Either way
                 // the vote is over and nobody can register the label, so
@@ -499,21 +518,11 @@ struct UsernameMarketplaceService {
             }
             let contenders = (state["contenders"] as? [[String: Any]]) ?? []
             if contenders.isEmpty { return .fresh }
-            // The vote-state payload carries no deadline, so ask the
-            // current-contests listing (normalized name → TimestampMillis)
-            // for it. Best-effort: a failed or incomplete listing just
-            // leaves the deadline unknown.
-            let endsAt = (try? await sdk.dpnsGetCurrentContests())?[normalized]
-                .map { Date(timeIntervalSince1970: Double($0) / 1000) }
-            return .activeContest(contenders: contenders.count, endsAt: endsAt)
-        } catch {
-            // rs-sdk reports "no contest" as an error rather than an
-            // empty result; a missing contest is the normal fresh case.
-            let text = String(describing: error).lowercased()
-            if text.contains("not found") || text.contains("no contest") {
-                return .fresh
-            }
-            Self.logger.info("🏷️ MARKET :: contest precheck unavailable for \(label, privacy: .public): \(String(describing: error), privacy: .public)")
+            return .activeContest(contenders: contenders.count, endsAt: nil)
+        case .failure:
+            // A label with no contest is not an error: the query answers
+            // it with no contenders, handled above. A failure says nothing
+            // about the label.
             return .unknown
         }
     }
@@ -560,16 +569,13 @@ struct UsernameMarketplaceService {
         if let walletError = error as? PlatformWalletError {
             switch walletError {
             case .notForSale:
-                return NSLocalizedString("This username is not for sale.", comment: "Username marketplace")
+                return String(localized: "This username is not for sale.", comment: "Username marketplace")
             case .priceChanged:
-                return NSLocalizedString("The seller changed the price before your purchase was accepted. Review the new price and try again.", comment: "Username marketplace")
+                return String(localized: "The seller changed the price before your purchase was accepted. Review the new price and try again.", comment: "Username marketplace")
             case let .insufficientIdentityCredits(_, required, available):
-                return String.localizedStringWithFormat(
-                    NSLocalizedString("Your identity balance can't cover this purchase: %@ DASH needed (including a fee reserve), %@ DASH available. Top up your identity balance and try again.", comment: "Username marketplace"),
-                    (required / 1000).dashAmount.formattedDashAmountWithoutCurrencySymbol,
-                    (available / 1000).dashAmount.formattedDashAmountWithoutCurrencySymbol)
+                return String(localized: "Your identity balance can't cover this purchase: \((required / 1000).dashAmount.formattedDashAmountWithoutCurrencySymbol) DASH needed (including a fee reserve), \((available / 1000).dashAmount.formattedDashAmountWithoutCurrencySymbol) DASH available. Top up your identity balance and try again.", comment: "Username marketplace")
             case .contestedNameNotTradable:
-                return NSLocalizedString("This name is in an active network vote and can't be traded until the contest ends.", comment: "Username marketplace")
+                return String(localized: "This name is in an active network vote and can't be traded until the contest ends.", comment: "Username marketplace")
             default:
                 break
             }

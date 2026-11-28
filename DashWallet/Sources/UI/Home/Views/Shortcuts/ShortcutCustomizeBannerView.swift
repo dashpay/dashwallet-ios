@@ -27,11 +27,11 @@ struct ShortcutCustomizeBannerView: View {
                 .frame(width: 26, height: 26)
 
             VStack(alignment: .leading, spacing: 1) {
-                Text(NSLocalizedString("Customize shortcut bar", comment: "Shortcut banner"))
+                Text(String(localized: "Customize shortcut bar", comment: "Shortcut banner"))
                     .font(.footnoteMedium)
                     .foregroundStyle(Color.dash.primaryText)
 
-                Text(NSLocalizedString("Hold any button above to replace it with the function you need", comment: "Shortcut banner"))
+                Text(String(localized: "Hold any button above to replace it with the function you need", comment: "Shortcut banner"))
                     .font(.footnote)
                     .foregroundStyle(Color.dash.gray500)
             }
@@ -45,7 +45,7 @@ struct ShortcutCustomizeBannerView: View {
                     .frame(width: 44, height: 44)
                     .contentShape(Rectangle())
             }
-            .accessibilityLabel(NSLocalizedString("Close", comment: "Accessibility"))
+            .accessibilityLabel(String(localized: "Close", comment: "Accessibility"))
             .accessibilityIdentifier("shortcut_banner_dismiss")
         }
         .padding(.horizontal, 18)

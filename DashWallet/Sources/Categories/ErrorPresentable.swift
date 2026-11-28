@@ -71,6 +71,6 @@ extension ErrorPresentable where Self: UIViewController {
     }
 
     func present(message: String, level: MessageLevel) {
-        showAlert(with: NSLocalizedString("Error", comment: ""), message: message)
+        showAlert(with: String(localized: "Error", comment: ""), message: message)
     }
 }

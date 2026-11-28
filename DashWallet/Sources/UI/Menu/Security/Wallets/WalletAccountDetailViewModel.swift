@@ -26,7 +26,6 @@
 
 import Combine
 import Foundation
-import OSLog
 import SwiftData
 import SwiftDashSDK
 
@@ -96,9 +95,7 @@ struct WalletAccountDetail: Equatable {
 
 @MainActor
 final class WalletAccountDetailViewModel: ObservableObject {
-    private static let logger = Logger(
-        subsystem: "org.dashfoundation.dash",
-        category: "wallet-account-detail")
+    private static let logger = AppLogger(category: "wallet-account-detail")
 
     /// Nil until `reload()` finds the account; the screen shows an
     /// unavailable state then.
@@ -188,7 +185,7 @@ final class WalletAccountDetailViewModel: ObservableObject {
             sections = items.isEmpty
                 ? []
                 : [AccountAddressSection(
-                    name: NSLocalizedString("Platform Addresses", comment: "Wallet accounts"),
+                    name: String(localized: "Platform Addresses", comment: "Wallet accounts"),
                     items: items)]
         } else {
             sections = [UInt8(0), 1, 2, 3].compactMap { tag in
@@ -205,7 +202,7 @@ final class WalletAccountDetailViewModel: ObservableObject {
             typeName: account.accountTypeName,
             accountIndex: account.accountIndex,
             networkName: account.wallet.network.map { WalletEnvironment.displayName(of: $0) }
-                ?? NSLocalizedString("Unknown", comment: ""),
+                ?? String(localized: "Unknown", comment: ""),
             showsBalance: showsBalance,
             isPlatformPayment: isPlatformPayment,
             isProviderKeyAccount: account.accountType == 10 || account.accountType == 11,

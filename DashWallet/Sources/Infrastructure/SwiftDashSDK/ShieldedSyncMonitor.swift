@@ -19,7 +19,6 @@
 
 import Combine
 import Foundation
-import OSLog
 import SwiftData
 import SwiftDashSDK
 
@@ -28,9 +27,7 @@ final class ShieldedSyncMonitor: ObservableObject {
 
     static let shared = ShieldedSyncMonitor()
 
-    private static let logger = Logger(
-        subsystem: "org.dashfoundation.dash",
-        category: "swift-sdk-migration.shielded-sync-monitor")
+    private static let logger = AppLogger(category: "swift-sdk-migration.shielded-sync-monitor")
 
     // MARK: - Published state (Shielded Sync Info screen)
 
@@ -158,13 +155,13 @@ final class ShieldedSyncMonitor: ObservableObject {
     /// failure, so a coordinator error cannot hide an offline button response.
     func syncNow() -> String? {
         guard NetworkStatusService.shared.isOnline else {
-            return NSLocalizedString(
-                "You are offline. Connect to the internet and try again.",
+            return String(
+                localized: "You are offline. Connect to the internet and try again.",
                 comment: "Shielded manual sync requires an internet connection")
         }
         guard PlatformAddressSyncCoordinator.shared.recoverShieldedNow() else {
-            return NSLocalizedString(
-                "Wallet sync is not ready. Start wallet sync and try again.",
+            return String(
+                localized: "Wallet sync is not ready. Start wallet sync and try again.",
                 comment: "Shielded manual sync requires Core runtime readiness")
         }
         lastError = nil
@@ -229,7 +226,7 @@ final class ShieldedSyncMonitor: ObservableObject {
                 refreshNotesSynced()
             }
         } else {
-            lastError = result.errorMessage ?? NSLocalizedString("Shielded sync failed", comment: "Sync diagnostics")
+            lastError = result.errorMessage ?? String(localized: "Shielded sync failed", comment: "Sync diagnostics")
         }
     }
 
@@ -257,7 +254,7 @@ final class ShieldedSyncMonitor: ObservableObject {
             let rows = try modelContainer.mainContext.fetch(descriptor)
             notesSynced = rows.map(\.lastSyncedIndex).max() ?? 0
         } catch {
-            Self.logger.warning("🛡️ SHIELD-MON :: sync-state fetch failed: \(String(describing: error), privacy: .public)")
+            Self.logger.warning("🛡️ SHIELD-MON :: sync-state fetch failed: \(error)")
         }
     }
 

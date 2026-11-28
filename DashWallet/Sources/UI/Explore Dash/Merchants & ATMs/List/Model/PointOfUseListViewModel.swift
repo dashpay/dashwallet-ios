@@ -178,7 +178,7 @@ final class PointOfUseListViewModel: ObservableObject {
     var searchRadius: Double { model.currentRadius }
 
     var appliedFiltersText: String {
-        model.appliedFiltersLocalizedString ?? NSLocalizedString("Default filters applied", comment: "Explore Dash")
+        model.appliedFiltersLocalizedString ?? String(localized: "Default filters applied", comment: "Explore Dash")
     }
 
     /// The filters the filter screen opens with: the current ones, with a sort
@@ -217,13 +217,13 @@ final class PointOfUseListViewModel: ObservableObject {
         switch configuration.kind {
         case .atms:
             guard model.currentSegment.showMap else { return nil }
-            format = NSLocalizedString("%d ATM(s) in %@", comment: "#bc-ignore!")
+            format = String(localized: "%d ATM(s) in %@", comment: "Explore: number of ATMs, then the search radius (a distance, e.g. 20 mi)")
         case .merchants:
             guard model.showMap,
                   model.currentSegment != MerchantsListSegment.all,
                   items.contains(where: { $0.isPhysical })
             else { return nil }
-            format = NSLocalizedString("%d merchant(s) in %@", comment: "#bc-ignore!")
+            format = String(localized: "%d merchant(s) in %@", comment: "Explore: number of merchants, then the search radius (a distance, e.g. 20 mi)")
         }
 
         return String.localizedStringWithFormat(format, items.count, formattedSearchRadius)

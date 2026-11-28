@@ -27,11 +27,11 @@ struct TransferPreview: View {
 
     var body: some View {
         VStack(spacing: 2) {
-            Text(NSLocalizedString("You will transfer", comment: ""))
+            Text(String(localized: "You will transfer", comment: ""))
                 .scaledSystemFont(size: 12, relativeTo: .caption)
                 .foregroundColor(Color.dash.secondaryText)
             HStack(spacing: 4) {
-                Text("~ \(amountFormatted)")
+                Text(verbatim: "~ \(amountFormatted)")
                     .scaledSystemFont(size: 13, weight: .semibold, relativeTo: .footnote)
                     .foregroundColor(.dash.primaryText)
                 Image("icon_dash_currency")

@@ -74,10 +74,10 @@ struct WalletAccountDetailScreen: View {
                     }
                 } else {
                     ContentUnavailableView(
-                        NSLocalizedString("Account Not Found", comment: "Wallet accounts"),
+                        String(localized: "Account Not Found", comment: "Wallet accounts"),
                         systemImage: "exclamationmark.triangle",
-                        description: Text(NSLocalizedString(
-                            "This account is no longer in the wallet's store.",
+                        description: Text(String(
+                            localized: "This account is no longer in the wallet's store.",
                             comment: "Wallet accounts")))
                 }
 
@@ -97,12 +97,12 @@ struct WalletAccountDetailScreen: View {
             })
 
             VStack(alignment: .leading, spacing: 4) {
-                Text(viewModel.detail?.typeName ?? NSLocalizedString("Account", comment: "Wallet accounts"))
+                Text(viewModel.detail?.typeName ?? String(localized: "Account", comment: "Wallet accounts"))
                     .font(.title)
                     .fontWeight(.bold)
                     .foregroundColor(.dash.primaryText)
                 if let detail = viewModel.detail, detail.showsBalance {
-                    Text("#\(detail.accountIndex)")
+                    Text(verbatim: "#\(detail.accountIndex.formatted())")
                         .font(.subheadline)
                         .foregroundColor(.dash.secondaryText)
                 }
@@ -117,36 +117,36 @@ struct WalletAccountDetailScreen: View {
 
     private func overviewCard(_ detail: WalletAccountDetail) -> some View {
         card(
-            title: NSLocalizedString("Account Information", comment: "Wallet accounts"),
+            title: String(localized: "Account Information", comment: "Wallet accounts"),
             systemImage: "info.circle.fill"
         ) {
-            infoRow(NSLocalizedString("Type", comment: "Wallet accounts"), detail.typeName)
-            infoRow(NSLocalizedString("Index", comment: "Wallet accounts"), "#\(detail.accountIndex)", monospaced: true)
-            infoRow(NSLocalizedString("Network", comment: "Wallet accounts"), detail.networkName)
+            infoRow(String(localized: "Type", comment: "Wallet accounts"), detail.typeName)
+            infoRow(String(localized: "Index", comment: "Wallet accounts"), "#\(detail.accountIndex)", monospaced: true)
+            infoRow(String(localized: "Network", comment: "Wallet accounts"), detail.networkName)
         }
     }
 
     private func balanceCard(_ detail: WalletAccountDetail) -> some View {
         card(
-            title: NSLocalizedString("Balance", comment: ""),
+            title: String(localized: "Balance", comment: ""),
             systemImage: detail.isPlatformPayment ? "creditcard" : "circle.hexagongrid.fill"
         ) {
             if detail.isPlatformPayment {
                 infoRow(
-                    NSLocalizedString("Platform Credits", comment: "Wallet accounts"),
+                    String(localized: "Platform Credits", comment: "Wallet accounts"),
                     Self.formatCredits(detail.platformCredits))
                 infoRow(
-                    NSLocalizedString("Raw Credits", comment: "Wallet accounts"),
+                    String(localized: "Raw Credits", comment: "Wallet accounts"),
                     "\(detail.platformCredits)",
                     monospaced: true)
             } else {
-                infoRow(NSLocalizedString("Confirmed", comment: "Wallet accounts"), detail.confirmed.formattedDashAmount)
+                infoRow(String(localized: "Confirmed", comment: "Wallet accounts"), detail.confirmed.formattedDashAmount)
                 if detail.unconfirmed > 0 {
-                    infoRow(NSLocalizedString("Pending", comment: "Wallet accounts"), detail.unconfirmed.formattedDashAmount)
+                    infoRow(String(localized: "Pending", comment: "Wallet accounts"), detail.unconfirmed.formattedDashAmount)
                 }
                 Divider()
                 HStack {
-                    Text(NSLocalizedString("Total Balance", comment: "Wallet accounts"))
+                    Text(String(localized: "Total Balance", comment: "Wallet accounts"))
                         .font(.footnote)
                         .foregroundColor(.dash.secondaryText)
                     Spacer()
@@ -160,41 +160,39 @@ struct WalletAccountDetailScreen: View {
 
     private func poolSummaryCard(_ detail: WalletAccountDetail) -> some View {
         card(
-            title: NSLocalizedString("Address Pool", comment: "Wallet accounts"),
+            title: String(localized: "Address Pool", comment: "Wallet accounts"),
             systemImage: "square.stack.3d.up.fill"
         ) {
             if detail.isPlatformPayment {
                 // DIP-17 pools are flat — no external/internal split, no
                 // core transactions, no UTXOs.
-                infoRow(NSLocalizedString("Total Addresses", comment: "Wallet accounts"), "\(detail.platformAddressesTotal)")
-                infoRow(NSLocalizedString("Addresses Used", comment: "Wallet accounts"), "\(detail.platformAddressesUsed)")
+                infoRow(String(localized: "Total Addresses", comment: "Wallet accounts"), "\(detail.platformAddressesTotal)")
+                infoRow(String(localized: "Addresses Used", comment: "Wallet accounts"), "\(detail.platformAddressesUsed)")
                 infoRow(
-                    NSLocalizedString("Highest Used", comment: "Wallet accounts"),
+                    String(localized: "Highest Used", comment: "Wallet accounts"),
                     detail.platformHighestUsed.map { "\($0)" } ?? "—")
             } else {
                 if detail.externalPoolSize > 0 {
-                    infoRow(NSLocalizedString("Pool Size (External)", comment: "Wallet accounts"), "\(detail.externalPoolSize)")
+                    infoRow(String(localized: "Pool Size (External)", comment: "Wallet accounts"), "\(detail.externalPoolSize)")
                 }
                 if detail.internalPoolSize > 0 {
-                    infoRow(NSLocalizedString("Pool Size (Internal)", comment: "Wallet accounts"), "\(detail.internalPoolSize)")
+                    infoRow(String(localized: "Pool Size (Internal)", comment: "Wallet accounts"), "\(detail.internalPoolSize)")
                 }
                 infoRow(
-                    NSLocalizedString("Highest Used (External)", comment: "Wallet accounts"),
+                    String(localized: "Highest Used (External)", comment: "Wallet accounts"),
                     detail.externalHighestUsed.map { "\($0)" } ?? "—")
                 infoRow(
-                    NSLocalizedString("Highest Used (Internal)", comment: "Wallet accounts"),
+                    String(localized: "Highest Used (Internal)", comment: "Wallet accounts"),
                     detail.internalHighestUsed.map { "\($0)" } ?? "—")
-                infoRow(NSLocalizedString("Transactions", comment: ""), "\(detail.transactionCount)")
-                infoRow(NSLocalizedString("TXOs", comment: "Wallet accounts"), "\(detail.txoCount)")
+                infoRow(String(localized: "Transactions", comment: ""), "\(detail.transactionCount)")
+                infoRow(String(localized: "TXOs", comment: "Wallet accounts"), "\(detail.txoCount)")
             }
         }
     }
 
     private func addressListCard(_ section: AccountAddressSection, isPlatform: Bool) -> some View {
         card(
-            title: String(
-                format: NSLocalizedString("%@ Addresses (%d)", comment: "Wallet accounts — pool name + count"),
-                section.name, section.items.count),
+            title: String(format: String(localized: "%@ Addresses (%d)", comment: "Wallet accounts — pool name + count"), section.name, section.items.count),
             systemImage: Self.poolIcon(for: section.name)
         ) {
             ForEach(Array(section.items.enumerated()), id: \.element.id) { idx, item in
@@ -215,13 +213,13 @@ struct WalletAccountDetailScreen: View {
                     .truncationMode(.middle)
                     .foregroundColor(.dash.primaryText)
                 HStack(spacing: 6) {
-                    Text("#\(item.index)")
+                    Text(verbatim: "#\(item.index.formatted())")
                     if item.isUsed {
-                        Text("• " + NSLocalizedString("used", comment: "Wallet accounts — address flag"))
+                        Text("• " + String(localized: "used", comment: "Wallet accounts — address flag"))
                     }
                     if item.balance > 0 {
-                        Text(isPlatform
-                            ? "• \(item.balance) credits"
+                        Text(verbatim: isPlatform
+                            ? "• \(item.balance.formatted()) credits"
                             : "• \(item.balance.formattedDashAmount)")
                     }
                 }
@@ -230,7 +228,7 @@ struct WalletAccountDetailScreen: View {
             }
             Spacer()
             if copiedAddress == item.address {
-                Label(NSLocalizedString("Copied", comment: ""), systemImage: "checkmark")
+                Label(String(localized: "Copied", comment: ""), systemImage: "checkmark")
                     .font(.caption2)
                     .foregroundColor(.green)
             } else {
@@ -250,12 +248,12 @@ struct WalletAccountDetailScreen: View {
     /// balance. The per-index derived keys live in Tools → Masternode Keys.
     private func extendedPublicKeyCard(_ detail: WalletAccountDetail) -> some View {
         card(
-            title: NSLocalizedString("Extended Public Key", comment: "Wallet accounts"),
+            title: String(localized: "Extended Public Key", comment: "Wallet accounts"),
             systemImage: "key.horizontal.fill"
         ) {
             if let hex = detail.extendedPublicKeyHex, !hex.isEmpty {
-                Text(NSLocalizedString(
-                    "This account derives masternode keys. It has no on-chain addresses or balance.",
+                Text(String(
+                    localized: "This account derives masternode keys. It has no on-chain addresses or balance.",
                     comment: "Wallet accounts"))
                     .font(.caption)
                     .foregroundColor(.dash.secondaryText)
@@ -264,8 +262,8 @@ struct WalletAccountDetailScreen: View {
                     .foregroundColor(.dash.primaryText)
                     .textSelection(.enabled)
             } else {
-                Text(NSLocalizedString(
-                    "No extended public key has been persisted for this account yet.",
+                Text(String(
+                    localized: "No extended public key has been persisted for this account yet.",
                     comment: "Wallet accounts"))
                     .font(.caption)
                     .foregroundColor(.dash.secondaryText)
@@ -320,7 +318,7 @@ struct WalletAccountDetailScreen: View {
         switch name {
         case "External": return "arrow.down.circle"
         case "Internal": return "arrow.triangle.2.circlepath"
-        case NSLocalizedString("Platform Addresses", comment: "Wallet accounts"): return "creditcard"
+        case String(localized: "Platform Addresses", comment: "Wallet accounts"): return "creditcard"
         default: return "square.stack"
         }
     }

@@ -321,25 +321,25 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
         let message: String
         
         if coinjoin {
-            let position = diffSeconds > 0 ? NSLocalizedString("ahead", comment: "TimeSkew") : NSLocalizedString("behind", comment: "TimeSkew")
-            message = String.localizedStringWithFormat(NSLocalizedString("Your device time is %@ by %d seconds. You cannot use CoinJoin due to this difference.\n\nThe time settings on your device needs to be changed to “Set time automatically” to use CoinJoin.", comment: "TimeSkew"), position, abs(diffSeconds))
+            let position = diffSeconds > 0 ? String(localized: "ahead", comment: "TimeSkew") : String(localized: "behind", comment: "TimeSkew")
+            message = String(localized: "Your device time is \(position) by \(abs(diffSeconds)) seconds. You cannot use CoinJoin due to this difference.\n\nThe time settings on your device needs to be changed to “Set time automatically” to use CoinJoin.", comment: "TimeSkew")
         } else {
-            message = String.localizedStringWithFormat(NSLocalizedString("Your device time is off by %d minutes. You probably cannot send or receive Dash due to this problem.\n\nYou should check and if necessary correct your date, time and timezone settings.", comment: "TimeSkew"), abs(diffSeconds / 60))
+            message = String(localized: "Your device time is off by \(abs(diffSeconds / 60)) minutes. You probably cannot send or receive Dash due to this problem.\n\nYou should check and if necessary correct your date, time and timezone settings.", comment: "TimeSkew")
         }
         
         showModalDialog(
             style: .warning,
             icon: .system("exclamationmark.triangle"),
-            heading: NSLocalizedString("Check date & time settings", comment: "TimeSkew"),
+            heading: String(localized: "Check date & time settings", comment: "TimeSkew"),
             textBlock1: message,
-            positiveButtonText: NSLocalizedString("Settings", comment: ""),
+            positiveButtonText: String(localized: "Settings", comment: ""),
             positiveButtonAction: hasSettings ? {
                 self.viewModel.showTimeSkewAlertDialog = false
                 if let url = settingsURL {
                     UIApplication.shared.open(url)
                 }
             } : nil,
-            negativeButtonText: NSLocalizedString("Dismiss", comment: ""),
+            negativeButtonText: String(localized: "Dismiss", comment: ""),
             negativeButtonAction: {
                 self.viewModel.showTimeSkewAlertDialog = false
             }
@@ -351,11 +351,11 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
         showModalDialog(
             style: .regular,
             icon: .system("arrow.down.circle"),
-            heading: NSLocalizedString("Move your mixed coins", comment: "CoinJoin"),
-            textBlock1: String(format: NSLocalizedString("You have %@ in CoinJoin mixed coins. CoinJoin is no longer supported — move them to your spendable balance.", comment: "CoinJoin"), amount),
-            positiveButtonText: NSLocalizedString("Move funds", comment: "CoinJoin"),
+            heading: String(localized: "Move your mixed coins", comment: "CoinJoin"),
+            textBlock1: String(localized: "You have \(amount) in CoinJoin mixed coins. CoinJoin is no longer supported — move them to your spendable balance.", comment: "CoinJoin"),
+            positiveButtonText: String(localized: "Move funds", comment: "CoinJoin"),
             positiveButtonAction: {
-                DWLogger.log("HomeViewController: sweep invoked from Home popup (\(amount))")
+                DWLogger.log("HomeViewController: sweep invoked from Home popup")
                 self.viewModel.showCoinJoinSweepDialog = false
                 Task { @MainActor in
                     // The post-sync popup (LegacyModalDialog) is mid-dismissal here —
@@ -379,14 +379,14 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
                     self.showModalDialog(
                         style: .error,
                         icon: .system("exclamationmark.triangle"),
-                        heading: NSLocalizedString("Move CoinJoin Funds", comment: "CoinJoin"),
+                        heading: String(localized: "Move CoinJoin Funds", comment: "CoinJoin"),
                         textBlock1: errorMessage,
-                        positiveButtonText: NSLocalizedString("OK", comment: ""),
+                        positiveButtonText: String(localized: "OK", comment: ""),
                         positiveButtonAction: nil
                     )
                 }
             },
-            negativeButtonText: NSLocalizedString("Later", comment: "CoinJoin"),
+            negativeButtonText: String(localized: "Later", comment: "CoinJoin"),
             negativeButtonAction: {
                 // Persisted: stops the per-launch re-prompt until new mixed
                 // coins arrive; the Tools/Settings row stays available.
@@ -582,6 +582,24 @@ extension HomeViewController: ShortcutsActionDelegate {
             showBackupWarningThenSelect(position: position)
         } else {
             presentShortcutSelection(for: position)
+        }
+    }
+}
+
+// MARK: - DWQRScanModelDelegate
+
+extension HomeViewController {
+    /// The Home scanner (the Scan shortcut, `dashwallet://scanqr`) also reads
+    /// DashConnect codes, and opens the Connections screen with them: the
+    /// same place a tapped DashConnect link goes, but as a scan.
+    ///
+    /// The scan delegate is `DWBasePayViewController`; only Home answers this
+    /// optional half, so the lock screen and the Send scanners keep treating
+    /// these codes as not-a-payment.
+    @objc(qrScanModel:didScanDashConnectURI:)
+    func qrScanModel(_ viewModel: DWQRScanModel, didScanDashConnectURI uri: String) {
+        dismiss(animated: true) { [weak self] in
+            (self?.tabBarController as? MainTabbarController)?.openDashConnect(uri, scanned: true)
         }
     }
 }

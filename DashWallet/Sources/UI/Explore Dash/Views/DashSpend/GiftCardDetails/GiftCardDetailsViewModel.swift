@@ -262,13 +262,32 @@ class GiftCardDetailsViewModel: ObservableObject {
         stopTicker()
     }
 
-    /// A provider status as it may appear in the exported log: a short token, or a placeholder
-    /// when the provider sent anything else.
-    nonisolated static func loggableStatus(_ status: String) -> String {
-        let isToken = !status.isEmpty && status.count <= 32 && status.allSatisfy {
-            $0.isASCII && ($0.isLetter || $0.isNumber || $0 == "_" || $0 == "-")
+    /// A CTX order status as it may appear in the exported log: an app-owned label for a status
+    /// the app knows, `<unrecognized>` for anything else the provider sends.
+    nonisolated static func loggableCTXStatus(_ status: String) -> String {
+        switch status.lowercased() {
+        case "unpaid": return "unpaid"
+        case "paid": return "paid"
+        case "fulfilled": return "fulfilled"
+        case "rejected": return "rejected"
+        case "expired": return "expired"
+        default: return "<unrecognized>"
         }
-        return isToken ? status : "<unrecognized>"
+    }
+
+    /// A PiggyCards order status as it may appear in the exported log: an app-owned label for a
+    /// status the app knows, `<unrecognized>` for anything else the provider sends.
+    nonisolated static func loggablePiggyCardsStatus(_ status: String) -> String {
+        switch status.lowercased() {
+        case "payment pending": return "payment_pending"
+        case "paid": return "paid"
+        case "processing": return "processing"
+        case "complete", "completed": return "complete"
+        case "rejected": return "rejected"
+        case "cancelled": return "cancelled"
+        case "failed": return "failed"
+        default: return "<unrecognized>"
+        }
     }
 
     /// A poll failure as it may appear in the exported log: the error's kind only, never the
@@ -346,7 +365,7 @@ class GiftCardDetailsViewModel: ObservableObject {
             // returns the ticker to its base cadence.
             noteSuccessfulPoll()
 
-            DWLogger.log("DashSpend: CTX gift card status: \(Self.loggableStatus(response.status)), "
+            DWLogger.log("DashSpend: CTX gift card status: \(Self.loggableCTXStatus(response.status)), "
                 + "number: \(response.cardNumber?.isEmpty == false), "
                 + "redeemUrl: \(response.redeemUrl?.isEmpty == false), "
                 + "barcodeUrl: \(response.barcodeUrl?.isEmpty == false)")
@@ -382,10 +401,10 @@ class GiftCardDetailsViewModel: ObservableObject {
                 }
 
             case "rejected":
-                endOrder(message: NSLocalizedString("Gift card purchase was rejected", comment: ""))
+                endOrder(message: String(localized: "Gift card purchase was rejected", comment: ""))
 
             case "expired":
-                endOrder(message: NSLocalizedString("Gift card order expired. Please contact support.", comment: ""))
+                endOrder(message: String(localized: "Gift card order expired. Please contact support.", comment: ""))
 
             default:
                 break
@@ -427,7 +446,7 @@ class GiftCardDetailsViewModel: ObservableObject {
             let orderStatus = try await piggyCardsRepository.getOrderStatus(orderId: metadata.orderId)
             noteSuccessfulPoll()
 
-            DWLogger.log("DashSpend: PiggyCards order status: \(Self.loggableStatus(orderStatus.data.status)), "
+            DWLogger.log("DashSpend: PiggyCards order status: \(Self.loggablePiggyCardsStatus(orderStatus.data.status)), "
                 + "cards: \(orderStatus.data.cards.count)")
 
             switch orderStatus.data.status.lowercased() {
@@ -439,8 +458,8 @@ class GiftCardDetailsViewModel: ObservableObject {
                 )
 
                 guard !payload.isEmpty else {
-                    endOrder(message: NSLocalizedString(
-                        "Gift card details are unavailable. Please contact support.",
+                    endOrder(message: String(
+                        localized: "Gift card details are unavailable. Please contact support.",
                         comment: ""
                     ))
                     return
@@ -471,8 +490,14 @@ class GiftCardDetailsViewModel: ObservableObject {
                 await giftCardsDAO.update(dto: updatedCard)
                 stopTicker()
 
-            case "failed", "rejected", "cancelled":
-                endOrder(message: NSLocalizedString("Gift card purchase was rejected", comment: ""))
+            case "rejected":
+                endOrder(message: String(localized: "Gift card purchase was rejected", comment: ""))
+
+            case "cancelled":
+                endOrder(message: String(localized: "Gift card order was cancelled", comment: "DashSpend"))
+
+            case "failed":
+                endOrder(message: String(localized: "Gift card order failed. Please contact support.", comment: "DashSpend"))
 
             default:
                 break

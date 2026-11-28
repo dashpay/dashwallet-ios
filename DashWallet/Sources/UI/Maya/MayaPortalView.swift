@@ -29,9 +29,9 @@ struct MayaPortalView: View {
     var body: some View {
         SwapPortalScaffold(
             logoIcon: .custom("maya-illustration"),
-            title: NSLocalizedString("Maya", comment: "Dash DEX"),
-            description: NSLocalizedString(
-                "Convert Dash from Dash Wallet to any crypto that is supported on Maya and send it to any wallet",
+            title: String(localized: "Maya", comment: "Dash DEX"),
+            description: String(
+                localized: "Convert Dash from Dash Wallet to any crypto that is supported on Maya and send it to any wallet",
                 comment: "Dash DEX"
             ),
             isOnline: isOnline,

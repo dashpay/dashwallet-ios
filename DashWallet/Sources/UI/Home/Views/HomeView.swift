@@ -462,7 +462,7 @@ struct HomeViewContent<Content: View>: View {
                             // not "no transactions" — the tail sentinel below
                             // renders and keeps paging instead.
                             if !viewModel.canLoadMoreHistory {
-                                Text(NSLocalizedString("There are no transactions to display", comment: ""))
+                                Text(String(localized: "There are no transactions to display", comment: ""))
                                     .font(.caption)
                                     .foregroundColor(Color.primary.opacity(0.5))
                                     .padding(.top, 20)
@@ -472,7 +472,7 @@ struct HomeViewContent<Content: View>: View {
                                 SwiftUI.ProgressView()
                                     .progressViewStyle(CircularProgressViewStyle())
 
-                                Text(NSLocalizedString("Loading transactions", comment: "Home"))
+                                Text(String(localized: "Loading transactions", comment: "Home"))
                                     .font(.caption)
                                     .foregroundColor(Color.primary.opacity(0.5))
                             }
@@ -511,7 +511,7 @@ struct HomeViewContent<Content: View>: View {
                             SwiftUI.ProgressView()
                                 .progressViewStyle(CircularProgressViewStyle())
 
-                            Text(NSLocalizedString("Loading more transactions", comment: "Home"))
+                            Text(String(localized: "Loading more transactions", comment: "Home"))
                                 .font(.caption)
                                 .foregroundColor(Color.primary.opacity(0.5))
                         }
@@ -810,13 +810,13 @@ struct HomeViewContent<Content: View>: View {
         switch txItem.internalTransferRoute {
         case .coreToShielded:
             if txItem.isCoinJoinFundedTransfer {
-                return NSLocalizedString("CoinJoin → Shielded", comment: "Transfer of own mixed funds into the private shielded balance")
+                return String(localized: "CoinJoin → Shielded", comment: "Transfer of own mixed funds into the private shielded balance")
             }
-            return NSLocalizedString("Transparent → Shielded", comment: "Transfer of own funds into the private shielded balance")
+            return String(localized: "Transparent → Shielded", comment: "Transfer of own funds into the private shielded balance")
         case .shieldedToCore:
-            return NSLocalizedString("Shielded → Transparent", comment: "Transfer of own funds from the private shielded balance back to the transparent wallet")
+            return String(localized: "Shielded → Transparent", comment: "Transfer of own funds from the private shielded balance back to the transparent wallet")
         case .coreToPlatform:
-            return NSLocalizedString("Transparent → Platform", comment: "Transfer of own funds into the Platform balance")
+            return String(localized: "Transparent → Platform", comment: "Transfer of own funds into the Platform balance")
         case .coreToIdentity, .coreToCore, nil:
             // Identity fundings carry their purpose in the title
             // ("Identity registration"), so no route pill.
@@ -845,8 +845,8 @@ struct HomeViewContent<Content: View>: View {
             let firstTx = set.transactionMap.values.first
             DashUIKit.TransactionView(
                 icon: IconName.custom("tx.item.coinjoin.icon").dashIconSource,
-                topText: String.localizedStringWithFormat(NSLocalizedString("%d transaction(s)", comment: "#bc-ignore!"), set.transactionMap.count),
-                title: NSLocalizedString("Mixing Transactions", comment: "CoinJoin"),
+                topText: String(localized: "\(set.transactionMap.count) transaction(s)", comment: "Number of transactions in a group of transactions"),
+                title: String(localized: "Mixing Transactions", comment: "CoinJoin"),
                 subtitle: firstTx?.shortTimeString ?? "",
                 dashAmount: set.amount,
                 amountSign: .none,
@@ -858,9 +858,9 @@ struct HomeViewContent<Content: View>: View {
         case .coinjoinWithdrawal(let set):
             let firstTx = set.transactionMap.values.first
             TransactionPreview(
-                title: NSLocalizedString("CoinJoin Withdrawals", comment: "CoinJoin"),
+                title: String(localized: "CoinJoin Withdrawals", comment: "CoinJoin"),
                 subtitle: firstTx?.shortTimeString ?? "",
-                topText: String.localizedStringWithFormat(NSLocalizedString("%d transaction(s)", comment: "#bc-ignore!"), set.transactionMap.count),
+                topText: String(localized: "\(set.transactionMap.count) transaction(s)", comment: "Number of transactions in a group of transactions"),
                 icon: .custom("tx.item.internal.icon"),
                 dashAmount: set.amount
             ) {
@@ -909,13 +909,13 @@ struct HomeViewContent<Content: View>: View {
                 title: metadata?.title ?? txItem.stateTitle,
                 subtitle: txItem.shortTimeString,
                 details: offersShieldedFinish
-                    ? NSLocalizedString("Pending — tap to finish", comment: "InternalTransfer recovery")
+                    ? String(localized: "Pending — tap to finish", comment: "InternalTransfer recovery")
                     : txItem.isPendingIdentityRegistration
-                        ? NSLocalizedString("Pending — tap to finish", comment: "DashPay registration recovery")
+                        ? String(localized: "Pending — tap to finish", comment: "DashPay registration recovery")
                     // A pending top-up has nothing to "finish" in another
                     // flow — it recovers from the tx detail sheet.
                     : txItem.isPendingIdentityFunding || txItem.isPendingPlatformFunding
-                        ? NSLocalizedString("Pending", comment: "")
+                        ? String(localized: "Pending", comment: "")
                         : (metadata?.details?.isEmpty == false
                             ? metadata?.details
                             // Alias-titled contact payments show the
@@ -927,7 +927,7 @@ struct HomeViewContent<Content: View>: View {
                 amountSign: isInternalAmount ? .none : .always,
                 amountAccessorySystemImage: isInternalAmount ? "arrow.triangle.2.circlepath" : nil,
                 fiat: txItem.fiatAmount,
-                trailingStatusText: txItem.state == .locked ? NSLocalizedString("Locked", comment: "Transaction state: coinbase reward locked until 100 confirmations") : nil
+                trailingStatusText: txItem.state == .locked ? String(localized: "Locked", comment: "Transaction state: coinbase reward locked until 100 confirmations") : nil
             ) {
                 // A stuck "to Shielded" transfer opens the recovery sheet
                 // instead of the read-only detail/gift-card sheets.

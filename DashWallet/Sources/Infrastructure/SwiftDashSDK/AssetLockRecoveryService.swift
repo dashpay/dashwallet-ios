@@ -27,7 +27,6 @@
 
 import Combine
 import Foundation
-import OSLog
 import SwiftDashSDK
 import SwiftData
 
@@ -44,9 +43,7 @@ struct AssetLockRecoveryService {
         self.probeStore = probeStore
     }
 
-    private static let logger = Logger(
-        subsystem: "org.dashfoundation.dash",
-        category: "swift-sdk-migration.asset-lock-recovery")
+    private static let logger = AppLogger(category: "swift-sdk-migration.asset-lock-recovery")
 
     enum RecoveryError: LocalizedError {
         case notReady
@@ -64,11 +61,11 @@ struct AssetLockRecoveryService {
         var errorDescription: String? {
             switch self {
             case .notReady:
-                return NSLocalizedString("Wallet is not ready", comment: "DashPay")
+                return String(localized: "Wallet is not ready", comment: "DashPay")
             case .noIdentity:
-                return NSLocalizedString("This wallet has no identity to top up.", comment: "Asset-lock retry: identity top-up with no identity")
+                return String(localized: "This wallet has no identity to top up.", comment: "Asset-lock retry: identity top-up with no identity")
             case .unsupportedRoute:
-                return NSLocalizedString("This transfer can't be retried from here.", comment: "Asset-lock retry: unsupported funding route")
+                return String(localized: "This transfer can't be retried from here.", comment: "Asset-lock retry: unsupported funding route")
             case .inProgress(let message), .failed(let message, _):
                 return message
             }
@@ -268,9 +265,7 @@ struct AssetLockRecoveryService {
         var failed = 0
         var cancelled = false
         /// First failure's message, surfaced so a run that mostly failed says
-        /// WHY on screen instead of a bare count. Bulk failures land in OSLog,
-        /// which a diagnostic export never captures (the gap ticket 32004
-        /// found for sends), so the count alone left nothing to diagnose from.
+        /// WHY on screen instead of a bare count.
         var firstFailureMessage: String?
         /// Set when the pass gave up early after repeated failures.
         var stoppedAfterRepeatedFailures = false
@@ -289,45 +284,31 @@ struct AssetLockRecoveryService {
         var summary: String {
             var parts: [String] = []
             if completed > 0 {
-                parts.append(String.localizedStringWithFormat(
-                    NSLocalizedString("%d finished", comment: "SPV diagnostics"),
-                    completed))
+                parts.append(String(localized: "\(completed) finished", comment: "SPV diagnostics"))
             }
             if addedToOwnShielded > 0 {
-                parts.append(String.localizedStringWithFormat(
-                    NSLocalizedString(
-                        "%d transfers added to your Shielded balance",
-                        comment: "SPV diagnostics: transfers finished to the wallet's own Shielded balance because their recipient was not on record"),
-                    addedToOwnShielded))
+                parts.append(String(localized: "\(addedToOwnShielded) transfers added to your Shielded balance", comment: "SPV diagnostics: transfers finished to the wallet's own Shielded balance because their recipient was not on record"))
             }
             if alreadySpent > 0 {
-                parts.append(String.localizedStringWithFormat(
-                    NSLocalizedString("%d already spent", comment: "SPV diagnostics"),
-                    alreadySpent))
+                parts.append(String(localized: "\(alreadySpent) already spent", comment: "SPV diagnostics"))
             }
             if awaitingSync > 0 {
-                parts.append(String.localizedStringWithFormat(
-                    NSLocalizedString("%d waiting for the network", comment: "SPV diagnostics"),
-                    awaitingSync))
+                parts.append(String(localized: "\(awaitingSync) waiting for the network", comment: "SPV diagnostics"))
             }
             if inProgress > 0 {
-                parts.append(String(
-                    format: NSLocalizedString("%d still in progress", comment: "SPV diagnostics"),
-                    inProgress))
+                parts.append(String(format: String(localized: "%d still in progress", comment: "SPV diagnostics"), inProgress))
             }
             if failed > 0 {
-                parts.append(String.localizedStringWithFormat(
-                    NSLocalizedString("%d could not be reached", comment: "SPV diagnostics"),
-                    failed))
+                parts.append(String(localized: "\(failed) could not be reached", comment: "SPV diagnostics"))
             }
             if cancelled {
-                parts.append(NSLocalizedString("stopped early", comment: "SPV diagnostics"))
+                parts.append(String(localized: "stopped early", comment: "SPV diagnostics"))
             }
             if stoppedAfterRepeatedFailures {
-                parts.append(NSLocalizedString("stopped after repeated failures", comment: "SPV diagnostics"))
+                parts.append(String(localized: "stopped after repeated failures", comment: "SPV diagnostics"))
             }
             var summary = parts.isEmpty
-                ? NSLocalizedString("Nothing to finish.", comment: "SPV diagnostics")
+                ? String(localized: "Nothing to finish.", comment: "SPV diagnostics")
                 : parts.joined(separator: ", ")
             if let reason = firstFailureMessage {
                 summary += "\n\(reason)"
@@ -518,7 +499,7 @@ struct AssetLockRecoveryService {
             // do and hides the reason, so it gets its own state.
             outcome.authFailureMessage = (error as? LocalizedError)?.errorDescription
                 ?? error.localizedDescription
-            DWLogger.log("LOCK-RETRY bulk aborted — authentication failed: \(outcome.authFailureMessage ?? "")")
+            DWLogger.log("LOCK-RETRY bulk aborted — authentication failed: \(AppLogMessage.errorSummary(error))")
             return outcome
         }
 
@@ -622,7 +603,7 @@ struct AssetLockRecoveryService {
                 let step = Self.bulkStep(for: error)
                 let stop = Self.apply(step, to: &outcome, consecutiveFailures: &consecutiveFailures)
                 if case .failed = step {
-                    // File logger, not just OSLog: a bulk pass that fails is
+                    // A bulk pass that fails is
                     // exactly what a diagnostic export needs to carry, with the
                     // typed error case so a consensus refusal is searchable.
                     AssetLockRetryLog.logFailure(

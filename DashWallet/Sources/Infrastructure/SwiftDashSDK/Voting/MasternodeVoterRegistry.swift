@@ -18,7 +18,6 @@
 //
 
 import Foundation
-import OSLog
 import SwiftDashSDK
 
 // MARK: - VoterNode
@@ -61,8 +60,8 @@ struct VoterNode: Identifiable, Hashable {
 
     var displayName: String {
         let type = isEvonode
-            ? NSLocalizedString("Evonode", comment: "Voting")
-            : NSLocalizedString("Masternode", comment: "Voting")
+            ? String(localized: "Evonode", comment: "Voting")
+            : String(localized: "Masternode", comment: "Voting")
         return "\(type) \(typeIndex)"
     }
 
@@ -84,9 +83,7 @@ struct VoterNode: Identifiable, Hashable {
 @MainActor
 final class MasternodeVoterRegistry {
 
-    private static let logger = Logger(
-        subsystem: "org.dashfoundation.dash",
-        category: "swift-sdk-migration.voting")
+    private static let logger = AppLogger(category: "swift-sdk-migration.voting")
 
     init() {}
 

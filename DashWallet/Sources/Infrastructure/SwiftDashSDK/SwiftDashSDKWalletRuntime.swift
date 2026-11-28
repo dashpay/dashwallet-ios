@@ -17,7 +17,6 @@
 //
 
 import Foundation
-import OSLog
 import SwiftDashSDK
 
 /// Small, testable serial task chain used by the wallet runtime. Keeping the
@@ -226,9 +225,7 @@ extension SwiftDashSDKWalletRuntime {
 @objc(DWSwiftDashSDKWalletRuntime)
 @MainActor
 final class SwiftDashSDKWalletRuntime: NSObject {
-    private static let logger = Logger(
-        subsystem: "org.dashfoundation.dash",
-        category: "swift-sdk-migration.wallet-runtime")
+    private static let logger = AppLogger(category: "swift-sdk-migration.wallet-runtime")
 
     private static let seedMigratorDoneKey = "swiftSDKKeyMigration.v1.done"
     private static let seedMigratorDeferredKeys = [
@@ -985,7 +982,7 @@ final class SwiftDashSDKWalletRuntime: NSObject {
             do {
                 try await SwiftDashSDKSPVCoordinator.shared.restartAsync()
             } catch {
-                Self.logger.error("🧭 RUNTIME :: Core SPV restart failed: \(String(describing: error), privacy: .public)")
+                Self.logger.error("🧭 RUNTIME :: Core SPV restart failed: \(error)")
             }
         }
     }
@@ -1096,10 +1093,9 @@ final class SwiftDashSDKWalletRuntime: NSObject {
                     "🧭 RUNTIME :: network switch prepared during the Core start; leaving \(network.rawValue, privacy: .public) to its refresh")
                 return nil
             } catch {
-                Self.logger.error("🧭 RUNTIME :: Core start failed: \(String(describing: error), privacy: .public)")
+                Self.logger.error("🧭 RUNTIME :: Core start failed: \(error)")
                 let failure = self.lifecycleState.preparationFailure ?? WalletPreparationFailure(error: error)
-                // os_log does not reach the diagnostic export; the file log
-                // does. Only a record the open classified names a category:
+                // Only a record the open classified names a category:
                 // the fallback for anything else (SPV start, devnet preflight)
                 // bridges to OtherError codes and would mislabel the cause.
                 if let classified = self.lifecycleState.preparationFailure {
@@ -1162,7 +1158,7 @@ final class SwiftDashSDKWalletRuntime: NSObject {
         } catch {
             platformPhase = .degraded(network)
             Self.logger.error(
-                "🧭 RUNTIME :: Platform start failed; Core stays up: \(String(describing: error), privacy: .public)")
+                "🧭 RUNTIME :: Platform start failed; Core stays up: \(error)")
         }
     }
 
@@ -1218,7 +1214,7 @@ final class SwiftDashSDKWalletRuntime: NSObject {
             name: SwiftDashSDKWalletState.activeWalletDidChangeNotification,
             object: nil)
         Self.logger.info(
-            "🧭 RUNTIME :: active-wallet change reason=\(reason, privacy: .public) wallet=\(walletId, privacy: .public)")
+            "🧭 RUNTIME :: active-wallet change reason=\(reason, privacy: .public) wallet=\(walletId.prefix(8), privacy: .public)")
     }
 
     private func selectSolePersistedNetworkIfNeeded(currentNetwork: Network) -> Bool {
@@ -1396,11 +1392,11 @@ final class SwiftDashSDKWalletRuntime: NSObject {
         var errorDescription: String? {
             switch self {
             case .unsupportedCurrentNetwork(let name):
-                return String(format: NSLocalizedString("SwiftDashSDK runtime does not support %@", comment: "Wallet runtime error"), name)
+                return String(localized: "SwiftDashSDK runtime does not support \(name)", comment: "Wallet runtime error")
             case .keyMigrationIncomplete:
-                return NSLocalizedString("Key migration has not completed.", comment: "Wallet runtime error")
+                return String(localized: "Key migration has not completed.", comment: "Wallet runtime error")
             case .walletUnavailable:
-                return NSLocalizedString("The stored wallet could not be read.", comment: "Wallet runtime error")
+                return String(localized: "The stored wallet could not be read.", comment: "Wallet runtime error")
             }
         }
     }
@@ -1432,20 +1428,20 @@ final class SwiftDashSDKWalletRuntime: NSObject {
         var errorDescription: String? {
             switch self {
             case .unsupportedNetwork:
-                return NSLocalizedString("Cannot switch wallet: the current network is not supported.", comment: "Wallet runtime error")
+                return String(localized: "Cannot switch wallet: the current network is not supported.", comment: "Wallet runtime error")
             case .devnetNotConfigured:
-                return NSLocalizedString(
-                    "Devnet is not configured. Enter a Quorum URL and Devnet Name in Settings → Devnet Settings first.",
+                return String(
+                    localized: "Devnet is not configured. Enter a Quorum URL and Devnet Name in Settings → Devnet Settings first.",
                     comment: "Devnet")
             case .unknownWallet:
-                return NSLocalizedString("Cannot switch wallet: no wallet with that id is stored on this network.", comment: "Wallet runtime error")
+                return String(localized: "Cannot switch wallet: no wallet with that id is stored on this network.", comment: "Wallet runtime error")
             case .bindFailed:
-                return NSLocalizedString("Switching wallet failed: the new wallet could not be loaded.", comment: "Wallet runtime error")
+                return String(localized: "Switching wallet failed: the new wallet could not be loaded.", comment: "Wallet runtime error")
             case .switchInProgress:
-                return NSLocalizedString("Another wallet operation is already in progress.", comment: "Wallet runtime error")
+                return String(localized: "Another wallet operation is already in progress.", comment: "Wallet runtime error")
             case .startFailed(let detail, _):
-                let base = NSLocalizedString(
-                    "Switching networks failed: the runtime did not start.", comment: "Wallet runtime error")
+                let base = String(
+                    localized: "Switching networks failed: the runtime did not start.", comment: "Wallet runtime error")
                 guard let detail, !detail.isEmpty else { return base }
                 return base + " (\(detail))"
             }

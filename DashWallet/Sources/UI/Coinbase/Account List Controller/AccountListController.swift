@@ -66,7 +66,7 @@ extension AccountListController {
 
     private func configureHierarchy() {
         view.backgroundColor = .dw_secondaryBackground()
-        title = NSLocalizedString("Select a coin", comment: "Coinbase")
+        title = String(localized: "Select a coin", comment: "Coinbase")
 
         let barButton = UIBarButtonItem(barButtonSystemItem: .close, target: self, action: #selector(closeAction))
         navigationItem.rightBarButtonItem = barButton;

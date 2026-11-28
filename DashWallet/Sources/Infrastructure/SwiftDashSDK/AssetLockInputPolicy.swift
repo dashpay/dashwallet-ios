@@ -179,12 +179,12 @@ enum AssetLockInputLimit {
     }
 
     static var title: String {
-        NSLocalizedString("Too many coins for one transfer", comment: "Asset-lock input limit")
+        String(localized: "Too many coins for one transfer", comment: "Asset-lock input limit")
     }
 
     static var message: String {
-        NSLocalizedString(
-            "This transfer needs more separate coins than the network accepts in one transfer. Combine your coins first (a small network fee applies), then try again.",
+        String(
+            localized: "This transfer needs more separate coins than the network accepts in one transfer. Combine your coins first (a small network fee applies), then try again.",
             comment: "Asset-lock input limit")
     }
 
@@ -259,7 +259,7 @@ enum AssetLockInputLimit {
             verdict = AssetLockInputPolicy.drainVerdict(finalCount: finalValues.count, inputBudget: check.inputBudget)
         }
         DWLogger.log(
-            "🔒 ASSET-LOCK-INPUTS :: amount=\(check.amountDuffs.map(String.init) ?? "drain") budget=\(check.inputBudget) "
+            "🔒 ASSET-LOCK-INPUTS :: amount=\(check.amountDuffs == nil ? "drain" : "<private>") budget=\(check.inputBudget) "
                 + "coins=\(utxos.count) final=\(finalValues.count) verdict=\(verdict)",
             className: "AssetLockInputLimit")
         return verdict
