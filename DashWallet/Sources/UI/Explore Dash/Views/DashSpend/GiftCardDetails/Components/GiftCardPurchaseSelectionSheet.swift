@@ -94,7 +94,7 @@ struct GiftCardPurchaseSelectionSheet: View {
             }
         }
         .frame(maxWidth: .infinity)
-        .frame(height: 120)
+        .frame(minHeight: 120)
         .background(Color.dash.secondaryBackground)
         .cornerRadius(20)
     }

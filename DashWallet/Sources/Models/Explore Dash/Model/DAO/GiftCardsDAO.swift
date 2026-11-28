@@ -193,12 +193,20 @@ class GiftCardsDAOImpl: NSObject, GiftCardsDAO {
         }
     }
 
+    /// Stores the link. A nil challenge leaves the stored one as it is, so an answer without one cannot erase it.
+    static func redeemUrlUpdate(txId: Data, url: String, challenge: String?) -> Update {
+        let row = GiftCard.table.filter(GiftCard.txId == txId)
+
+        guard let challenge else {
+            return row.update(GiftCard.number <- url)
+        }
+        return row.update(GiftCard.number <- url,
+                          GiftCard.redeemUrlChallenge <- challenge)
+    }
+
     func updateRedeemUrl(txId: Data, url: String, challenge: String?) async {
         do {
-            let update = GiftCard.table.filter(GiftCard.txId == txId)
-                .update(GiftCard.number <- url,
-                        GiftCard.redeemUrlChallenge <- challenge)
-            try await execute(update)
+            try await execute(Self.redeemUrlUpdate(txId: txId, url: url, challenge: challenge))
 
             if let existingCard = await get(byTxId: txId) {
                 let updatedCard = GiftCard(
@@ -212,7 +220,7 @@ class GiftCardsDAOImpl: NSObject, GiftCardsDAO {
                     barcodeFormat: existingCard.barcodeFormat,
                     note: existingCard.note,
                     provider: existingCard.provider,
-                    redeemUrlChallenge: challenge
+                    redeemUrlChallenge: existingCard.redeemUrlChallenge
                 )
                 let key = txId.hexEncodedString()
                 cacheSet(updatedCard, forKey: key)

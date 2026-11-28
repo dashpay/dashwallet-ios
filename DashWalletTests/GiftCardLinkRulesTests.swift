@@ -14,6 +14,7 @@
 //  limitations under the License.
 //
 
+import SQLite
 import XCTest
 @testable import dashpay
 
@@ -244,12 +245,42 @@ final class GiftCardLinkRulesTests: XCTestCase {
         XCTAssertEqual(CTXGiftCardDelivery.fulfilledAnswersWithoutDetails(after: 0, isFulfilled: false), 0)
     }
 
-    func testALinkWithoutAChallengeKeepsTheStoredOne() {
-        XCTAssertEqual(CTXGiftCardDelivery.challengeToStore(delivered: "A1B2C3D4E5", stored: "OLD"), "A1B2C3D4E5")
-        XCTAssertEqual(CTXGiftCardDelivery.challengeToStore(delivered: nil, stored: "A1B2C3D4E5"), "A1B2C3D4E5")
-        XCTAssertEqual(CTXGiftCardDelivery.challengeToStore(delivered: " \n", stored: "A1B2C3D4E5"), "A1B2C3D4E5")
-        XCTAssertNil(CTXGiftCardDelivery.challengeToStore(delivered: nil, stored: "  "))
-        XCTAssertNil(CTXGiftCardDelivery.challengeToStore(delivered: nil, stored: nil))
+    func testALaterLinkWithoutAChallengeKeepsTheOneAnotherAnswerStored() throws {
+        let txId = Data([0x01, 0x02])
+        let link = "https://spend.ctx.com/gift-cards/abc/redeem"
+        let connection = try Connection(.inMemory)
+        try connection.run(GiftCard.table.create { table in
+            table.column(GiftCard.txId, primaryKey: true)
+            table.column(GiftCard.number)
+            table.column(GiftCard.redeemUrlChallenge)
+        })
+        try connection.run(GiftCard.table.insert(GiftCard.txId <- txId))
+
+        func storedChallenge() throws -> String? {
+            let row = try XCTUnwrap(connection.pluck(GiftCard.table))
+            XCTAssertEqual(row[GiftCard.number], link)
+            return row[GiftCard.redeemUrlChallenge]
+        }
+
+        try connection.run(GiftCardsDAOImpl.redeemUrlUpdate(txId: txId, url: link, challenge: nil))
+        XCTAssertNil(try storedChallenge())
+
+        try connection.run(GiftCardsDAOImpl.redeemUrlUpdate(txId: txId, url: link, challenge: "A1B2C3D4E5"))
+        try connection.run(GiftCardsDAOImpl.redeemUrlUpdate(txId: txId, url: link, challenge: nil))
+        XCTAssertEqual(try storedChallenge(), "A1B2C3D4E5")
+
+        try connection.run(GiftCardsDAOImpl.redeemUrlUpdate(txId: txId, url: link, challenge: "F6G7H8I9J0"))
+        XCTAssertEqual(try storedChallenge(), "F6G7H8I9J0")
+    }
+
+    @MainActor
+    func testBlankStoredBarcodeDrawsNoImage() {
+        let viewModel = GiftCardDetailsViewModel(txId: Data(), shouldLoadTransaction: false)
+
+        XCTAssertNil(viewModel.imageFromBarcode(value: nil, format: nil))
+        XCTAssertNil(viewModel.imageFromBarcode(value: "", format: nil))
+        XCTAssertNil(viewModel.imageFromBarcode(value: " \t\n", format: "CODE128"))
+        XCTAssertNotNil(viewModel.imageFromBarcode(value: "6006491234567890", format: "CODE128"))
     }
 
     func testSignInIsRequiredOnlyForAnOrderThatWouldBeFetched() {

@@ -148,11 +148,6 @@ enum CTXGiftCardDelivery: Equatable {
     static func pinToStore(delivered: String?, stored: String?) -> String? {
         GiftCardDetailsCardItem.nonBlank(delivered) ?? GiftCardDetailsCardItem.nonBlank(stored)
     }
-
-    /// A delivered challenge code, or else the stored one, so a link without one does not erase it.
-    static func challengeToStore(delivered: String?, stored: String?) -> String? {
-        GiftCardDetailsCardItem.trimmedOrNil(delivered) ?? GiftCardDetailsCardItem.nonBlank(stored)
-    }
 }
 
 struct GiftCardDetailsUIState {
@@ -487,14 +482,7 @@ class GiftCardDetailsViewModel: ObservableObject {
                     stopTicker()
                     DWLogger.log("DashSpend: Gift card details fetched successfully")
                 case .link(let redeemUrl, let challenge):
-                    await giftCardsDAO.updateRedeemUrl(
-                        txId: txId,
-                        url: redeemUrl,
-                        challenge: CTXGiftCardDelivery.challengeToStore(
-                            delivered: challenge,
-                            stored: giftCard.redeemUrlChallenge
-                        )
-                    )
+                    await giftCardsDAO.updateRedeemUrl(txId: txId, url: redeemUrl, challenge: challenge)
                     stopTicker()
                     DWLogger.log("DashSpend: Gift card redeem URL fetched successfully")
                 case .nothingYet:
@@ -804,8 +792,8 @@ class GiftCardDetailsViewModel: ObservableObject {
         }
     }
 
-    private func imageFromBarcode(value: String?, format: String?) -> UIImage? {
-        guard let value, !value.isEmpty else { return nil }
+    func imageFromBarcode(value: String?, format: String?) -> UIImage? {
+        guard let value = GiftCardDetailsCardItem.nonBlank(value) else { return nil }
         let normalizedFormat = normalizeBarcodeFormat(format)
 
         let filterName: String
