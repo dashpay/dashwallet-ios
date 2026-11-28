@@ -178,6 +178,7 @@ final class PaymentProtocolTests: XCTestCase {
 
     override func tearDown() {
         MockURLProtocol.responseHandler = nil
+        MockURLProtocol.redirectHandler = nil
         MockURLProtocol.handler = nil
         super.tearDown()
     }
@@ -185,7 +186,7 @@ final class PaymentProtocolTests: XCTestCase {
     private func makeTransport() -> PaymentProtocolTransport {
         let config = URLSessionConfiguration.ephemeral
         config.protocolClasses = [MockURLProtocol.self]
-        return PaymentProtocolTransport(session: URLSession(configuration: config))
+        return PaymentProtocolTransport(session: URLSession(configuration: config), requiresHTTPS: false)
     }
 
     private var requestURL: URL { URL(string: "https://merchant.example/i/abc")! }
@@ -219,6 +220,84 @@ final class PaymentProtocolTests: XCTestCase {
         await assertThrowsBIP70(try await makeTransport().fetchRequest(from: requestURL, scheme: "dash")) {
             if case .unexpectedResponse = $0 { return true }; return false
         }
+    }
+
+    private func makeHTTPSOnlyTransport() -> PaymentProtocolTransport {
+        let config = URLSessionConfiguration.ephemeral
+        config.protocolClasses = [MockURLProtocol.self]
+        return PaymentProtocolTransport(session: URLSession(configuration: config), requiresHTTPS: true)
+    }
+
+    func testHTTPSOnlyTransportRefusesAnHTTPRequestURLWithoutFetching() async {
+        var fetched = false
+        let body = fixture
+        MockURLProtocol.responseHandler = { _ in fetched = true; return (200, ["Content-Type": "application/dash-paymentrequest"], body) }
+        await assertThrowsBIP70(try await makeHTTPSOnlyTransport()
+            .fetchRequest(from: URL(string: "http://merchant.example/i/abc")!, scheme: "dash")) { $0 == .insecureTransport }
+        XCTAssertFalse(fetched)
+    }
+
+    func testHTTPSOnlyTransportRefusesAnHTTPURIListTarget() async {
+        var fetchedHosts: [String] = []
+        MockURLProtocol.responseHandler = { request in
+            fetchedHosts.append(request.url?.absoluteString ?? "")
+            return (200, ["Content-Type": "text/uri-list"], Data("http://merchant.example/real\n".utf8))
+        }
+        await assertThrowsBIP70(try await makeHTTPSOnlyTransport().fetchRequest(from: requestURL, scheme: "dash")) {
+            $0 == .insecureTransport
+        }
+        XCTAssertEqual(fetchedHosts, [requestURL.absoluteString])
+    }
+
+    func testDefaultTransportStillFollowsAnHTTPURIListTarget() async throws {
+        let body = fixture
+        MockURLProtocol.responseHandler = { request in
+            request.url?.scheme == "https"
+                ? (200, ["Content-Type": "text/uri-list"], Data("http://merchant.example/real\n".utf8))
+                : (200, ["Content-Type": "application/dash-paymentrequest"], body)
+        }
+        let req = try await makeTransport().fetchRequest(from: requestURL, scheme: "dash")
+        XCTAssertEqual(req.pkiType, "x509+sha256")
+    }
+
+    func testHTTPSOnlyTransportRefusesAnHTTPRedirectOfTheFetch() async {
+        MockURLProtocol.redirectHandler = { $0.url?.scheme == "https" ? URL(string: "http://merchant.example/real") : nil }
+        let body = fixture
+        MockURLProtocol.responseHandler = { _ in (200, ["Content-Type": "application/dash-paymentrequest"], body) }
+        await assertThrowsBIP70(try await makeHTTPSOnlyTransport().fetchRequest(from: requestURL, scheme: "dash")) {
+            $0 == .insecureTransport
+        }
+    }
+
+    func testHTTPSOnlyTransportRefusesAnHTTPPaymentURLAndRedirect() async {
+        var posted = false
+        MockURLProtocol.responseHandler = { _ in posted = true; return (200, ["Content-Type": "application/dash-paymentack"], Data()) }
+        let payment = Payment(merchantData: nil, transactions: [Data([1])], refundTo: [], memo: nil)
+        await assertThrowsBIP70(try await makeHTTPSOnlyTransport()
+            .postPayment(payment, to: URL(string: "http://merchant.example/pay")!, scheme: "dash")) { $0 == .insecureTransport }
+        XCTAssertFalse(posted)
+
+        MockURLProtocol.redirectHandler = { $0.url?.scheme == "https" ? URL(string: "http://merchant.example/pay") : nil }
+        await assertThrowsBIP70(try await makeHTTPSOnlyTransport()
+            .postPayment(payment, to: URL(string: "https://merchant.example/pay")!, scheme: "dash")) { $0 == .insecureTransport }
+        XCTAssertFalse(posted)
+    }
+
+    private func redirectDecision(enforced: Bool, to target: String) -> (followed: Bool, refused: Bool) {
+        let redirects = HTTPSRedirectGuard(isEnforced: enforced)
+        let session = URLSession(configuration: .ephemeral)
+        let task = session.dataTask(with: requestURL)
+        let response = HTTPURLResponse(url: requestURL, statusCode: 302, httpVersion: nil, headerFields: nil)!
+        var followed = false
+        redirects.urlSession(session, task: task, willPerformHTTPRedirection: response,
+                             newRequest: URLRequest(url: URL(string: target)!)) { followed = $0 != nil }
+        return (followed, redirects.refusedRedirect)
+    }
+
+    func testRedirectGuardRefusesAnHTTPRedirectOnlyWhenEnforced() {
+        XCTAssertTrue(redirectDecision(enforced: true, to: "http://merchant.example/real") == (false, true))
+        XCTAssertTrue(redirectDecision(enforced: true, to: "https://merchant.example/real") == (true, false))
+        XCTAssertTrue(redirectDecision(enforced: false, to: "http://merchant.example/real") == (true, false))
     }
 
     func testTransportRejectsOversizedPayload() async {
@@ -553,8 +632,9 @@ private final class FakeTransport: PaymentProtocolTransporting {
     var postShouldThrow: BIP70Error?
     var onPost: (() -> Void)?
     private(set) var postedPayment: Payment?
+    var onFetch: (() -> Void)?
     init(_ request: PaymentRequest) { self.request = request }
-    func fetchRequest(from url: URL, scheme: String) async throws -> PaymentRequest { request }
+    func fetchRequest(from url: URL, scheme: String) async throws -> PaymentRequest { onFetch?(); return request }
     func postPayment(_ payment: Payment, to url: URL, scheme: String) async throws -> PaymentACK {
         onPost?(); postedPayment = payment
         if let e = postShouldThrow { throw e }
@@ -588,7 +668,15 @@ private final class FakeReceive: ReceiveAddressProviding {
 
 private final class FakeAuth: SendAuthorizing {
     var error: Error?
-    func authorize() async throws { if let e = error { throw e } }
+    var onAuthorize: (() -> Void)?
+    private(set) var authorizeCount = 0
+    private(set) var authorizedAmounts: [UInt64] = []
+    func authorize(spendAmount: UInt64) async throws {
+        authorizeCount += 1
+        authorizedAmounts.append(spendAmount)
+        onAuthorize?()
+        if let e = error { throw e }
+    }
 }
 
 final class BIP70PaymentServiceTests: XCTestCase {
@@ -753,6 +841,211 @@ final class BIP70PaymentServiceTests: XCTestCase {
         XCTAssertTrue(w.calls.isEmpty)
     }
 
+    /// The headless flow fetches and verifies the request before it asks for the PIN, so the
+    /// user never authorizes a request nobody has looked at yet.
+    func testHeadlessFetchesRequestBeforeAuthorizing() async throws {
+        var events: [String] = []
+        let t = FakeTransport(unsigned()); t.onFetch = { events.append("fetch") }
+        let auth = FakeAuth(); auth.onAuthorize = { events.append("authorize") }
+        let w = FakeWallet()
+        let svc = service(t, w, auth: auth)
+
+        _ = try await svc.confirmAndSendHeadless(from: url, scheme: "dash", network: .testnet)
+
+        XCTAssertEqual(events, ["fetch", "authorize"])
+        XCTAssertEqual(w.calls, ["build", "broadcast"])
+    }
+
+    /// The caller's check sees the prepared request, and passing it lets the send go ahead.
+    func testHeadlessValidateReceivesThePreparedRequest() async throws {
+        let auth = FakeAuth(); let w = FakeWallet()
+        let svc = service(FakeTransport(unsigned()), w, auth: auth)
+        var seenAmount: UInt64?
+
+        let result = try await svc.confirmAndSendHeadless(
+            from: url, scheme: "dash", network: .testnet,
+            validate: { seenAmount = $0.amount })
+
+        XCTAssertEqual(seenAmount, 100_000)
+        XCTAssertEqual(result.amount, 100_000)
+        XCTAssertEqual(auth.authorizeCount, 1)
+        XCTAssertEqual(auth.authorizedAmounts, [100_000], "the prompt is for the request's amount")
+    }
+
+    /// A request the caller refuses ends the flow there: no PIN prompt, nothing built or
+    /// broadcast, nothing posted to the merchant.
+    func testHeadlessValidateRejectionStopsBeforeAuthorizeAndBuild() async {
+        struct Refused: Error {}
+        let t = FakeTransport(unsigned()); let auth = FakeAuth(); let w = FakeWallet()
+        let svc = service(t, w, auth: auth)
+
+        do {
+            _ = try await svc.confirmAndSendHeadless(
+                from: url, scheme: "dash", network: .testnet,
+                validate: { _ in throw Refused() })
+            XCTFail("expected throw")
+        } catch {
+            XCTAssertTrue(error is Refused, "unexpected error: \(error)")
+        }
+
+        XCTAssertEqual(auth.authorizeCount, 0)
+        XCTAssertTrue(w.calls.isEmpty)
+        XCTAssertNil(t.postedPayment)
+    }
+
+    /// A request that fails verification never reaches the caller's check or the PIN prompt.
+    func testHeadlessExpiredRequestStopsBeforeValidateAndAuthorize() async {
+        let auth = FakeAuth(); let w = FakeWallet()
+        let svc = service(FakeTransport(unsigned(expires: 1)), w, auth: auth)
+        var validateCalled = false
+
+        await assertThrowsBIP70(
+            try await svc.confirmAndSendHeadless(from: url, scheme: "dash", network: .testnet,
+                                                 validate: { _ in validateCalled = true }),
+            .expired)
+
+        XCTAssertFalse(validateCalled)
+        XCTAssertEqual(auth.authorizeCount, 0)
+        XCTAssertTrue(w.calls.isEmpty)
+    }
+
+    /// `SendCoinsService.payWithDashUrl` hands the caller's check the fetched request and
+    /// stops on its refusal: no PIN prompt, nothing built.
+    func testPayWithDashUrlRunsTheCallersCheckBeforeAuthorizing() async {
+        struct Refused: Error {}
+        let auth = FakeAuth(); let w = FakeWallet()
+        let svc = service(FakeTransport(unsigned(network: nil)), w, auth: auth)
+        let sender = SendCoinsService(makeBIP70Service: { svc })
+        var seenAmount: UInt64?
+
+        do {
+            _ = try await sender.payWithDashUrl(
+                url: "dash:?r=http%3A%2F%2Fh%2Fpr",
+                validate: { seenAmount = $0.amount; throw Refused() })
+            XCTFail("expected throw")
+        } catch {
+            XCTAssertTrue(error is Refused, "unexpected error: \(error)")
+        }
+
+        XCTAssertEqual(seenAmount, 100_000)
+        XCTAssertEqual(auth.authorizeCount, 0)
+        XCTAssertTrue(w.calls.isEmpty)
+    }
+
+    /// Outputs whose amounts do not sum within UInt64 make the request malformed.
+    func testPrepareRejectsOutputsThatOverflowTheTotal() async {
+        let outputs = [PaymentOutput(amount: UInt64.max, script: p2pkh), PaymentOutput(amount: 1, script: p2pkh)]
+        let svc = service(FakeTransport(unsigned(outputs: outputs)), FakeWallet())
+        await assertThrowsBIP70(try await svc.prepareForConfirmation(from: url, scheme: "dash", network: .testnet),
+                                .malformedRequest)
+    }
+
+    /// A request that expires while it is being fetched gets no PIN prompt: the expiry is
+    /// checked against the time after the fetch, before the caller's check and the prompt.
+    func testHeadlessRequestExpiringDuringFetchIsNotAuthorized() async {
+        let expiry = UInt64(Date().timeIntervalSince1970) + 60
+        let beforeFetch = Date(timeIntervalSince1970: TimeInterval(expiry) - 30)
+        let afterFetch = Date(timeIntervalSince1970: TimeInterval(expiry) + 30)
+        var fetched = false
+        let t = FakeTransport(unsigned(expires: expiry)); t.onFetch = { fetched = true }
+        let auth = FakeAuth(); let w = FakeWallet()
+        let svc = service(t, w, auth: auth)
+        var validateCalled = false
+
+        await assertThrowsBIP70(
+            try await svc.confirmAndSendHeadless(from: url, scheme: "dash", network: .testnet,
+                                                 now: { fetched ? afterFetch : beforeFetch },
+                                                 validate: { _ in validateCalled = true }),
+            .expired)
+
+        XCTAssertTrue(fetched)
+        XCTAssertFalse(validateCalled)
+        XCTAssertEqual(auth.authorizeCount, 0)
+        XCTAssertTrue(w.calls.isEmpty)
+    }
+
+    /// A signed request with no payment URL is refused before the caller's check and before
+    /// the PIN prompt. The signed request is built from an unsigned one, because a signature
+    /// the system trusts cannot be made in a test.
+    func testHeadlessSignedRequestWithoutPaymentURLIsRefusedBeforeAsking() async throws {
+        let t = FakeTransport(unsigned(paymentURL: nil)); let auth = FakeAuth(); let w = FakeWallet()
+        let svc = service(t, w, auth: auth)
+        let prepared = try await svc.prepareForConfirmation(from: url, scheme: "dash", network: .testnet)
+        let signed = Confirmation(
+            merchantName: "Merchant", isSecure: true, recipients: prepared.recipients, amount: prepared.amount,
+            estimatedFee: prepared.estimatedFee, network: prepared.network, paymentURL: nil,
+            scheme: prepared.scheme, merchantData: prepared.merchantData, memo: prepared.memo,
+            callbackScheme: prepared.callbackScheme, request: prepared.request)
+        var validateCalled = false
+
+        await assertThrowsBIP70(
+            try await svc.authorizeAndSend(signed, validate: { _ in validateCalled = true }),
+            .missingPaymentURL)
+
+        XCTAssertFalse(validateCalled)
+        XCTAssertEqual(auth.authorizeCount, 0)
+        XCTAssertTrue(w.calls.isEmpty)
+    }
+
+    /// An unsigned request with no payment URL is a plain address-style payment and goes on.
+    func testHeadlessUnsignedRequestWithoutPaymentURLGoesOn() async throws {
+        let auth = FakeAuth(); let w = FakeWallet()
+        let svc = service(FakeTransport(unsigned(paymentURL: nil)), w, auth: auth)
+
+        _ = try await svc.confirmAndSendHeadless(from: url, scheme: "dash", network: .testnet)
+
+        XCTAssertEqual(auth.authorizeCount, 1)
+        XCTAssertEqual(w.calls, ["build", "broadcast"])
+    }
+
+    /// The caller's check may wait for the buyer's answer. A request that expires meanwhile
+    /// gets no PIN prompt: the expiry is checked again once the check returns.
+    func testHeadlessRequestExpiringDuringTheCallersCheckIsNotAuthorized() async {
+        let expiry = UInt64(Date().timeIntervalSince1970) + 60
+        let beforeCheck = Date(timeIntervalSince1970: TimeInterval(expiry) - 30)
+        let afterCheck = Date(timeIntervalSince1970: TimeInterval(expiry) + 30)
+        var checked = false
+        let t = FakeTransport(unsigned(expires: expiry))
+        let auth = FakeAuth(); let w = FakeWallet()
+        let svc = service(t, w, auth: auth)
+
+        await assertThrowsBIP70(
+            try await svc.confirmAndSendHeadless(from: url, scheme: "dash", network: .testnet,
+                                                 now: { checked ? afterCheck : beforeCheck },
+                                                 validate: { _ in
+                                                     await Task.yield()
+                                                     checked = true
+                                                 }),
+            .expired)
+
+        XCTAssertTrue(checked)
+        XCTAssertEqual(auth.authorizeCount, 0)
+        XCTAssertTrue(w.calls.isEmpty)
+        XCTAssertNil(t.postedPayment)
+    }
+
+    /// A request that is still valid when it is fetched but expires while the PIN prompt is
+    /// open is not sent: the expiry is checked again against the time after the prompt.
+    func testHeadlessRequestExpiringDuringAuthorizationIsNotSent() async {
+        let expiry = UInt64(Date().timeIntervalSince1970) + 60
+        let beforePrompt = Date(timeIntervalSince1970: TimeInterval(expiry) - 30)
+        let afterPrompt = Date(timeIntervalSince1970: TimeInterval(expiry) + 30)
+        var promptAnswered = false
+        let t = FakeTransport(unsigned(expires: expiry))
+        let auth = FakeAuth(); auth.onAuthorize = { promptAnswered = true }
+        let w = FakeWallet()
+        let svc = service(t, w, auth: auth)
+
+        await assertThrowsBIP70(
+            try await svc.confirmAndSendHeadless(from: url, scheme: "dash", network: .testnet,
+                                                 now: { promptAnswered ? afterPrompt : beforePrompt }),
+            .expired)
+
+        XCTAssertEqual(auth.authorizeCount, 1)
+        XCTAssertTrue(w.calls.isEmpty)
+        XCTAssertNil(t.postedPayment)
+    }
+
     /// A failed merchant round-trip happens BEFORE broadcast, so the money is unspent: the
     /// failure is a hard throw carrying the tx hash, nothing is broadcast, and the send
     /// guard is released so the user can retry.
@@ -845,6 +1138,180 @@ final class BIP70PaymentServiceTests: XCTestCase {
             XCTAssertEqual(error(verdict("x509+sha256", valid: false, failure: failure)),
                            .untrustedCertificate(failure))
         }
+    }
+
+    // MARK: Interactive policy + confirm-screen rows (unsigned requests)
+
+    private func unsignedNamed(_ name: String?, outputs: [PaymentOutput]? = nil) -> PaymentRequest {
+        let outs = outputs ?? [PaymentOutput(amount: 100_000, script: p2pkh)]
+        let details = PaymentDetails(network: "test", outputs: outs, expires: futureExpiry,
+                                     memo: nil, paymentURL: "http://h/pay", merchantData: nil)
+        let pkiData = name.map { X509Certificates(certificates: [Data($0.utf8)]).encoded() }
+        return PaymentRequest(pkiType: "none", pkiData: pkiData, serializedDetails: details.encoded())
+    }
+
+    private func paymentOutput(for request: PaymentRequest, isSecure: Bool? = nil) async throws -> DWPaymentOutput {
+        let confirmation = try await service(FakeTransport(request), FakeWallet())
+            .prepareForConfirmation(from: url, scheme: "dash", network: .testnet)
+        let box = BIP70ConfirmationBox(confirmation)
+        guard let isSecure else { return BIP70PaymentOutputFactory.paymentOutput(from: box) }
+        // The lock is a property of the output, so a signed one is built directly here: a
+        // request that verifies as signed needs a certificate the simulator trusts.
+        return DWPaymentOutput(merchantName: box.merchantName, isSecure: isSecure, amount: box.amount,
+                               fee: box.estimatedFee, address: box.primaryAddress ?? "", memo: box.memo,
+                               bip70Confirmation: box)
+    }
+
+    /// The confirm screen reads an output through this protocol; Swift only sees the
+    /// conformance at runtime (the Objective-C category forward-declares the protocol).
+    private func rows(of output: DWPaymentOutput) throws -> ConfirmPaymentDataSource {
+        try XCTUnwrap(output as AnyObject as? ConfirmPaymentDataSource)
+    }
+
+    private func addressRow(of output: DWPaymentOutput) throws -> DWTitleDetailItem? {
+        try rows(of: output).address(with: UIFont.systemFont(ofSize: 12), tintColor: UIColor.black)
+    }
+
+    func testUnsignedNameIsCarriedButNotSecure() {
+        let verdict = PaymentRequestVerifier().verify(unsignedNamed("Coffee Shop"))
+        XCTAssertEqual(verdict.commonName, "Coffee Shop")
+        XCTAssertFalse(verdict.isSecure)
+    }
+
+    func testUnsignedNamedRequestShowsAddressAndUnverifiedLabel() async throws {
+        let output = try await paymentOutput(for: unsignedNamed("Coffee Shop"))
+        XCTAssertEqual(try addressRow(of: output)?.attributedDetail?.string, Self.testnetAddress)
+        XCTAssertEqual(try rows(of: output).nameInfo?.plainDetail, "Unverified recipient: Coffee Shop")
+    }
+
+    func testUnsignedNamelessRequestShowsAddressAndUnverifiedLabel() async throws {
+        let output = try await paymentOutput(for: unsignedNamed(nil))
+        XCTAssertEqual(try addressRow(of: output)?.attributedDetail?.string, Self.testnetAddress)
+        XCTAssertEqual(try rows(of: output).nameInfo?.plainDetail, "Unverified recipient")
+    }
+
+    func testSignedRequestKeepsNameInPlaceOfAddress() async throws {
+        let output = try await paymentOutput(for: unsignedNamed("Coffee Shop"), isSecure: true)
+        XCTAssertNil(try addressRow(of: output))
+        XCTAssertEqual(try rows(of: output).nameInfo?.plainDetail, "🔒 Coffee Shop")
+    }
+
+    func testSignedMultiOutputRequestSaysHowManyAddressesItPays() async throws {
+        let outs = [PaymentOutput(amount: 100_000, script: p2pkh), PaymentOutput(amount: 200_000, script: p2sh)]
+        let output = try await paymentOutput(for: unsignedNamed("Coffee Shop", outputs: outs), isSecure: true)
+        XCTAssertEqual(try rows(of: output).generalInfo?.plainDetail, "This payment goes to 2 addresses.")
+    }
+
+    func testUnsignedOutputAlwaysRequiresAuthentication() async throws {
+        let output = try await paymentOutput(for: unsignedNamed("Coffee Shop"))
+        XCTAssertFalse(output.isSecure)
+        XCTAssertTrue(BIP70InteractiveCoordinator.requiresAuthentication(for: output, spendingConfirmationDisabled: false))
+        XCTAssertTrue(BIP70InteractiveCoordinator.requiresAuthentication(for: output, spendingConfirmationDisabled: true))
+    }
+
+    func testSignedOutputFollowsTheSpendingConfirmationSetting() async throws {
+        let output = try await paymentOutput(for: unsignedNamed("Coffee Shop"), isSecure: true)
+        XCTAssertTrue(BIP70InteractiveCoordinator.requiresAuthentication(for: output, spendingConfirmationDisabled: false))
+        XCTAssertFalse(BIP70InteractiveCoordinator.requiresAuthentication(for: output, spendingConfirmationDisabled: true))
+    }
+
+    private var twoAddresses: [PaymentOutput] {
+        [PaymentOutput(amount: 100_000, script: p2pkh), PaymentOutput(amount: 200_000, script: p2sh)]
+    }
+
+    private func coordinator(_ request: PaymentRequest, allowsInsecureTransport: Bool) -> BIP70InteractiveCoordinator {
+        BIP70InteractiveCoordinator(service: service(FakeTransport(request), FakeWallet()),
+                                    allowsInsecureTransport: allowsInsecureTransport)
+    }
+
+    private func prepare(_ request: PaymentRequest, allowsInsecureTransport: Bool = true) async throws -> Confirmation {
+        try await coordinator(request, allowsInsecureTransport: allowsInsecureTransport)
+            .prepare(requestURL: url, scheme: "pay", callbackScheme: nil, network: .testnet)
+    }
+
+    func testUnsignedRequestPayingTwoAddressesIsAllowedAndSaysSo() async throws {
+        let confirmation = try await prepare(unsignedNamed(nil, outputs: twoAddresses))
+        XCTAssertEqual(BIP70ConfirmationBox(confirmation).recipientCount, 2)
+
+        let output = try await paymentOutput(for: unsignedNamed(nil, outputs: twoAddresses))
+        // The address row shows the first address, and its title says there are more.
+        XCTAssertEqual(try addressRow(of: output)?.title, "Send to (1 of 2)")
+        let single = try await paymentOutput(for: unsignedNamed(nil))
+        XCTAssertEqual(try addressRow(of: single)?.title, "Send to")
+        let info = try XCTUnwrap(try rows(of: output).generalInfo?.plainDetail)
+        XCTAssertTrue(info.contains("This payment goes to 2 addresses."))
+        // Each address is listed with the amount it receives.
+        let lines = BIP70ConfirmationBox(confirmation).recipientLines
+        XCTAssertEqual(lines.count, 2)
+        for (line, recipient) in zip(lines, confirmation.recipients) {
+            XCTAssertTrue(line.hasSuffix(" DASH: " + recipient.address))
+            XCTAssertEqual(line, "\(recipient.amount.formattedDashAmountWithoutCurrencySymbol) DASH: \(recipient.address)")
+            XCTAssertTrue(info.contains(line))
+        }
+
+        // 0.001 and 0.002 DASH, each next to its own address (digits only: the separator follows the locale).
+        XCTAssertEqual(confirmation.recipients.map(\.amount), [100_000, 200_000])
+        XCTAssertEqual(lines.map { $0.prefix { $0 != " " }.filter(\.isNumber) }, ["0001", "0002"])
+
+        // A signed request keeps the count line only: its signer answers for the outputs.
+        let signed = try await paymentOutput(for: unsignedNamed(nil, outputs: twoAddresses), isSecure: true)
+        let signedInfo = try XCTUnwrap(try rows(of: signed).generalInfo?.plainDetail)
+        XCTAssertTrue(signedInfo.contains("This payment goes to 2 addresses."))
+        XCTAssertFalse(signedInfo.contains(lines[0]))
+    }
+
+    func testTwoOutputsToOneAddressCountAsOneAddress() async throws {
+        let sameAddress = [PaymentOutput(amount: 100_000, script: p2pkh), PaymentOutput(amount: 200_000, script: p2pkh)]
+        let confirmation = try await prepare(unsignedNamed(nil, outputs: sameAddress))
+        XCTAssertEqual(confirmation.amount, 300_000)
+        XCTAssertEqual(BIP70ConfirmationBox(confirmation).recipientCount, 1)
+        let subtotals = BIP70InteractivePolicy.subtotals(of: confirmation)
+        XCTAssertEqual(subtotals.count, 1)
+        XCTAssertEqual(subtotals.first?.amount, 300_000)
+    }
+
+    func testCoordinatorRefusesAnHTTPPaymentURLWhenHTTPSIsRequired() async throws {
+        // `unsignedNamed` carries payment_url "http://h/pay".
+        do {
+            _ = try await prepare(unsignedNamed("Coffee Shop"), allowsInsecureTransport: false)
+            XCTFail("expected a refusal")
+        } catch {
+            XCTAssertEqual(error as? BIP70Error, .insecureTransport)
+            XCTAssertTrue(BIP70InteractiveCoordinator.isRefusal(BIP70InteractiveCoordinator.nsError(error)))
+        }
+        _ = try await prepare(unsignedNamed("Coffee Shop"), allowsInsecureTransport: true)
+        XCTAssertFalse(BIP70InteractiveCoordinator.isRefusal(BIP70InteractiveCoordinator.nsError(BIP70Error.expired)))
+    }
+
+    func testCoordinatorRefusesAPaymentURLThatDoesNotParse() async throws {
+        let details = PaymentDetails(network: "test", outputs: [PaymentOutput(amount: 100_000, script: p2pkh)],
+                                     expires: futureExpiry, memo: nil, paymentURL: "https://[h/pay", merchantData: nil)
+        XCTAssertNil(URL(string: "https://[h/pay"))
+        let request = PaymentRequest(pkiType: "none", pkiData: nil, serializedDetails: details.encoded())
+        do {
+            _ = try await prepare(request, allowsInsecureTransport: true)
+            XCTFail("expected a refusal")
+        } catch {
+            XCTAssertEqual(error as? BIP70Error, .malformedRequest)
+        }
+    }
+
+    func testUnsignedNoteIsLabelledFlattenedAndCapped() async throws {
+        let details = PaymentDetails(network: "test", outputs: [PaymentOutput(amount: 100_000, script: p2pkh)],
+                                     expires: futureExpiry, memo: "Verified merchant:\n  Coffee Shop\n" + String(repeating: "x", count: 300),
+                                     paymentURL: "http://h/pay", merchantData: nil)
+        let request = PaymentRequest(pkiType: "none", pkiData: nil, serializedDetails: details.encoded())
+        let unsignedOutput = try await paymentOutput(for: request)
+        let unsignedNote = try XCTUnwrap(try rows(of: unsignedOutput).generalInfo?.plainDetail)
+        XCTAssertEqual(String(unsignedNote.prefix(49)), "Unverified note: Verified merchant: Coffee Shop x")
+        XCTAssertFalse(unsignedNote.contains("\n"))
+        XCTAssertEqual(unsignedNote.count, "Unverified note: ".count + 140)
+        XCTAssertTrue(unsignedNote.hasSuffix("…"))
+
+        let signedOutput = try await paymentOutput(for: request, isSecure: true)
+        let signedNote = try XCTUnwrap(try rows(of: signedOutput).generalInfo?.plainDetail)
+        XCTAssertTrue(signedNote.hasPrefix("Verified merchant:"))
+        XCTAssertGreaterThan(signedNote.count, 300)
     }
 
     func testCallbackURLFormat() async throws {

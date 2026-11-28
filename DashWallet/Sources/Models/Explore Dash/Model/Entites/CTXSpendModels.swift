@@ -240,11 +240,13 @@ struct MerchantResponse: Decodable {
     }
 }
 
+/// Texts CTX sends about a merchant. Each one is optional: CTX staging answers with an `info`
+/// that has no `terms`, and a text the response does not carry stays `nil`.
 struct MerchantInfo: Codable {
-    let terms: String
-    let description: String
-    let instructions: String
-    let intro: String
+    let terms: String?
+    let description: String?
+    let instructions: String?
+    let intro: String?
 }
 
 enum DenominationType: String, Codable {

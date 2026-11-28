@@ -32,7 +32,7 @@ struct ScanQRButton: View {
 
     var body: some View {
         DashUIKit.DashButton(
-            text: NSLocalizedString("Scan QR", comment: "DashConnect"),
+            text: String(localized: "Scan QR", comment: "DashConnect"),
             size: size,
             style: .filledBlue,
             action: onScanQR

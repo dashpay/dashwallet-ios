@@ -36,12 +36,12 @@ struct SwapTransactionSuccessView: View {
                 .padding(.bottom, 30)
 
             VStack(spacing: 6) {
-                Text(String(format: NSLocalizedString("You successfully converted DASH to %@", comment: "Dash DEX"), coinCode))
+                Text(String(localized: "You successfully converted DASH to \(coinCode)", comment: "Dash DEX"))
                     .dashFont(.title1)
                     .foregroundColor(Color.dash.primaryText)
                     .multilineTextAlignment(.center)
 
-                Text(String(format: NSLocalizedString("It can take up to a few minutes for your %@ to arrive at the destination address using %@", comment: "Dash DEX"), coinName, executionNetwork))
+                Text(String(localized: "It can take up to a few minutes for your \(coinName) to arrive at the destination address using \(executionNetwork)", comment: "Dash DEX"))
                     .dashFont(.subhead)
                     .foregroundColor(Color.dash.secondaryText)
                     .multilineTextAlignment(.center)
@@ -53,7 +53,7 @@ struct SwapTransactionSuccessView: View {
 
             VStack(spacing: 20) {
                 DashUIKit.DashButton(
-                    text: NSLocalizedString("Done", comment: ""),
+                    text: String(localized: "Done", comment: ""),
                     fillsWidth: true,
                     size: .large,
                     style: .filledBlue

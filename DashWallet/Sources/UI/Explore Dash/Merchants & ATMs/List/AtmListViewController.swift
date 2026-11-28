@@ -42,13 +42,13 @@ extension AtmListSegmnets {
     var title: String {
         switch self {
         case .all:
-            return NSLocalizedString("All", comment: "all")
+            return String(localized: "All", comment: "all")
         case .buy:
-            return NSLocalizedString("Buy", comment: "buy")
+            return String(localized: "Buy", comment: "buy")
         case .sell:
-            return NSLocalizedString("Sell", comment: "Sell")
+            return String(localized: "Sell", comment: "Sell")
         case .buyAndSell:
-            return NSLocalizedString("Buy/Sell", comment: "Buy/Sell")
+            return String(localized: "Buy/Sell", comment: "Buy/Sell")
         }
     }
 
@@ -87,7 +87,7 @@ class AtmListViewController: ExplorePointOfUseListViewController {
         // Explore, close when presented from the Home shortcut.
         if customNavBar == nil {
             customNavBar = CustomNavBarConfiguration(
-                title: NSLocalizedString("ATMs", comment: ""),
+                title: String(localized: "ATMs", comment: ""),
                 leading: defaultCustomNavBarLeading,
                 onBack: { [weak self] in self?.closeOrPop() },
                 onInfo: nil)
@@ -100,7 +100,7 @@ class AtmListViewController: ExplorePointOfUseListViewController {
     }
 
     override func configureHierarchy() {
-        title = NSLocalizedString("ATMs", comment: "");
+        title = String(localized: "ATMs", comment: "");
 
         super.configureHierarchy()
         tableView.register(AtmItemCell.self, forCellReuseIdentifier: AtmItemCell.reuseIdentifier)

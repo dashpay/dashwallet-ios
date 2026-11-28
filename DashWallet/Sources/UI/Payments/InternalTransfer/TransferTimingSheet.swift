@@ -24,21 +24,21 @@ struct TransferTimingSheet: View {
             VStack(alignment: .leading, spacing: 0) {
 
                 VStack(alignment: .leading, spacing: 20) {
-                    Text(NSLocalizedString("Transfers take different times", comment: "Payments"))
+                    Text(String(localized: "Transfers take different times", comment: "Payments"))
                         .dashFont(.title1)
                         .foregroundStyle(Color.dash.primaryText)
 
                     VStack(alignment: .leading, spacing: 16) {
                         SheetFeature(
-                            title: NSLocalizedString("From Dash Wallet to Shielded balance", comment: "Payments"),
-                            description: NSLocalizedString("The transfer is instant", comment: "Payments"),
+                            title: String(localized: "From Dash Wallet to Shielded balance", comment: "Payments"),
+                            description: String(localized: "The transfer is instant", comment: "Payments"),
                             icon: DashIcon.Features.instant.source,
                             iconColor: .dash.yellow
                         )
 
                         SheetFeature(
-                            title: NSLocalizedString("From Shielded balance to Dash Wallet", comment: "Payments"),
-                            description: NSLocalizedString("The transfer could take up to 10 minutes", comment: "Payments"),
+                            title: String(localized: "From Shielded balance to Dash Wallet", comment: "Payments"),
+                            description: String(localized: "The transfer could take up to 10 minutes", comment: "Payments"),
                             icon: DashIcon.Features.timerPurple.source
                         )
                     }
@@ -48,7 +48,7 @@ struct TransferTimingSheet: View {
                 .padding(.bottom, 32)
 
                 DashButton(
-                    text: NSLocalizedString("I got it", comment: "Payments"),
+                    text: String(localized: "I got it", comment: "Payments"),
                     style: .filledBlue,
                     size: .large,
                     action: onConfirm

@@ -136,7 +136,7 @@ struct BuySellPortalView: View {
                 .aspectRatio(contentMode: .fit)
                 .frame(width: 12, height: 16)
 
-            Text(NSLocalizedString("Powered by Uphold", comment: "Buy Sell Portal"))
+            Text(String(localized: "Powered by Uphold", comment: "Buy Sell Portal"))
                 .font(.caption1)
                 .foregroundColor(.dash.primaryText)
         }
@@ -183,8 +183,8 @@ struct BuySellPortalView: View {
 
     private var topIntro: some View {
         TopIntro(
-            title: NSLocalizedString("Buy & Sell Dash", comment: "Buy Sell Portal"),
-            subtitle: NSLocalizedString("Select a service to buy, sell, convert and transfer Dash", comment: "Buy Sell Portal")
+            title: String(localized: "Buy & Sell Dash", comment: "Buy Sell Portal"),
+            subtitle: String(localized: "Select a service to buy, sell, convert and transfer Dash", comment: "Buy Sell Portal")
         )
     }
 }

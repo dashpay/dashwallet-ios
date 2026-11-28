@@ -100,38 +100,38 @@ struct WalletPreparationFailure: Equatable, Identifiable {
 
     var title: String {
         if kind == .legacyMigration {
-            return NSLocalizedString("Couldn't move your wallet",
+            return String(localized: "Couldn't move your wallet",
                                      comment: "Wallet preparation failure")
         }
         if kind == .keychain {
-            return NSLocalizedString("Couldn't read your wallet keys",
+            return String(localized: "Couldn't read your wallet keys",
                                      comment: "Wallet preparation failure")
         }
-        return NSLocalizedString("Couldn't open your wallet data",
+        return String(localized: "Couldn't open your wallet data",
                                  comment: "Wallet preparation failure")
     }
 
     var message: String {
         if kind == .legacyMigration {
-            return NSLocalizedString(
-                "The wallet from the previous version of this app is still on this device but could not be prepared. Do not delete this app. Try again or contact support for help.",
+            return String(
+                localized: "The wallet from the previous version of this app is still on this device but could not be prepared. Do not delete this app. Try again or contact support for help.",
                 comment: "Wallet preparation failure")
         }
         if kind == .storage {
-            return NSLocalizedString(
-                "There isn't enough free space to prepare your wallet. Free up storage in iPhone Settings, then try again. Your wallet keys are still stored safely on this device.",
+            return String(
+                localized: "There isn't enough free space to prepare your wallet. Free up storage in iPhone Settings, then try again. Your wallet keys are still stored safely on this device.",
                 comment: "Wallet preparation failure")
         }
         if kind == .keychain {
             // Neither "your keys are safe" nor "your keys are lost": a read
             // failed. No claim about the stores either — this card can
             // follow a reset that removed them.
-            return NSLocalizedString(
-                "Your wallet keys could not be read from this device's secure storage. Do not delete this app. Try again or contact support for help.",
+            return String(
+                localized: "Your wallet keys could not be read from this device's secure storage. Do not delete this app. Try again or contact support for help.",
                 comment: "Wallet preparation failure")
         }
-        return NSLocalizedString(
-            "Your wallet could not be opened. Your wallet keys are still stored safely on this device. Try again or contact support for help.",
+        return String(
+            localized: "Your wallet could not be opened. Your wallet keys are still stored safely on this device. Try again or contact support for help.",
             comment: "Wallet preparation failure")
     }
 

@@ -503,19 +503,14 @@ class CreateUsernameViewModel: ObservableObject {
     /// The cost row when nothing but the price stops the name: the price,
     /// stated as the least the source must hold.
     nonisolated static func minimumCostMessage(requiredDuffs: UInt64) -> String {
-        String.localizedStringWithFormat(
-            NSLocalizedString("You need at least %@ Dash to create this username", comment: "Usernames"),
-            requiredDuffs.dashAmount.formattedDashAmountWithoutCurrencySymbol)
+        String(localized: "You need at least \(requiredDuffs.dashAmount.formattedDashAmountWithoutCurrencySymbol) Dash to create this username", comment: "Usernames")
     }
 
     /// Why a private registration waits on the shared pool rather than on
     /// the user's own funds. One wording for every screen that says it.
     nonisolated static func shieldedPoolTooSmallMessage(current: UInt64) -> String {
         let count: (UInt64) -> String = { NumberFormatter.localizedString(from: NSNumber(value: $0), number: .decimal) }
-        return String.localizedStringWithFormat(
-            NSLocalizedString("The shared privacy pool holds %@ of the %@ notes a private registration needs. That count comes from everyone's shielded activity, so it grows on its own — try again later.", comment: "Usernames"),
-            count(current),
-            count(ShieldedIdentityFundingReadiness.minimumPoolNotes))
+        return String(localized: "The shared privacy pool holds \(count(current)) of the \(count(ShieldedIdentityFundingReadiness.minimumPoolNotes)) notes a private registration needs. That count comes from everyone's shielded activity, so it grows on its own — try again later.", comment: "Usernames")
     }
 
     /// What a ready Shielded balance pays for, where it changes what the
@@ -843,7 +838,7 @@ class CreateUsernameViewModel: ObservableObject {
         if let fiatAmount = try? CurrencyExchanger.shared.convertDash(amount: DWDP_MIN_BALANCE_TO_CREATE_USERNAME.dashAmount, to: App.fiatCurrency) {
             fiat = NumberFormatter.fiatFormatter.string(from: fiatAmount as NSNumber)!
         } else {
-            fiat = NSLocalizedString("Syncing…", comment: "Balance")
+            fiat = String(localized: "Syncing…", comment: "Balance")
         }
 
         return fiat
@@ -1020,8 +1015,8 @@ class CreateUsernameViewModel: ObservableObject {
             // The form's rule again, on the name actually submitted: the
             // voucher cannot pay for a name that goes to a vote.
             guard Self.invitationPays(for: submittedUsername, tier: invitationTier) else {
-                return .failure(NSLocalizedString(
-                    "You can only create a non-contested username using this invitation",
+                return .failure(String(
+                    localized: "You can only create a non-contested username using this invitation",
                     comment: "DashPay Invitations"))
             }
             // The card's check again, right before the claim: an identity
@@ -1100,7 +1095,7 @@ class CreateUsernameViewModel: ObservableObject {
                 // The registration-activity sink of the Home card re-checks
                 // the invitation once this attempt has ended.
                 if let failure = InvitationClaimFailure.classify(error) {
-                    DWLogger.log("CreateUsername: invitation claim refused (\(failure)): \(String(describing: error))")
+                    DWLogger.log("CreateUsername: invitation claim refused (\(failure)): \(AppLogMessage.errorSummary(error))")
                     return .failure(failure.message)
                 }
                 return .failure(
@@ -1131,7 +1126,7 @@ class CreateUsernameViewModel: ObservableObject {
                     if error.domain == NSCocoaErrorDomain && error.code == NSUserCancelledError {
                         continuation.resume(returning: .cancelled)
                     } else if let check = AssetLockInputLimit.check(for: error) {
-                        DWLogger.log("CreateUsername: registration refused over the asset-lock input limit for '\(submittedUsername)'")
+                        DWLogger.log("CreateUsername: registration refused over the asset-lock input limit")
                         continuation.resume(returning: .needsCoinConsolidation(check))
                     } else {
                         continuation.resume(
@@ -1160,7 +1155,7 @@ class CreateUsernameViewModel: ObservableObject {
             // The gate (`canPurchaseListedNameDirectly`) shouldn't let a
             // priceless state reach here; answer with the marketplace's
             // canonical wording rather than crashing.
-            return .failure(NSLocalizedString("This username is not for sale.", comment: "Username marketplace"))
+            return .failure(String(localized: "This username is not for sale.", comment: "Username marketplace"))
         }
         do {
             _ = try await DWIdentityRegistrationCoordinator.shared.startPurchaseUsername(
@@ -1184,7 +1179,7 @@ class CreateUsernameViewModel: ObservableObject {
             purchaseSubmissionUnconfirmed = true
             return .submittedUnconfirmed(error.localizedDescription)
         }
-        DWLogger.log("CreateUsername: purchase failed: \(error.localizedDescription)")
+        DWLogger.log("CreateUsername: purchase failed: \(AppLogMessage.errorSummary(error))")
         if let check = AssetLockInputLimit.check(for: error) {
             return .needsCoinConsolidation(check)
         }
@@ -1193,13 +1188,13 @@ class CreateUsernameViewModel: ObservableObject {
 
     /// Human wording for a failed registration — the shared mapping
     /// (`UsernameRegistrationFailureWording`) the Home / More row reports with
-    /// too. The raw text always reaches the log.
+    /// too. The log gets the error's summary, never its text.
     private static func registrationFailureMessage(
         _ error: Error,
         username: String
     ) -> String {
         let raw = error.localizedDescription
-        DWLogger.log("CreateUsername: registration failed for '\(username)': \(raw)")
+        DWLogger.log("CreateUsername: registration failed: \(AppLogMessage.errorSummary(error))")
         return UsernameRegistrationFailureWording.message(forRaw: raw, username: username)
     }
 
@@ -1314,7 +1309,7 @@ class CreateUsernameViewModel: ObservableObject {
         // What each source spends: Core, BIP44 UTXOs via
         // `registerIdentityWithFunding` (or `topUpIdentityWithFunding`);
         // Platform Payment, DIP-17 credits via `registerIdentityFromAddresses`
-        // (or `topUpFromAddresses`); Shielded, a fixed exit denomination via
+        // (or `topUpIdentityFromAddresses`); Shielded, a fixed exit denomination via
         // `shieldedIdentityCreateFromPool`, viable only when its readiness
         // gates (funding, maturity, pool) all pass — and never for a top-up.
         // All three are measured here; `activeFundingSource` decides which
@@ -1414,12 +1409,11 @@ class CreateUsernameViewModel: ObservableObject {
         // Log the funding verdict only after typing settles. Logging it from
         // the local validator did synchronous file work for every keystroke.
         let isContested = DWContestedNameStatusService.isContestedLabel(username)
-        let requiredCost = requiredFundingDuffs(isContested: isContested)
         DWLogger.log(
-            "CreateUsername: checking '\(username)' "
-                + "(contested=\(isContested), required=\(requiredCost) duffs"
+            "CreateUsername: checking "
+                + "(contested=\(isContested)"
                 + "\(identityTopUpDuffs != nil ? " top-up of existing identity" : "")) — "
-                + "core=\(hasMinimumRequiredCoreBalance) [spendable \(coreSpendableDuffs) duffs], "
+                + "core=\(hasMinimumRequiredCoreBalance), "
                 + "platform=\(hasMinimumRequiredPlatformBalance), "
                 + "shielded=\(hasReadyShieldedFunding), "
                 + "recovery=\(hasPendingRegistrationRecovery), voucher=\(isInvitationMode) — "
@@ -1479,7 +1473,7 @@ class CreateUsernameViewModel: ObservableObject {
                     result = .invalidCritical
                 case let .activeContest(contenders, endsAt):
                     DWLogger.log(
-                        "CreateUsername: '\(username)' is in an active vote "
+                        "CreateUsername: the name is in an active vote "
                             + "(\(contenders) contenders, ends \(endsAt.map { "\($0)" } ?? "unknown"))")
                     // Our own running vote shows as "in voting", not as a
                     // joinable contest. The submission bookmark answers first;

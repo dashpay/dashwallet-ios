@@ -20,7 +20,7 @@ import Foundation
 extension ServiceItem {
     var balanceValue: NSAttributedString? {
         if status == .syncing {
-            return NSAttributedString(string: NSLocalizedString("Syncing...", comment: "Buy and Sell Dash"))
+            return NSAttributedString(string: String(localized: "Syncing...", comment: "Buy and Sell Dash"))
         }
 
         if let balance = dashBalanceFormatted, let fiat = fiatBalanceFormatted {
@@ -114,11 +114,11 @@ extension Status {
 
     var statusString: String {
         switch self {
-        case .initializing: return NSLocalizedString("Initializing", comment: "Buy Sell Portal")
-        case .authorized: return NSLocalizedString("Connected", comment: "Buy Sell Portal")
+        case .initializing: return String(localized: "Initializing", comment: "Buy Sell Portal")
+        case .authorized: return String(localized: "Connected", comment: "Buy Sell Portal")
         // case .disconnected: return NSLocalizedString("Disconnected", comment: "Buy Sell Portal")
-        case .syncing: return NSLocalizedString("Syncing", comment: "Buy Sell Portal")
-        case .failed: return NSLocalizedString("Failed to sync", comment: "Buy Sell Portal")
+        case .syncing: return String(localized: "Syncing", comment: "Buy Sell Portal")
+        case .failed: return String(localized: "Failed to sync", comment: "Buy Sell Portal")
         case .unknown, .idle: return ""
         }
     }

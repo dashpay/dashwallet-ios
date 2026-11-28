@@ -28,7 +28,7 @@ struct SwapFeeInfoSheet: View {
         VStack(spacing: 0) {
 
             VStack(alignment: .leading, spacing: 6) {
-                Text(NSLocalizedString("Fees in crypto purchases", comment: "Dash DEX"))
+                Text(String(localized: "Fees in crypto purchases", comment: "Dash DEX"))
                     .dashFont(.title1)
                     .foregroundColor(Color.dash.primaryText)
                     .frame(maxWidth: .infinity, alignment: .topLeading)
@@ -48,7 +48,7 @@ struct SwapFeeInfoSheet: View {
                 // sheet has no UIViewController context for modal presentation.
                 if !usesGenericFeeInfo {
                     DashUIKit.DashButton(
-                        text: NSLocalizedString("Learn more", comment: "Dash DEX"),
+                        text: String(localized: "Learn more", comment: "Dash DEX"),
                         fillsWidth: true,
                         size: .large,
                         style: .filledBlue
@@ -58,7 +58,7 @@ struct SwapFeeInfoSheet: View {
                 }
 
                 DashUIKit.DashButton(
-                    text: NSLocalizedString("Close", comment: "Dash DEX"),
+                    text: String(localized: "Close", comment: "Dash DEX"),
                     fillsWidth: true,
                     size: .large,
                     style: .tintedGray
@@ -73,14 +73,14 @@ struct SwapFeeInfoSheet: View {
 
     private var infoDescription: String {
         if usesGenericFeeInfo {
-            return NSLocalizedString(
-                "The displayed fee combines SwapKit routing costs, including service, outbound, and on-chain network fees. It is shown in the coin you are buying, and the quoted receive amount already accounts for it.",
+            return String(
+                localized: "The displayed fee combines SwapKit routing costs, including service, outbound, and on-chain network fees. It is shown in the coin you are buying, and the quoted receive amount already accounts for it.",
                 comment: "SwapKit"
             )
         }
 
-        return NSLocalizedString(
-            "In addition to the displayed Maya fee, we include a spread in the price. \nCryptocurrency markets are volatile, and this allows us to temporary lock in a price for trade execution.",
+        return String(
+            localized: "In addition to the displayed Maya fee, we include a spread in the price. \nCryptocurrency markets are volatile, and this allows us to temporary lock in a price for trade execution.",
             comment: "Dash DEX"
         )
     }

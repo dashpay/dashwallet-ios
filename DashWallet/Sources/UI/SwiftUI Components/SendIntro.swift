@@ -22,7 +22,7 @@ struct SendIntro<Content: View>: View {
     @State private var balanceHidden: Bool = true
     
     var title: String
-    var preposition: String = NSLocalizedString("to", comment: "Send Screen")
+    var preposition: String = String(localized: "to", comment: "Send Screen")
     var destination: String? = nil
     var dashBalance: UInt64? = nil
     var balanceLabel: String? = nil
@@ -55,14 +55,14 @@ struct SendIntro<Content: View>: View {
                     if let balanceLabel = balanceLabel {
                         Text(balanceLabel).font(.subheadline)
                     } else {
-                        Text(NSLocalizedString("Balance", comment: "Send Screen: to address") + ":").font(.subheadline)
+                        Text(String(localized: "Balance", comment: "Send Screen: to address") + ":").font(.subheadline)
                     }
 
                     if balanceHidden {
-                        Text("***********").font(.subheadline)
+                        Text(verbatim: "***********").font(.subheadline)
                     } else {
                         DashAmount(amount: Int64(dashBalance), font: .subheadline, showDirection: false)
-                        Text("~").font(.subheadline)
+                        Text(verbatim: "~").font(.subheadline)
                         FormattedFiatText(from: dashBalance)
                     }
                     
@@ -100,7 +100,7 @@ struct SendIntro<Content: View>: View {
     
     @ViewBuilder
     private func FormattedFiatText(from dashAmount: UInt64) -> some View {
-        let text = (try? CurrencyExchanger.shared.convertDash(amount: dashAmount.dashAmount, to: App.fiatCurrency).formattedFiatAmount) ?? NSLocalizedString("Not available", comment: "")
+        let text = (try? CurrencyExchanger.shared.convertDash(amount: dashAmount.dashAmount, to: App.fiatCurrency).formattedFiatAmount) ?? String(localized: "Not available", comment: "")
             
         Text(text)
             .font(.subheadline)

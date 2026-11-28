@@ -18,7 +18,6 @@
 //
 
 import Foundation
-import OSLog
 import SwiftDashSDK
 
 // MARK: - EvonodeEpochBlocks
@@ -82,11 +81,11 @@ final class EvonodeEpochBlocksService: EvonodeEpochBlocksProviding {
 
         var errorDescription: String? {
             switch self {
-            case .sdkUnavailable: return NSLocalizedString("Platform SDK not ready", comment: "Evonode status: epoch blocks error")
-            case .malformedEntry: return NSLocalizedString("Unexpected proposer tally format", comment: "Evonode status: epoch blocks error")
-            case .pageLimitReached: return NSLocalizedString("Proposer list too long to scan", comment: "Evonode status: epoch blocks error")
+            case .sdkUnavailable: return String(localized: "Platform SDK not ready", comment: "Evonode status: epoch blocks error")
+            case .malformedEntry: return String(localized: "Unexpected proposer tally format", comment: "Evonode status: epoch blocks error")
+            case .pageLimitReached: return String(localized: "Proposer list too long to scan", comment: "Evonode status: epoch blocks error")
             case let .currentEpochUnavailable(reason):
-                return String(format: NSLocalizedString("Current epoch unavailable: %@", comment: "Evonode status: epoch blocks error"), reason)
+                return String(localized: "Current epoch unavailable: \(reason)", comment: "Evonode status: epoch blocks error")
             }
         }
     }
@@ -98,9 +97,7 @@ final class EvonodeEpochBlocksService: EvonodeEpochBlocksProviding {
     /// Runaway guard on paging (5000 evonodes ≫ any Dash network).
     private static let maxPages = 50
 
-    private static let logger = Logger(
-        subsystem: "org.dashfoundation.dash",
-        category: "swift-sdk-migration.evonode-epoch-blocks")
+    private static let logger = AppLogger(category: "swift-sdk-migration.evonode-epoch-blocks")
 
     init() {}
 

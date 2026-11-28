@@ -167,7 +167,7 @@ final class BuyEnterAmountViewModel: ObservableObject {
         let requestID = rateRequestID
 
         isLoading = true
-        statusMessage = NSLocalizedString("Loading rates…", comment: "Dash DEX")
+        statusMessage = String(localized: "Loading rates…", comment: "Dash DEX")
         rateErrorMessage = nil
         defer {
             if requestID == rateRequestID {
@@ -199,8 +199,8 @@ final class BuyEnterAmountViewModel: ObservableObject {
             }
         } catch {
             guard requestID == rateRequestID else { return }
-            rateErrorMessage = NSLocalizedString(
-                "Unable to load rate data",
+            rateErrorMessage = String(
+                localized: "Unable to load rate data",
                 comment: "Dash DEX"
             )
         }

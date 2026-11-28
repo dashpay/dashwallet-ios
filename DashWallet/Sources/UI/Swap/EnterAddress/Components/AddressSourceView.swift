@@ -39,7 +39,7 @@ enum AddressSourceType: Identifiable {
         switch self {
         case .uphold: return "Uphold"
         case .coinbase: return "Coinbase"
-        case .clipboard: return NSLocalizedString("Clipboard", comment: "Dash DEX")
+        case .clipboard: return String(localized: "Clipboard", comment: "Dash DEX")
         }
     }
 }
@@ -117,9 +117,9 @@ struct AddressSourceView: View {
         case .available(let address):
             address
         case .notAvailable:
-            NSLocalizedString("Not available", comment: "Dash DEX")
+            String(localized: "Not available", comment: "Dash DEX")
         case .loading:
-            NSLocalizedString("Loading...", comment: "Dash DEX")
+            String(localized: "Loading...", comment: "Dash DEX")
         case .loggedOut:
             nil
         }
@@ -129,7 +129,7 @@ struct AddressSourceView: View {
         switch state {
         case .loggedOut:
             AnyView(
-                Text(NSLocalizedString("Log In", comment: "Dash DEX"))
+                Text(String(localized: "Log In", comment: "Dash DEX"))
                     .font(.subheadMedium)
                     .foregroundColor(.dash.blue)
             )

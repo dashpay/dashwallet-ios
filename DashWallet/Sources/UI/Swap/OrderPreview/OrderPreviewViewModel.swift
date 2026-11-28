@@ -159,7 +159,7 @@ final class OrderPreviewViewModel: ObservableObject {
 
             return (
                 url: url,
-                text: NSLocalizedString("View MayaChain explorer", comment: "Dash DEX")
+                text: String(localized: "View MayaChain explorer", comment: "Dash DEX")
             )
         }
 
@@ -174,7 +174,7 @@ final class OrderPreviewViewModel: ObservableObject {
 
             return (
                 url: url,
-                text: NSLocalizedString("View NEAR Intents explorer", comment: "Dash DEX")
+                text: String(localized: "View NEAR Intents explorer", comment: "Dash DEX")
             )
         }
 
@@ -196,11 +196,11 @@ final class OrderPreviewViewModel: ObservableObject {
     /// SwapKit uses a generic "Fee" label.
     var feeLabel: String {
         swapProvider.usesGenericFeeLabel
-            ? NSLocalizedString("Fee", comment: "Swap order preview")
+            ? String(localized: "Fee", comment: "Swap order preview")
             : (
                 executionNetwork == "—"
-                    ? NSLocalizedString("Swap fee", comment: "Dash DEX")
-                    : String(format: NSLocalizedString("%@ fee", comment: "Dash DEX"), executionNetwork)
+                    ? String(localized: "Swap fee", comment: "Dash DEX")
+                    : String(localized: "\(executionNetwork) fee", comment: "Dash DEX")
             )
     }
 
@@ -209,18 +209,15 @@ final class OrderPreviewViewModel: ObservableObject {
     }
 
     var timerText: String {
-        String(
-            format: NSLocalizedString("%ld sec", comment: "Dash DEX"),
-            CLong(remainingSubmitSeconds)
-        )
+        String(localized: "\(CLong(remainingSubmitSeconds)) sec", comment: "Dash DEX")
     }
 
     var confirmButtonText: String {
         // The countdown is shown separately as `timerText`, so the button is just "Confirm"
         // while the quote is live, and switches to "Refresh quote" once it expires.
         remainingSubmitSeconds > 0
-            ? NSLocalizedString("Confirm", comment: "Dash DEX")
-            : NSLocalizedString("Refresh quote", comment: "Dash DEX")
+            ? String(localized: "Confirm", comment: "Dash DEX")
+            : String(localized: "Refresh quote", comment: "Dash DEX")
     }
 
     private var dashSatoshis: Int64
@@ -388,7 +385,7 @@ final class OrderPreviewViewModel: ObservableObject {
                     return
                 }
                 guard let point = makeQuotePoint(dashSatoshis: dashSatoshis, quote: newQuote) else {
-                    setFailure(NSLocalizedString("Unable to refresh quote. Please try again.", comment: "Swap"))
+                    setFailure(String(localized: "Unable to refresh quote. Please try again.", comment: "Swap"))
                     return
                 }
                 refreshedPoint = point
@@ -462,7 +459,7 @@ final class OrderPreviewViewModel: ObservableObject {
 
     private func resolveExecutionData(from quote: SwapQuoteResult) throws -> SwapExecutionData {
         guard let vaultAddress = quote.inboundAddress, !vaultAddress.isEmpty else {
-            throw swapFieldError(NSLocalizedString("Deposit address is missing. Please refresh and try again.", comment: "Dash DEX"))
+            throw swapFieldError(String(localized: "Deposit address is missing. Please refresh and try again.", comment: "Dash DEX"))
         }
 
         let trimmedMemo = quote.memo?.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -481,7 +478,7 @@ final class OrderPreviewViewModel: ObservableObject {
         // `prettifyProviders` — matching text in it would tie a money rule to UI copy.
         if resolvedMemo != nil, dashSatoshis < MayaDepositRules.minimumDepositDuffs {
             let minimum = Decimal(MayaDepositRules.minimumDepositDuffs) / Decimal(kOneDash)
-            let format = NSLocalizedString("The minimum DASH deposit for this swap is %@.", comment: "Dash DEX")
+            let format = String(localized: "The minimum DASH deposit for this swap is %@.", comment: "Dash DEX")
             throw swapFieldError(String(format: format, minimum.formattedDashAmount))
         }
 
@@ -534,7 +531,7 @@ final class OrderPreviewViewModel: ObservableObject {
         let txidHex = Transaction.displayHex(txidWire)
         // The success side needs a trace too: without it a log export can't distinguish
         // "the deposit never went out" from "it went out and the swap failed later".
-        DWLogger.log("Swap: deposit broadcast for \(coin.code) — txid=\(txidHex) deposit=\(depositAddress)")
+        DWLogger.log("Swap: deposit broadcast for \(coin.code) — txid=\(txidHex)")
         submittedTxidWire = txidWire
         submittedTxId = txidHex
         lastDepositAddress = depositAddress
@@ -653,16 +650,13 @@ final class OrderPreviewViewModel: ObservableObject {
             backendOutcome = .done(outHashes: [order.outboundTxHash].compactMap { $0 })
             daoCancellable?.cancel()
         case .refunded:
-            swapStatus = .failed(reason: String(format: NSLocalizedString(
-                "Your DASH was refunded by %@.",
-                comment: "Swap refund message — %@ is the provider name e.g. Maya"
-            ), swapProvider.displayName))
+            swapStatus = .failed(reason: String(localized: "Your DASH was refunded by \(swapProvider.displayName).", comment: "Swap refund message — %@ is the provider name e.g. Maya"))
             backendOutcome = .refunded
             daoCancellable?.cancel()
         case .failed:
             if !isSuccessAlreadyShown {
-                swapStatus = .failed(reason: NSLocalizedString(
-                    "Swap timed out. Contact support if funds were sent.",
+                swapStatus = .failed(reason: String(
+                    localized: "Swap timed out. Contact support if funds were sent.",
                     comment: "Dash DEX"
                 ))
             }
@@ -721,7 +715,7 @@ final class OrderPreviewViewModel: ObservableObject {
             throw swapFieldError(apiError)
         }
         guard let firstPoint = makeQuotePoint(dashSatoshis: dashSatoshis, quote: firstQuote) else {
-            throw swapFieldError(NSLocalizedString("Unable to refresh quote. Please try again.", comment: "Swap"))
+            throw swapFieldError(String(localized: "Unable to refresh quote. Please try again.", comment: "Swap"))
         }
         points.append(firstPoint)
 

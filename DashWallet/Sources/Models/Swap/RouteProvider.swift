@@ -29,18 +29,18 @@ enum RouteProvider {
 
     var displayLabel: String {
         switch self {
-        case .maya: return NSLocalizedString("Maya", comment: "Swap route provider")
-        case .near: return NSLocalizedString("NEAR", comment: "Swap route provider")
-        case .multiple: return NSLocalizedString("Multiple networks", comment: "Swap route provider")
+        case .maya: return String(localized: "Maya", comment: "Swap route provider")
+        case .near: return String(localized: "NEAR", comment: "Swap route provider")
+        case .multiple: return String(localized: "Multiple networks", comment: "Swap route provider")
         }
     }
 
     /// Compact label for narrow trailing column in CoinSelector.
     var shortLabel: String {
         switch self {
-        case .maya: return NSLocalizedString("Maya", comment: "Swap route provider short")
-        case .near: return NSLocalizedString("NEAR", comment: "Swap route provider short")
-        case .multiple: return NSLocalizedString("Multiple", comment: "Swap route provider short")
+        case .maya: return String(localized: "Maya", comment: "Swap route provider short")
+        case .near: return String(localized: "NEAR", comment: "Swap route provider short")
+        case .multiple: return String(localized: "Multiple", comment: "Swap route provider short")
         }
     }
 }

@@ -27,6 +27,7 @@ on:
       - "WatchApp/**"
       - "WatchApp Extension/**"
       - "scripts/a11y_audit.py"
+      - "scripts/test_a11y_audit_catalog.py"
       - "scripts/a11y_baseline.json"
       - "scripts/a11y_config.json"
       - ".github/workflows/accessibility.yml"
@@ -61,6 +62,9 @@ jobs:
       # so the fixtures run before the audit.
       - name: Rule self-test
         run: python3 scripts/a11y_audit.py --self-test
+
+      - name: Catalog lookup tests
+        run: python3 scripts/test_a11y_audit_catalog.py
 
       # Take the accepted debt from the base branch. A PR that both introduces
       # a finding and baselines it would otherwise pass its own check.

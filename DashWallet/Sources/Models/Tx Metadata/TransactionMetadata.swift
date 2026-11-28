@@ -23,17 +23,17 @@ extension TxMetadataTaxCategory {
     var stringValue: String {
         switch self {
         case .unknown:
-            return NSLocalizedString("Transfer", comment: "")
+            return String(localized: "Transfer", comment: "")
         case .transferOut:
-            return NSLocalizedString("Transfer Out", comment: "")
+            return String(localized: "Transfer Out", comment: "")
         case .transferIn:
-            return NSLocalizedString("Transfer In", comment: "")
+            return String(localized: "Transfer In", comment: "")
         case .expense:
-            return NSLocalizedString("Expense", comment: "")
+            return String(localized: "Expense", comment: "")
         case .income:
-            return NSLocalizedString("Income", comment: "")
+            return String(localized: "Income", comment: "")
         case .internalTransfer:
-            return NSLocalizedString("Internal Transfer", comment: "Transaction within the wallet, transfer of own funds")
+            return String(localized: "Internal Transfer", comment: "Transaction within the wallet, transfer of own funds")
         }
     }
 
@@ -108,7 +108,7 @@ extension TransactionMetadata {
     }
 
     func fiatAmountString(from dashAmount: UInt64) -> String {
-        let notAvailableString = NSLocalizedString("Not available", comment: "Fiat amount");
+        let notAvailableString = String(localized: "Not available", comment: "Fiat amount");
 
         if let rate,
            let rateCurrency,

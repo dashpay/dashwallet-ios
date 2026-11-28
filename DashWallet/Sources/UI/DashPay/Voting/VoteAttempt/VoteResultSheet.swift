@@ -37,7 +37,7 @@ struct VoteResultSheet: View {
         DashUIKit.BottomSheet(showBackButton: .constant(false), showsCloseButton: false) {
             VStack(alignment: .leading, spacing: 20) {
                 DashUIKit.TopIntroView(
-                    title: NSLocalizedString("Vote partly cast", comment: "Voting"),
+                    title: String(localized: "Vote partly cast", comment: "Voting"),
                     mainDescription: Self.summary(of: report, username: username),
                     descriptionColor: Color.dash.secondaryText)
 
@@ -57,7 +57,7 @@ struct VoteResultSheet: View {
 
                 HStack(spacing: 10) {
                     DashUIKit.DashButton(
-                        text: NSLocalizedString("Close", comment: ""),
+                        text: String(localized: "Close", comment: ""),
                         fillsWidth: true,
                         size: .large,
                         style: .tintedGray,
@@ -65,7 +65,7 @@ struct VoteResultSheet: View {
                     // Not while every failed masternode has no vote left: a retry cannot land.
                     if report.offersTryAgain {
                         DashUIKit.DashButton(
-                            text: NSLocalizedString("Try again", comment: "Voting"),
+                            text: String(localized: "Try again", comment: "Voting"),
                             isLoading: isRetrying,
                             fillsWidth: true,
                             size: .large,
@@ -104,29 +104,28 @@ struct VoteResultSheet: View {
         let format: String
         switch report.choice {
         case .towards:
-            format = NSLocalizedString("%1$d of %2$d masternodes voted to approve %3$@.", comment: "Voting")
+            format = String(localized: "%1$d of %2$d masternodes voted to approve %3$@.", comment: "Voting")
         case .lock:
-            format = NSLocalizedString("%1$d of %2$d masternodes voted to block %3$@.", comment: "Voting")
+            format = String(localized: "%1$d of %2$d masternodes voted to block %3$@.", comment: "Voting")
         case .abstain:
-            format = NSLocalizedString("%1$d of %2$d masternodes cancelled their vote on %3$@.", comment: "Voting")
+            format = String(localized: "%1$d of %2$d masternodes cancelled their vote on %3$@.", comment: "Voting")
         }
         let landedSentence = String(format: format, landed, total, username)
         let notCastCount = report.failed.filter { !$0.mayHaveLanded }.count
         guard notCastCount > 0 else { return landedSentence }
         let notCast = notCastCount == 1
-            ? NSLocalizedString("The other vote was not cast.", comment: "Voting")
-            : String.localizedStringWithFormat(NSLocalizedString("The other %d votes were not cast.", comment: "Voting"),
-                     notCastCount)
+            ? String(localized: "The other vote was not cast.", comment: "Voting")
+            : String(localized: "The other \(notCastCount) votes were not cast.", comment: "Voting")
         return landedSentence + " " + notCast
     }
 
     /// "✓ Voted", "Not cast — <reason>", "Result not confirmed" for a vote
     /// that may have landed, or "Sending…" while Try again runs.
     static func status(of outcome: VoteOutcome, isRetrying: Bool) -> String {
-        if outcome.succeeded { return NSLocalizedString("✓ Voted", comment: "Voting") }
-        if isRetrying { return NSLocalizedString("Sending…", comment: "Voting") }
+        if outcome.succeeded { return String(localized: "✓ Voted", comment: "Voting") }
+        if isRetrying { return String(localized: "Sending…", comment: "Voting") }
         if outcome.mayHaveLanded { return outcome.failure ?? "" }
-        return String(format: NSLocalizedString("Not cast — %@", comment: "Voting"), outcome.failure ?? "")
+        return String(localized: "Not cast — \(outcome.failure ?? "")", comment: "Voting")
     }
 
     /// Green for a vote that landed, neutral for one that may have, red otherwise.
@@ -153,7 +152,7 @@ struct QuickVotingResultSheet: View {
         DashUIKit.BottomSheet(showBackButton: .constant(false), showsCloseButton: false) {
             VStack(alignment: .leading, spacing: 20) {
                 DashUIKit.TopIntroView(
-                    title: NSLocalizedString("Quick voting partly done", comment: "Voting"),
+                    title: String(localized: "Quick voting partly done", comment: "Voting"),
                     mainDescription: Self.description(of: run),
                     descriptionColor: Color.dash.secondaryText)
 
@@ -171,7 +170,7 @@ struct QuickVotingResultSheet: View {
 
                 HStack(spacing: 10) {
                     DashUIKit.DashButton(
-                        text: NSLocalizedString("Close", comment: ""),
+                        text: String(localized: "Close", comment: ""),
                         fillsWidth: true,
                         size: .large,
                         style: .tintedGray,
@@ -179,7 +178,7 @@ struct QuickVotingResultSheet: View {
                     // Not while every failed vote has no vote left: a retry cannot land.
                     if run.offersTryAgain {
                         DashUIKit.DashButton(
-                            text: NSLocalizedString("Try again", comment: "Voting"),
+                            text: String(localized: "Try again", comment: "Voting"),
                             isLoading: isRetrying,
                             fillsWidth: true,
                             size: .large,
@@ -215,8 +214,8 @@ struct QuickVotingResultSheet: View {
     /// Not "were not voted for" while some vote may have landed.
     static func description(of run: QuickVoteRunReport) -> String {
         run.reports.contains { $0.failed.contains(where: \.mayHaveLanded) }
-            ? NSLocalizedString("Some votes were not cast or their result is not confirmed:", comment: "Voting")
-            : NSLocalizedString("Some votes were not cast. These usernames were not voted for:", comment: "Voting")
+            ? String(localized: "Some votes were not cast or their result is not confirmed:", comment: "Voting")
+            : String(localized: "Some votes were not cast. These usernames were not voted for:", comment: "Voting")
     }
 
     /// The status of a name's first failed vote, as on the single vote's sheet.

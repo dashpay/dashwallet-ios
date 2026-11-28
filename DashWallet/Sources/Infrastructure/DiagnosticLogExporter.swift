@@ -65,13 +65,11 @@ enum DiagnosticLogExportError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .noLogsFound:
-            return NSLocalizedString(
-                "No diagnostic logs were found on this device. Logs are written from the next launch onward.",
+            return String(
+                localized: "No diagnostic logs were found on this device. Logs are written from the next launch onward.",
                 comment: "Log export")
         case .zipFailed(let reason):
-            return String.localizedStringWithFormat(
-                NSLocalizedString("Could not create the log archive: %@", comment: "Log export"),
-                reason)
+            return String(localized: "Could not create the log archive: \(reason)", comment: "Log export")
         }
     }
 }
@@ -331,7 +329,7 @@ struct DiagnosticLogExporter {
                 "  \(record.outPointHex)\(outPointNote)  "
                     + "type=\(record.fundingTypeRaw) (\(fundingTypeName(record.fundingTypeRaw)))  "
                     + "status=\(record.statusRaw) (\(assetLockStatusName(record.statusRaw)))  "
-                    + "amount=\(record.amountDuffs) duffs")
+                    + "amount=\(AppLogMessage.redacted)")
             lines.append(
                 "      created=\(iso.string(from: record.createdAt)) "
                     + "updated=\(iso.string(from: record.updatedAt))")

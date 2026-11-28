@@ -67,7 +67,7 @@ struct GroupedTransactionsScreen: View {
                     
                 Section {
                     VStack(alignment: .leading, spacing: 6) {
-                        Text(NSLocalizedString("Why do I see all these transactions?", comment: "Grouped Transactions"))
+                        Text(String(localized: "Why do I see all these transactions?", comment: "Grouped Transactions"))
                             .font(.footnote)
                             .fontWeight(.medium)
                             .foregroundStyle(Color.dash.tertiaryText)

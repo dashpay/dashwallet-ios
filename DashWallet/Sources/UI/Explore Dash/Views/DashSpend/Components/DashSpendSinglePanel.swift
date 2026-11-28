@@ -113,7 +113,7 @@ struct DashSpendSinglePanel: View {
 
     private var loadingView: some View {
         VStack(spacing: 20) {
-            Text(NSLocalizedString("Loading gift card options...", comment: "DashSpend"))
+            Text(String(localized: "Loading gift card options...", comment: "DashSpend"))
                 .font(.subhead)
                 .foregroundColor(.dash.secondaryText)
         }
@@ -148,7 +148,7 @@ struct DashSpendSinglePanel: View {
                 value: $input,
                 showDecimalSeparator: true,
                 locale: .autoupdatingCurrent,
-                actionButtonText: NSLocalizedString("Continue", comment: ""),
+                actionButtonText: String(localized: "Continue", comment: ""),
                 actionEnabled: actionEnabled && !showLimits && hasValidLimits,
                 inProgress: inProgress,
                 actionHandler: onAction

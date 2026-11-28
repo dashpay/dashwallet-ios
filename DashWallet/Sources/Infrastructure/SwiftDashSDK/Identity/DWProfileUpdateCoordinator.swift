@@ -47,7 +47,6 @@
 //
 
 import Foundation
-import OSLog
 import SwiftData
 import SwiftDashSDK
 
@@ -56,9 +55,7 @@ final class DWProfileUpdateCoordinator {
 
     static let shared = DWProfileUpdateCoordinator()
 
-    private static let logger = Logger(
-        subsystem: "org.dashfoundation.dash",
-        category: "swift-sdk-migration.profile-coordinator")
+    private static let logger = AppLogger(category: "swift-sdk-migration.profile-coordinator")
 
     /// Pinned identity index. Aligned with
     /// `DWIdentityRegistrationCoordinator.pinnedIdentityIndex` and
@@ -111,15 +108,15 @@ final class DWProfileUpdateCoordinator {
         var errorDescription: String? {
             switch self {
             case .noWallet:
-                return NSLocalizedString("Wallet is not ready", comment: "DashPay")
+                return String(localized: "Wallet is not ready", comment: "DashPay")
             case .noModelContainer:
-                return NSLocalizedString("Storage is not configured", comment: "DashPay")
+                return String(localized: "Storage is not configured", comment: "DashPay")
             case .noIdentity:
-                return NSLocalizedString("No DashPay identity is registered", comment: "DashPay")
+                return String(localized: "No DashPay identity is registered", comment: "DashPay")
             case .authCancelled:
-                return NSLocalizedString("Authentication cancelled", comment: "DashPay")
+                return String(localized: "Authentication cancelled", comment: "DashPay")
             case .authFailed:
-                return NSLocalizedString("Authentication failed", comment: "DashPay")
+                return String(localized: "Authentication failed", comment: "DashPay")
             case .profileWrite(let underlying):
                 return underlying.localizedDescription
             }
@@ -149,7 +146,7 @@ final class DWProfileUpdateCoordinator {
         avatarUrl: String?,
         avatarBytes: Data?
     ) async throws -> DashPayProfile {
-        Self.logger.info("🪪 PROFILE-COORD :: updateProfile displayName=\(displayName ?? "(nil)", privacy: .public) avatar=\(avatarUrl ?? "(nil)", privacy: .public) bytes=\(avatarBytes?.count ?? 0, privacy: .public)")
+        Self.logger.info("🪪 PROFILE-COORD :: updateProfile displayName=\(displayName != nil, privacy: .public) avatar=\(avatarUrl != nil, privacy: .public) bytes=\(avatarBytes?.count ?? 0, privacy: .public)")
 
         guard let wallet = SwiftDashSDKHost.shared.wallet else {
             Self.logger.error("🪪 PROFILE-COORD :: noWallet — SwiftDashSDKHost.shared.wallet is nil")
@@ -263,11 +260,11 @@ final class DWProfileUpdateCoordinator {
                             signer: signer)
                     }
                 } catch let secondError {
-                    Self.logger.error("🪪 PROFILE-COORD :: retry failed: \(String(describing: secondError), privacy: .public)")
+                    Self.logger.error("🪪 PROFILE-COORD :: retry failed: \(secondError)")
                     throw CoordinatorError.profileWrite(secondError)
                 }
             } else {
-                Self.logger.error("🪪 PROFILE-COORD :: \(preferCreate ? "create" : "update", privacy: .public) failed: \(String(describing: firstError), privacy: .public)")
+                Self.logger.error("🪪 PROFILE-COORD :: \(preferCreate ? "create" : "update", privacy: .public) failed: \(firstError)")
                 throw CoordinatorError.profileWrite(firstError)
             }
         }

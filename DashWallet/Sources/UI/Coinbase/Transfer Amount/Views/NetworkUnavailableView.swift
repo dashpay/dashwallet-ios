@@ -41,13 +41,13 @@ final class NetworkUnavailableView: UIView {
         let title = UILabel()
         title.font = .dw_font(forTextStyle: .body).withWeight(500)
         title.textColor = .dw_label()
-        title.text = NSLocalizedString("Network Unavailable", comment: "Network Unavailable")
+        title.text = String(localized: "Network Unavailable", comment: "Network Unavailable")
         textStackView.addArrangedSubview(title)
 
         let subtitle = UILabel()
         subtitle.font = .dw_font(forTextStyle: .footnote)
         subtitle.textColor = .dw_secondaryText()
-        subtitle.text = NSLocalizedString("Please check your network connection", comment: "Network Unavailable")
+        subtitle.text = String(localized: "Please check your network connection", comment: "Network Unavailable")
         textStackView.addArrangedSubview(subtitle)
 
         NSLayoutConstraint.activate([
