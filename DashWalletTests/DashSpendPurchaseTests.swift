@@ -748,20 +748,26 @@ final class DashSpendPurchaseTests: XCTestCase {
         XCTAssertFalse(viewModel.canRetryMerchantLoad)
     }
 
-    /// The network coming back while a load that began without it is still running starts a
-    /// load of its own, which is the one that counts.
-    func testTheNetworkComingBackDuringALoadLoadsTheMerchantAgain() async {
+    /// The network coming back while a load is running, however often, is followed by one
+    /// load, and only once the running one has ended without a currency.
+    func testTheNetworkComingBackDuringALoadIsFollowedByOneLoad() async {
         let viewModel = ctxViewModel()
         ctx.holdsMerchantCalls = true
 
         let first = Task { await viewModel.updateMerchantInfo() }
         await waitForHeldMerchantCalls(1)
-        viewModel.networkStatusDidChange?(.online)
-        await waitForHeldMerchantCalls(2)
-        guard ctx.heldMerchantCalls.count == 2 else { return XCTFail("no load followed the network coming back") }
+        for _ in 0..<3 { viewModel.networkStatusDidChange?(.online) }
+        for _ in 0..<200 { await Task.yield() }
+        XCTAssertEqual(ctx.heldMerchantCalls.count, 1)
 
         ctx.answerMerchantCall(0, with: StubCTXRepository.merchantJSON(currency: nil))
         await first.value
+        await waitForHeldMerchantCalls(2)
+        for _ in 0..<200 { await Task.yield() }
+        guard ctx.heldMerchantCalls.count == 2 else {
+            return XCTFail("\(ctx.heldMerchantCalls.count) loads, not the first and one more")
+        }
+
         ctx.answerMerchantCall(1, with: StubCTXRepository.merchantJSON(currency: "USD"))
         let deadline = Date().addingTimeInterval(Self.patience)
         while viewModel.cardCurrency == nil || viewModel.isLoading, Date() < deadline { await Task.yield() }
@@ -769,8 +775,24 @@ final class DashSpendPurchaseTests: XCTestCase {
         XCTAssertFalse(viewModel.isLoading)
 
         viewModel.networkStatusDidChange?(.online)
-        for _ in 0..<50 { await Task.yield() }
+        for _ in 0..<200 { await Task.yield() }
         XCTAssertEqual(ctx.heldMerchantCalls.count, 2)
+    }
+
+    /// A running load that confirms the currency is not followed by another.
+    func testTheNetworkComingBackDuringALoadThatConfirmsTheCurrencyLoadsNothingMore() async {
+        let viewModel = ctxViewModel()
+        ctx.holdsMerchantCalls = true
+
+        let first = Task { await viewModel.updateMerchantInfo() }
+        await waitForHeldMerchantCalls(1)
+        viewModel.networkStatusDidChange?(.online)
+        ctx.answerMerchantCall(0, with: StubCTXRepository.merchantJSON(currency: "USD"))
+        await first.value
+        for _ in 0..<200 { await Task.yield() }
+
+        XCTAssertEqual(viewModel.cardCurrency, "USD")
+        XCTAssertEqual(ctx.heldMerchantCalls.count, 1)
     }
 
     /// Just after launch the wallet has no rates yet: that is said as such, and goes when

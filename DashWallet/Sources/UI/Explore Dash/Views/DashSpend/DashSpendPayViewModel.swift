@@ -59,6 +59,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
     private let dependencies: Dependencies
     private let exchangeRate: (String) -> GiftCardPaymentGuard.ExchangeRate
     private let ratesAreFetching: () -> Bool
+    private var reconnectRetry: Task<Void, Never>?
     private let now: () -> Date
 
     /// What a purchase goes through: the provider repositories, the send service and the
@@ -1259,9 +1260,21 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
     private func handleNetworkStatusChange(_ status: NetworkStatus) {
         // Re-check errors when network status changes
         checkAmountForErrors()
-        // Also while a load is in flight: it began offline, and a later load supersedes it.
-        if status == .online, provider == .ctx, cardCurrency == nil {
-            Task { await updateMerchantInfo() }
+        // One retry at a time, however often the network comes back meanwhile.
+        if status == .online, provider == .ctx, cardCurrency == nil, reconnectRetry == nil {
+            reconnectRetry = Task { [weak self] in
+                await self?.loadMerchantOnceTheRunningLoadEnds()
+                self?.reconnectRetry = nil
+            }
+        }
+    }
+
+    /// Loads the merchant again if the load now running, which may have begun without the
+    /// network, ends without a confirmed currency.
+    private func loadMerchantOnceTheRunningLoadEnds() async {
+        for await loading in $isLoading.values where !loading { break }
+        if cardCurrency == nil {
+            await updateMerchantInfo()
         }
     }
 
