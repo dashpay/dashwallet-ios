@@ -389,6 +389,99 @@ final class PointOfUseListViewModelTests: XCTestCase {
         await fulfillment(of: [cleared], timeout: 3)
     }
 
+    // MARK: - Rows
+
+    func testAnOnlineMerchantRowHasNoDistance() {
+        location.isAuthorized = true
+        location.currentLocation = CLLocation(latitude: 40.0, longitude: -74.0)
+        let viewModel = makeViewModel(kind: .merchants, segments: [segment(tag: 0)])
+
+        let row = viewModel.rowModel(for: place(1, at: (40.01, -74.0), category: .merchant(merchantInfo(type: .online))))
+
+        XCTAssertNil(row.subtitle)
+    }
+
+    func testAPhysicalMerchantRowMeasuresFromTheDevice() {
+        location.isAuthorized = true
+        location.currentLocation = CLLocation(latitude: 40.0, longitude: -74.0)
+        let viewModel = makeViewModel(kind: .merchants, segments: [segment(tag: 0)])
+
+        let row = viewModel.rowModel(for: place(1, at: (40.01, -74.0), category: .merchant(merchantInfo(type: .physical))))
+
+        XCTAssertEqual(row.subtitle, distanceText(from: (40.0, -74.0), to: (40.01, -74.0)))
+    }
+
+    func testAMerchantRowMeasuresFromThePannedMapCenter() {
+        location.isAuthorized = true
+        location.currentLocation = CLLocation(latitude: 40.0, longitude: -74.0)
+        let viewModel = makeViewModel(kind: .merchants, segments: [segment(tag: 0)])
+        viewModel.mapDidMove(center: CLLocationCoordinate2D(latitude: 41.0, longitude: -74.0), bounds: bounds)
+
+        let row = viewModel.rowModel(for: place(1, at: (41.02, -74.0), category: .merchant(merchantInfo(type: .physical))))
+
+        XCTAssertEqual(row.subtitle, distanceText(from: (41.0, -74.0), to: (41.02, -74.0)))
+    }
+
+    func testAMerchantRowHasNoDistanceWithoutLocation() {
+        let viewModel = makeViewModel(kind: .merchants, segments: [segment(tag: 0)])
+
+        let row = viewModel.rowModel(for: place(1, at: (40.01, -74.0), category: .merchant(merchantInfo(type: .physical))))
+
+        XCTAssertNil(row.subtitle)
+    }
+
+    func testAMerchantRowShowsTheBestProviderDiscount() {
+        let viewModel = makeViewModel(kind: .merchants, segments: [segment(tag: 0)])
+        let providers = [ExplorePointOfUse.Merchant.GiftCardProviderInfo(providerId: "ctx", savingsPercentage: 400),
+                         ExplorePointOfUse.Merchant.GiftCardProviderInfo(providerId: "piggy", savingsPercentage: 1000)]
+
+        let row = viewModel.rowModel(for: place(1, category: .merchant(merchantInfo(paymentMethod: .giftCard,
+                                                                                    providers: providers))))
+
+        XCTAssertEqual(row.accessory, .merchant(savings: "~10%", paymentMethod: .giftCard))
+    }
+
+    /// The merchant-level discount is in basis points too; the old cell read
+    /// it as a percentage and showed nothing.
+    func testAMerchantRowFallsBackToTheMerchantDiscount() {
+        let viewModel = makeViewModel(kind: .merchants, segments: [segment(tag: 0)])
+
+        let row = viewModel.rowModel(for: place(1, category: .merchant(merchantInfo(savings: 500))))
+
+        XCTAssertEqual(row.accessory, .merchant(savings: "~5%", paymentMethod: .dash))
+    }
+
+    func testAMerchantRowWithoutADiscountShowsOnlyThePaymentMethod() {
+        let viewModel = makeViewModel(kind: .merchants, segments: [segment(tag: 0)])
+
+        let row = viewModel.rowModel(for: place(1, category: .merchant(merchantInfo())))
+
+        XCTAssertEqual(row.accessory, .merchant(savings: nil, paymentMethod: .dash))
+    }
+
+    func testAtmRowsTagTheOperationsTheyOffer() {
+        let viewModel = makeViewModel(segments: [segment(tag: 0)])
+        func tags(_ type: ExplorePointOfUse.Atm.`Type`) -> PointOfUseRowModel.Accessory {
+            viewModel.rowModel(for: place(1, category: .atm(.init(manufacturer: "m", type: type)))).accessory
+        }
+
+        XCTAssertEqual(tags(.buy), .atm(buy: true, sell: false))
+        XCTAssertEqual(tags(.sell), .atm(buy: false, sell: true))
+        XCTAssertEqual(tags(.buySell), .atm(buy: true, sell: true))
+    }
+
+    func testAnAtmRowShowsDistanceAndOperator() {
+        let viewModel = makeViewModel(segments: [segment(tag: 0)])
+        let atm = place(1, at: (40.01, -74.0), category: .atm(.init(manufacturer: "m", type: .buy)), source: "CoinFlip")
+
+        XCTAssertEqual(viewModel.rowModel(for: atm).subtitle, "CoinFlip")
+
+        location.isAuthorized = true
+        location.currentLocation = CLLocation(latitude: 40.0, longitude: -74.0)
+        XCTAssertEqual(viewModel.rowModel(for: atm).subtitle,
+                       "\(distanceText(from: (40.0, -74.0), to: (40.01, -74.0))) • CoinFlip")
+    }
+
     // MARK: - Helpers
 
     private let bounds = ExploreMapBounds(rect: MKMapRect(x: 0, y: 0, width: 1000, height: 1000))
@@ -444,6 +537,29 @@ final class PointOfUseListViewModelTests: XCTestCase {
         await withCheckedContinuation { continuation in
             DispatchQueue.main.async { continuation.resume() }
         }
+    }
+
+    private func merchantInfo(type: ExplorePointOfUse.Merchant.`Type` = .online,
+                              paymentMethod: ExplorePointOfUse.Merchant.PaymentMethod = .dash,
+                              savings: Int = 0,
+                              providers: [ExplorePointOfUse.Merchant.GiftCardProviderInfo] = []) -> ExplorePointOfUse.Merchant {
+        ExplorePointOfUse.Merchant(merchantId: "m", paymentMethod: paymentMethod, type: type, deeplink: nil,
+                                   savingsBasisPoints: savings, denominationsType: nil, redeemType: nil,
+                                   giftCardProviders: providers)
+    }
+
+    private func place(_ id: Int64, at coordinate: (Double, Double)? = nil, category: ExplorePointOfUse.Category,
+                       source: String? = nil) -> ExplorePointOfUse {
+        ExplorePointOfUse(id: id, name: "Place \(id)", category: category, active: true, city: nil, territory: nil,
+                          address1: nil, address2: nil, address3: nil, address4: nil,
+                          latitude: coordinate?.0, longitude: coordinate?.1,
+                          website: nil, phone: nil, logoLocation: nil, coverImage: nil, source: source)
+    }
+
+    private func distanceText(from origin: (Double, Double), to target: (Double, Double)) -> String {
+        let meters = CLLocation(latitude: target.0, longitude: target.1)
+            .distance(from: CLLocation(latitude: origin.0, longitude: origin.1))
+        return ExploreDash.distanceFormatter.string(from: Measurement(value: floor(meters), unit: UnitLength.meters))
     }
 
     private func atm(_ id: Int64) -> ExplorePointOfUse {

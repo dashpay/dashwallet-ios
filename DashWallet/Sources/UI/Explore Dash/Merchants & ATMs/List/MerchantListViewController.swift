@@ -130,8 +130,7 @@ class MerchantListViewController: ExplorePointOfUseListViewController {
                 cell.separatorInset = UIEdgeInsets(top: 0, left: 2000, bottom: 0, right: 0)
                 locationOffCell = itemCell
             } else {
-                let cell = super.tableView(tableView, cellForRowAt: indexPath) as! PointOfUseItemCell
-                return cell
+                return super.tableView(tableView, cellForRowAt: indexPath)
             }
         default:
             return super.tableView(tableView, cellForRowAt: indexPath)
@@ -177,7 +176,7 @@ class MerchantListViewController: ExplorePointOfUseListViewController {
         case .items:
             return (currentSegment.showLocationServiceSettings && DWLocationManager.shared.isPermissionDenied)
                 ? tableView.frame.size.height
-                : 56.0
+                : super.tableView(tableView, heightForRowAt: indexPath)
         default:
             return super.tableView(tableView, heightForRowAt: indexPath)
         }
@@ -221,14 +220,6 @@ class MerchantListViewController: ExplorePointOfUseListViewController {
         if isMovingFromParent || isBeingDismissed {
             viewModel.screenDidClose()
         }
-    }
-
-    override func configureHierarchy() {
-//        title = NSLocalizedString("Where to Spend", comment: "");
-
-        super.configureHierarchy()
-
-        tableView.register(MerchantItemCell.self, forCellReuseIdentifier: MerchantItemCell.reuseIdentifier)
     }
 
     override func viewDidLoad() {

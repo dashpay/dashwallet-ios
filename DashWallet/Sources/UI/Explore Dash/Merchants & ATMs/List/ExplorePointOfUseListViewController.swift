@@ -104,6 +104,9 @@ class ExplorePointOfUseListViewController: UIViewController, NavigationBarDispla
     internal var contentView: UIView!
 
     internal var tableView: UITableView!
+    /// A plain cell that hosts a `PointOfUseRow`.
+    internal static let rowReuseIdentifier = "PointOfUseRow"
+
     internal var filterCell: PointOfUseListFiltersCell?
     internal var searchCell: PointOfUseListSearchCell?
     internal var appliedFiltersLabel: UILabel!
@@ -473,7 +476,9 @@ extension ExplorePointOfUseListViewController {
         tableView.layer.zPosition = -1
         tableView.dataSource = self
         tableView.clipsToBounds = false
-        tableView.estimatedRowHeight = 0
+        // Item rows size from their content (see `heightForRowAt`); the
+        // other sections keep fixed heights.
+        tableView.estimatedRowHeight = PointOfUseRow.minHeight
         tableView.estimatedSectionHeaderHeight = 0
         tableView.estimatedSectionFooterHeight = 0
         tableView.register(PointOfUseListSegmentedCell.self,
@@ -483,6 +488,7 @@ extension ExplorePointOfUseListViewController {
         tableView.register(MerchantListLocationOffCell.self,
                            forCellReuseIdentifier: MerchantListLocationOffCell.reuseIdentifier)
         tableView.register(FetchingNextPageCell.self, forCellReuseIdentifier: FetchingNextPageCell.reuseIdentifier)
+        tableView.register(UITableViewCell.self, forCellReuseIdentifier: Self.rowReuseIdentifier)
         stackView.addArrangedSubview(tableView)
 
         showMapButton = UIButton(type: .custom)
@@ -767,14 +773,12 @@ extension ExplorePointOfUseListViewController: UITableViewDelegate, UITableViewD
             refreshFilterCell()
             cell = filterCell
         case .items:
-            let merchant = items[indexPath.row];
-            let itemCell: PointOfUseItemCell = tableView
-                .dequeueReusableCell(withIdentifier: PointOfUseItemCell.reuseIdentifier,
-                                     for: indexPath) as! PointOfUseItemCell
-            // Pass search center coordinate to cell for accurate distance calculations
-            itemCell.searchCenterCoordinate = viewModel.searchCenterCoordinate
-            itemCell.update(with: merchant)
-            cell = itemCell;
+            let itemCell = tableView.dequeueReusableCell(withIdentifier: Self.rowReuseIdentifier, for: indexPath)
+            itemCell.contentConfiguration = UIHostingConfiguration {
+                PointOfUseRow(model: viewModel.rowModel(for: items[indexPath.row]))
+            }
+            .margins(.all, 0)
+            cell = itemCell
         case .nextPage:
             let cell = tableView.dequeueReusableCell(withIdentifier: FetchingNextPageCell.reuseIdentifier,
                                                      for: indexPath) as! FetchingNextPageCell
@@ -822,10 +826,19 @@ extension ExplorePointOfUseListViewController: UITableViewDelegate, UITableViewD
         case .filters:
             return 50.0
         case .items:
-            return 56.0
+            // A long name wraps at large text sizes, so the row takes the
+            // height of its content (at least `PointOfUseRow.minHeight`).
+            return UITableView.automaticDimension
         case .nextPage:
             return 60.0
         }
+    }
+
+    func tableView(_ tableView: UITableView, estimatedHeightForRowAt indexPath: IndexPath) -> CGFloat {
+        guard ExplorePointOfUseSections(rawValue: indexPath.section) == .items else {
+            return self.tableView(tableView, heightForRowAt: indexPath)
+        }
+        return UIFontMetrics(forTextStyle: .subheadline).scaledValue(for: PointOfUseRow.minHeight)
     }
 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {

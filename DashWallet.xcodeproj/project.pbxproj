@@ -430,9 +430,7 @@
 		47AE8BAD28BFAE6700490F5E /* DWLocationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8BAC28BFAE6700490F5E /* DWLocationManager.swift */; };
 		47AE8BB028BFF28700490F5E /* explore.db in Resources */ = {isa = PBXBuildFile; fileRef = 47AE8BAF28BFF28400490F5E /* explore.db */; };
 		47AE8BB228BFF61A00490F5E /* FileManager+DashWallet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8BB128BFF61A00490F5E /* FileManager+DashWallet.swift */; };
-		47AE8BF028C1306000490F5E /* AtmItemCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8BC928C1305E00490F5E /* AtmItemCell.swift */; };
-		47AE8BF228C1306000490F5E /* PointOfUseItemCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8BCB28C1305E00490F5E /* PointOfUseItemCell.swift */; };
-		47AE8BF328C1306000490F5E /* MerchantItemCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8BCC28C1305E00490F5E /* MerchantItemCell.swift */; };
+		47AE8BF328C1306000490F5E /* PointOfUseRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8BCC28C1305E00490F5E /* PointOfUseRow.swift */; };
 		47AE8BF428C1306000490F5E /* FetchingNextPageCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8BCE28C1305E00490F5E /* FetchingNextPageCell.swift */; };
 		47AE8BF528C1306000490F5E /* MerchantListLocationOffCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8BD128C1305E00490F5E /* MerchantListLocationOffCell.swift */; };
 		47AE8BF628C1306000490F5E /* ExplorePointOfUseListViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8BD228C1305E00490F5E /* ExplorePointOfUseListViewController.swift */; };
@@ -1402,7 +1400,6 @@ F992AE17D040F0C0E6E79AF7 /* QuickVotingSheet.swift in Sources */ = {isa = PBXBui
 		C9D2C6A42A320AA000D15901 /* CoinbaseEntryPointModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47838B91290701470003E8AB /* CoinbaseEntryPointModel.swift */; };
 		C9D2C6A52A320AA000D15901 /* SyncingAlertViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F451EA2A0BF10B00825057 /* SyncingAlertViewController.swift */; };
 		C9D2C6A82A320AA000D15901 /* FileManager+DashWallet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8BB128BFF61A00490F5E /* FileManager+DashWallet.swift */; };
-		C9D2C6A92A320AA000D15901 /* PointOfUseItemCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8BCB28C1305E00490F5E /* PointOfUseItemCell.swift */; };
 		C9D2C6AC2A320AA000D15901 /* PayableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F42F9E29DA82E5001BC549 /* PayableViewController.swift */; };
 		C9D2C6AD2A320AA000D15901 /* HairlineView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8C1428C6378E00490F5E /* HairlineView.swift */; };
 		C9D2C6AE2A320AA000D15901 /* DWInitialViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A913E9423A3F75F006A2A59 /* DWInitialViewController.m */; };
@@ -1665,7 +1662,6 @@ F992AE17D040F0C0E6E79AF7 /* QuickVotingSheet.swift in Sources */ = {isa = PBXBui
 		C9D2C84A2A320AA000D15901 /* (null) in Sources */ = {isa = PBXBuildFile; };
 		C9D2C84B2A320AA000D15901 /* UITableView+DashWallet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47F005FE297164600029EB10 /* UITableView+DashWallet.swift */; };
 		C9D2C84F2A320AA000D15901 /* UIColor+DWStyle.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A44312022CCA2A0009BAF7F /* UIColor+DWStyle.m */; };
-		C9D2C8512A320AA000D15901 /* AtmItemCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8BC928C1305E00490F5E /* AtmItemCell.swift */; };
 		C9D2C8522A320AA000D15901 /* CoinbaseService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F6EDFB628C896BC000427E7 /* CoinbaseService.swift */; };
 		C9D2C8532A320AA000D15901 /* DWControllerCollectionView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8B9E5522FEDF2900FF8653 /* DWControllerCollectionView.m */; };
 		C9D2C8542A320AA000D15901 /* SFSafariViewController+DashWallet.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFDF22230FF1A00956D5F /* SFSafariViewController+DashWallet.m */; };
@@ -1699,7 +1695,7 @@ F992AE17D040F0C0E6E79AF7 /* QuickVotingSheet.swift in Sources */ = {isa = PBXBui
 		C9D2C8882A320AA000D15901 /* ExploreMapAnnotationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8BDA28C1305E00490F5E /* ExploreMapAnnotationView.swift */; };
 		C9D2C88A2A320AA000D15901 /* DWHomeModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4E533722F023AB00E5168A /* DWHomeModel.m */; };
 		C9D2C88F2A320AA000D15901 /* DWSegmentedControl.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8B9E3F22FD75C000FF8653 /* DWSegmentedControl.m */; };
-		C9D2C8902A320AA000D15901 /* MerchantItemCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8BCC28C1305E00490F5E /* MerchantItemCell.swift */; };
+		C9D2C8902A320AA000D15901 /* PointOfUseRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8BCC28C1305E00490F5E /* PointOfUseRow.swift */; };
 		C9D2C8912A320AA000D15901 /* PaymentMethodCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 478C98362943A60000FAA0F0 /* PaymentMethodCell.swift */; };
 		C9D2C8932A320AA000D15901 /* CBUserManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47EEE23A293F041E00049E0B /* CBUserManager.swift */; };
 		C9D2C8942A320AA000D15901 /* DerivationPathKeysHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C909615A29F6535300002D82 /* DerivationPathKeysHeaderView.swift */; };
@@ -2735,9 +2731,7 @@ FF9D88432B0292498590D377 /* QuickVotingViewModelTests.swift in Sources */ = {isa
 		47AE8BAC28BFAE6700490F5E /* DWLocationManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DWLocationManager.swift; sourceTree = "<group>"; };
 		47AE8BAF28BFF28400490F5E /* explore.db */ = {isa = PBXFileReference; lastKnownFileType = file; path = explore.db; sourceTree = "<group>"; };
 		47AE8BB128BFF61A00490F5E /* FileManager+DashWallet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "FileManager+DashWallet.swift"; sourceTree = "<group>"; };
-		47AE8BC928C1305E00490F5E /* AtmItemCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AtmItemCell.swift; sourceTree = "<group>"; };
-		47AE8BCB28C1305E00490F5E /* PointOfUseItemCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PointOfUseItemCell.swift; sourceTree = "<group>"; };
-		47AE8BCC28C1305E00490F5E /* MerchantItemCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MerchantItemCell.swift; sourceTree = "<group>"; };
+		47AE8BCC28C1305E00490F5E /* PointOfUseRow.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PointOfUseRow.swift; sourceTree = "<group>"; };
 		47AE8BCE28C1305E00490F5E /* FetchingNextPageCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FetchingNextPageCell.swift; sourceTree = "<group>"; };
 		47AE8BD128C1305E00490F5E /* MerchantListLocationOffCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MerchantListLocationOffCell.swift; sourceTree = "<group>"; };
 		47AE8BD228C1305E00490F5E /* ExplorePointOfUseListViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ExplorePointOfUseListViewController.swift; sourceTree = "<group>"; };
@@ -6299,9 +6293,7 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 		47AE8BC628C1305E00490F5E /* Cells */ = {
 			isa = PBXGroup;
 			children = (
-				47AE8BCB28C1305E00490F5E /* PointOfUseItemCell.swift */,
-				47AE8BCC28C1305E00490F5E /* MerchantItemCell.swift */,
-				47AE8BC928C1305E00490F5E /* AtmItemCell.swift */,
+				47AE8BCC28C1305E00490F5E /* PointOfUseRow.swift */,
 				47AE8BCE28C1305E00490F5E /* FetchingNextPageCell.swift */,
 				47AE8BD128C1305E00490F5E /* MerchantListLocationOffCell.swift */,
 				47AE8C0228C1F0C600490F5E /* PointOfUseListSegmentedCell.swift */,
@@ -9445,7 +9437,6 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				A11E57A7000BC0DE000BB00B /* SyncingAlertView.swift in Sources */,
 				47AE8BB228BFF61A00490F5E /* FileManager+DashWallet.swift in Sources */,
 				7545ED532DA91A2F0075F45C /* DashSpend/CTXConstants.swift in Sources */,
-				47AE8BF228C1306000490F5E /* PointOfUseItemCell.swift in Sources */,
 				C9F42F9F29DA82E5001BC549 /* PayableViewController.swift in Sources */,
 				75FFD6C12BF493A60032879E /* HomeViewController+SecureWalletDelegateImpl.swift in Sources */,
 				47AE8C1528C6378E00490F5E /* HairlineView.swift in Sources */,
@@ -9890,7 +9881,6 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				5AEEB0012F9C000000000009 /* NodesShortcutIcon.swift in Sources */,
 				75B3C1A22E36100100CAFE02 /* ShortcutSelectionView.swift in Sources */,
 				2A44312122CCA2A0009BAF7F /* UIColor+DWStyle.m in Sources */,
-				47AE8BF028C1306000490F5E /* AtmItemCell.swift in Sources */,
 				0F6EDFD728C896BD000427E7 /* CoinbaseService.swift in Sources */,
 				2A8B9E5622FEDF2900FF8653 /* DWControllerCollectionView.m in Sources */,
 				2A9FFDF52230FF1A00956D5F /* SFSafariViewController+DashWallet.m in Sources */,
@@ -9940,7 +9930,7 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				757B937D2BFF4F93002046A5 /* GroupedTransactionsScreen.swift in Sources */,
 				2A4E533822F023AB00E5168A /* DWHomeModel.m in Sources */,
 				2A8B9E4022FD75C000FF8653 /* DWSegmentedControl.m in Sources */,
-				47AE8BF328C1306000490F5E /* MerchantItemCell.swift in Sources */,
+				47AE8BF328C1306000490F5E /* PointOfUseRow.swift in Sources */,
 				478C98372943A60000FAA0F0 /* PaymentMethodCell.swift in Sources */,
 				47EEE23B293F041E00049E0B /* CBUserManager.swift in Sources */,
 				C909615B29F6535300002D82 /* DerivationPathKeysHeaderView.swift in Sources */,
@@ -10430,7 +10420,6 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				C9D2C6A52A320AA000D15901 /* SyncingAlertViewController.swift in Sources */,
 				A11E57A7000AC0DE000AB00A /* SyncingAlertView.swift in Sources */,
 				C9D2C6A82A320AA000D15901 /* FileManager+DashWallet.swift in Sources */,
-				C9D2C6A92A320AA000D15901 /* PointOfUseItemCell.swift in Sources */,
 				C9D2C6AC2A320AA000D15901 /* PayableViewController.swift in Sources */,
 				C9D2C6AD2A320AA000D15901 /* HairlineView.swift in Sources */,
 				C9D2C6AE2A320AA000D15901 /* DWInitialViewController.m in Sources */,
@@ -10946,7 +10935,6 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				516C63E52FE9BE0A00DD6BC3 /* AboutDashView.swift in Sources */,
 				516C63E92FE9BE0A00DD6BC3 /* AboutDashViewModel.swift in Sources */,
 				C9D2C84F2A320AA000D15901 /* UIColor+DWStyle.m in Sources */,
-				C9D2C8512A320AA000D15901 /* AtmItemCell.swift in Sources */,
 				C9D2C8522A320AA000D15901 /* CoinbaseService.swift in Sources */,
 				C9D2C8532A320AA000D15901 /* DWControllerCollectionView.m in Sources */,
 				C9D2C8542A320AA000D15901 /* SFSafariViewController+DashWallet.m in Sources */,
@@ -11000,7 +10988,7 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				751B61C12ADFF98800D1C2EF /* BaseIntegrationModel.swift in Sources */,
 				C943B3342A408CED00AF23C5 /* DWTextViewFormCellModel.m in Sources */,
 				C9D2C88F2A320AA000D15901 /* DWSegmentedControl.m in Sources */,
-				C9D2C8902A320AA000D15901 /* MerchantItemCell.swift in Sources */,
+				C9D2C8902A320AA000D15901 /* PointOfUseRow.swift in Sources */,
 				C9D2C8912A320AA000D15901 /* PaymentMethodCell.swift in Sources */,
 				C9D2C8932A320AA000D15901 /* CBUserManager.swift in Sources */,
 				75FFD6BC2BF48DF80032879E /* HomeViewController+JailbreakCheck.swift in Sources */,
