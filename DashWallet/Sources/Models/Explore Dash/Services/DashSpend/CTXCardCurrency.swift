@@ -25,7 +25,8 @@ struct CTXMerchantTerms: Equatable {
     /// The limits of a range merchant.
     let minimum: Decimal?
     let maximum: Decimal?
-    /// A `min-max-major` merchant sells whole amounts only.
+    /// A `min-max-major` merchant sells whole amounts only: the server refuses an order
+    /// for an amount with a fraction.
     let wholeAmountsOnly: Bool
 
     /// Nil when the answer cannot be used to buy a card: it names no usable currency, one of
@@ -54,16 +55,12 @@ struct CTXMerchantTerms: Equatable {
             maximum = nil
             wholeAmountsOnly = false
         case "min-max", "min-max-major":
-            // The server sends a minimum and a maximum for both. A third entry, which the
-            // Android client expects for `min-max-major`, is not a limit.
-            let isMajor = denominationsType == "min-max-major"
-            guard amounts.count == 2 || (isMajor && amounts.count == 3),
-                  amounts[1] > 0, amounts[0] <= amounts[1] else { return nil }
+            guard amounts.count == 2, amounts[1] > 0, amounts[0] <= amounts[1] else { return nil }
             isFixed = false
             self.denominations = []
             minimum = amounts[0]
             maximum = amounts[1]
-            wholeAmountsOnly = isMajor
+            wholeAmountsOnly = denominationsType == "min-max-major"
         default:
             return nil
         }

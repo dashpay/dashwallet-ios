@@ -789,20 +789,29 @@ final class DashSpendPurchaseTests: XCTestCase {
         assertNothingOrdered()
     }
 
-    /// `min-max-major` is a range of whole amounts, not two fixed cards.
+    /// `min-max-major` with the two values the server sends is a range of whole amounts,
+    /// not a card of 1 and a card of 500: no decimals can be typed, a fractional amount is
+    /// refused, and a whole one is ordered as "25.00".
     func testAMajorRangeMerchantIsARangeOfWholeAmounts() async throws {
-        for denominations in [[10, 100], [10, 100, 5]] {
-            let viewModel = await ctxViewModel(loading: StubCTXRepository.merchantJSON(
-                currency: "USD", type: "min-max-major", denominations: denominations))
+        let viewModel = await ctxViewModel(loading: StubCTXRepository.merchantJSON(
+            currency: "USD", type: "min-max-major", denominations: ["1", "500"]))
 
-            XCTAssertFalse(viewModel.isFixedDenomination)
-            XCTAssertEqual(viewModel.denominations, [])
-            XCTAssertEqual(viewModel.minimumAmount, 10)
-            XCTAssertEqual(viewModel.maximumAmount, 100)
-            XCTAssertEqual(viewModel.amountFractionDigits, 0)
-            XCTAssertThrowsError(try viewModel.beginPurchase(price: decimal("25.5")))
-            XCTAssertEqual(try confirmation(of: 25, on: viewModel).currency, "USD")
-        }
+        XCTAssertFalse(viewModel.isFixedDenomination)
+        XCTAssertEqual(viewModel.denominations, [])
+        XCTAssertEqual(viewModel.minimumAmount, 1)
+        XCTAssertEqual(viewModel.maximumAmount, 500)
+        XCTAssertEqual(viewModel.amountFractionDigits, 0)
+        viewModel.input = "25"
+        viewModel.input = "25\(Locale.current.decimalSeparator ?? ".")5"
+        XCTAssertEqual(viewModel.input, "25")
+        XCTAssertThrowsError(try viewModel.beginPurchase(price: decimal("25.5")))
+        XCTAssertThrowsError(try viewModel.beginPurchase(price: 501))
+
+        let snapshot = try confirmation(of: 25, on: viewModel)
+        payments.requestedByURL = snapshot.approval.amount
+        _ = try await finish(startPurchase(snapshot, on: viewModel), on: viewModel)
+        XCTAssertEqual(ctx.orders.map(\.fiatAmount), ["25.00"])
+        XCTAssertEqual(ctx.orders.map(\.fiatCurrency), ["USD"])
     }
 
     func testARefreshWithoutAnAnswerKeepsTheConfirmedCurrency() async throws {

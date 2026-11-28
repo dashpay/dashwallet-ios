@@ -221,25 +221,28 @@ final class GiftCardCurrencyTests: XCTestCase {
         XCTAssertNil(CTXMerchantTerms(currency: "USD", denominationsType: "min-max", denominations: []))
         XCTAssertNil(CTXMerchantTerms(currency: "USD", denominationsType: "min-max", denominations: ["5"]))
         XCTAssertNil(CTXMerchantTerms(currency: "USD", denominationsType: "min-max", denominations: ["5", "50", "500"]))
-        XCTAssertNil(CTXMerchantTerms(currency: "USD", denominationsType: "min-max-major", denominations: ["5"]))
         XCTAssertNil(CTXMerchantTerms(currency: "USD", denominationsType: "range", denominations: ["5", "500"]))
         XCTAssertNil(CTXMerchantTerms(currency: "USD", denominationsType: "", denominations: ["25"]))
     }
 
-    /// `min-max-major` is a range of whole amounts. The server sends a minimum and a maximum;
-    /// the limits are the first two entries when a third comes with them.
+    /// `min-max-major` is a range of whole amounts: exactly a minimum and a maximum, as the
+    /// server sends it, and no order for an amount with a fraction.
     func testAMajorRangeIsARangeOfWholeAmounts() {
-        for denominations in [["10", "100"], ["10", "100", "5"]] {
-            let terms = CTXMerchantTerms(currency: "JPY", denominationsType: "min-max-major", denominations: denominations)
-            XCTAssertEqual(terms?.isFixed, false)
-            XCTAssertEqual(terms?.minimum, 10)
-            XCTAssertEqual(terms?.maximum, 100)
-            XCTAssertEqual(terms?.denominations, [])
-            XCTAssertEqual(terms?.wholeAmountsOnly, true)
-        }
-        let dollars = CTXMerchantTerms(currency: "USD", denominationsType: "min-max-major", denominations: ["10", "100"])
+        let dollars = CTXMerchantTerms(currency: "USD", denominationsType: "min-max-major", denominations: ["1", "500"])
+        XCTAssertEqual(dollars?.isFixed, false)
+        XCTAssertEqual(dollars?.minimum, 1)
+        XCTAssertEqual(dollars?.maximum, 500)
+        XCTAssertEqual(dollars?.denominations, [])
+        XCTAssertEqual(dollars?.wholeAmountsOnly, true)
+        XCTAssertEqual(dollars?.allows(1), true)
         XCTAssertEqual(dollars?.allows(25), true)
+        XCTAssertEqual(dollars?.allows(500), true)
         XCTAssertEqual(dollars?.allows(decimal("25.5")), false)
+        XCTAssertEqual(dollars?.allows(501), false)
+        XCTAssertNil(CTXMerchantTerms(currency: "USD", denominationsType: "min-max-major", denominations: ["1", "500", "5"]))
+        XCTAssertNil(CTXMerchantTerms(currency: "USD", denominationsType: "min-max-major", denominations: ["1"]))
+        // A whole amount is ordered with the currency's decimals, which the server accepts.
+        XCTAssertEqual(try? CTXGiftCardOrder(price: 25, quantities: [:], currency: "USD").fiatAmount, "25.00")
         XCTAssertEqual(CTXMerchantTerms(currency: "USD", denominationsType: "min-max", denominations: ["10", "100"])?
             .allows(decimal("25.5")), true)
     }
