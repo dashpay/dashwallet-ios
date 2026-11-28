@@ -37,6 +37,8 @@ private final class StubCTXRepository: CTXGiftCardOrdering {
     private(set) var heldMerchantCalls: [CheckedContinuation<String, Error>] = []
     /// The currencies the order response names; `nil` for a field it leaves out.
     var answeredCurrencies: (payment: String?, card: String?) = (nil, nil)
+    /// The card value the order is answered with, given the amount ordered; nil for none.
+    var answeredCardAmount: (String) -> String? = { $0 }
 
     /// A `GET merchants/{id}` body; `currency` nil leaves the field out.
     static func merchantJSON(currency: String?, type: String = "min-max",
@@ -72,6 +74,7 @@ private final class StubCTXRepository: CTXGiftCardOrdering {
         ]
         body["paymentFiatCurrency"] = answeredCurrencies.payment
         body["cardFiatCurrency"] = answeredCurrencies.card
+        body["cardFiatAmount"] = answeredCardAmount(fiatAmount)
         return try JSONDecoder().decode(GiftCardResponse.self, from: JSONSerialization.data(withJSONObject: body))
     }
 }
@@ -553,6 +556,39 @@ final class DashSpendPurchaseTests: XCTestCase {
         XCTAssertEqual(payments.urlPayments.count, 1)
     }
 
+    /// The Dash amount of an answer is paid as it stands, so an answer for another card
+    /// value than the one confirmed, or for none that can be read, is not paid.
+    func testAnOrderAnsweredForAnotherCardValueIsNotPaid() async throws {
+        for answered in ["20.00", "24.99", "25.01", "30.00", "", "25,00", nil] as [String?] {
+            let viewModel = await ctxViewModel(loading: StubCTXRepository.merchantJSON(currency: "USD"))
+            let snapshot = try confirmation(of: 25, on: viewModel)
+            payments.requestedByURL = snapshot.approval.amount
+            ctx.answeredCardAmount = { _ in answered }
+
+            do {
+                _ = try await viewModel.purchaseGiftCardAndPay(snapshot)
+                XCTFail("the order was paid: \(answered ?? "nil")")
+            } catch {}
+
+            XCTAssertTrue(payments.isEmpty, answered ?? "nil")
+            XCTAssertTrue(recorder.records.isEmpty, answered ?? "nil")
+            XCTAssertNil(viewModel.purchaseSheet, answered ?? "nil")
+        }
+    }
+
+    func testAnOrderAnsweredForTheSameCardValueInAnotherScaleIsPaidAndRecorded() async throws {
+        let viewModel = await ctxViewModel(loading: StubCTXRepository.merchantJSON(currency: "USD"))
+        let snapshot = try confirmation(of: 25, on: viewModel)
+        payments.requestedByURL = snapshot.approval.amount
+        ctx.answeredCardAmount = { _ in "25" }
+
+        _ = try await finish(startPurchase(snapshot, on: viewModel), on: viewModel)
+
+        XCTAssertEqual(ctx.orders.map(\.fiatAmount), ["25.00"])
+        XCTAssertEqual(payments.urlPayments.count, 1)
+        XCTAssertEqual(recorder.records.map(\.price), [25])
+    }
+
     /// Clearing the selection sets `selectedDenomination`, whose observer puts the typed text
     /// back to "0". A currency change relies on that: "10.50" typed while the first load
     /// still showed dollars is not an amount of yen, and yen has no decimal key to edit it.
@@ -685,7 +721,9 @@ final class DashSpendPurchaseTests: XCTestCase {
 
         ctx.merchantAnswer = .success(StubCTXRepository.merchantJSON(currency: "USD"))
         await viewModel.updateMerchantInfo()
+        viewModel.sendableDuffs = .max
         viewModel.input = "25"
+        XCTAssertNil(viewModel.error)
         XCTAssertTrue(viewModel.showCost)
     }
 
@@ -721,6 +759,7 @@ final class DashSpendPurchaseTests: XCTestCase {
 
         rates.prices = Self.rates
         rates.areFetching = false
+        viewModel.sendableDuffs = .max
         viewModel.exchangeRatesDidChange()
         XCTAssertNil(viewModel.error)
     }

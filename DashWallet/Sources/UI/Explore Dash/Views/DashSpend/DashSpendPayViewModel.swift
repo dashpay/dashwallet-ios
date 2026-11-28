@@ -537,6 +537,12 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
             comment: "DashSpend"))
     }
 
+    static var cardValueMismatchError: DashSpendError {
+        .customError(String(
+            localized: "The gift card provider answered for a different card value than the one ordered. Nothing was sent. Please try again or contact support.",
+            comment: "DashSpend"))
+    }
+
     /// Closes the purchase sheet on the buyer's Cancel or swipe. A price change is declined.
     /// The sheet is not closed while the provider's answer is awaited.
     func dismissPurchaseSheet() {
@@ -688,6 +694,10 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
                                                   card: response.cardFiatCurrency) else {
                 DWLogger.log("Gift card order stopped: the provider did not answer in the currency ordered. Nothing was sent")
                 throw Self.currencyMismatchError
+            }
+            guard GiftCardCurrency.answerConfirms(cardValue: confirmedPrice, answered: response.cardFiatAmount) else {
+                DWLogger.log("Gift card order stopped: the provider did not answer for the card value ordered. Nothing was sent")
+                throw Self.cardValueMismatchError
             }
 
             // Process the payment using the payment URL

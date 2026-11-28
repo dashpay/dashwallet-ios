@@ -532657,6 +532657,9 @@
         }
       }
     },
+    "The gift card provider answered for a different card value than the one ordered. Nothing was sent. Please try again or contact support." : {
+      "comment" : "DashSpend"
+    },
     "The gift card provider answered in a different currency than the one ordered. Nothing was sent. Please try again or contact support." : {
       "comment" : "DashSpend"
     },

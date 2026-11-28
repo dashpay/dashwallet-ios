@@ -459,6 +459,22 @@ final class GiftCardCurrencyTests: XCTestCase {
         XCTAssertFalse(GiftCardCurrency.answerConfirms(ordered: "USD", payment: nil, card: "GBP"))
     }
 
+    /// The answer must be for the card value confirmed, compared as numbers.
+    func testAnAnswerIsForTheCardValueConfirmed() {
+        for equal in ["25", "25.00", "25.0", "025", "25."] {
+            XCTAssertTrue(GiftCardCurrency.answerConfirms(cardValue: 25, answered: equal), equal)
+        }
+        XCTAssertTrue(GiftCardCurrency.answerConfirms(cardValue: decimal("10.500"), answered: "10.5"))
+        XCTAssertTrue(GiftCardCurrency.answerConfirms(cardValue: 5000, answered: "5000"))
+        for other in ["24.99", "20", "25.01", "30", "250", "2.5", "0"] {
+            XCTAssertFalse(GiftCardCurrency.answerConfirms(cardValue: 25, answered: other), other)
+        }
+        for unreadable in [nil, "", " ", "25,00", "$25", "25 ", "-25", "+25", "2.5e1", ".", "1.2.3", "twenty", "٢٥",
+                           String(repeating: "0", count: 31) + "25"] as [String?] {
+            XCTAssertFalse(GiftCardCurrency.answerConfirms(cardValue: 25, answered: unreadable), "\(unreadable ?? "nil")")
+        }
+    }
+
     /// The card's currency is what was ordered, so an order in another currency than USD
     /// is confirmed only by an answer that names it, whatever the payment currency says.
     func testAnOrderInAnotherCurrencyNeedsTheCardCurrencyNamed() {

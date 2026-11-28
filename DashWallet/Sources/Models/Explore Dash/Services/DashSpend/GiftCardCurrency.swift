@@ -174,6 +174,18 @@ enum GiftCardCurrency {
         return ordered == usd || named(card) != nil
     }
 
+    /// Whether a provider's answer is for a card of `value`. The Dash amount in the answer is
+    /// paid as it stands, so the card it is for must be the one confirmed: `answered` has to
+    /// be a plain decimal equal to `value`, whatever its scale ("25" and "25.00" are equal).
+    static func answerConfirms(cardValue value: Decimal, answered: String?) -> Bool {
+        guard let answered, !answered.isEmpty, answered.utf8.count <= 32 else { return false }
+        let digits = UInt8(ascii: "0")...UInt8(ascii: "9")
+        let parts = answered.utf8.split(separator: UInt8(ascii: "."), omittingEmptySubsequences: false)
+        guard parts.count <= 2, parts[0].count > 0, parts.allSatisfy({ $0.allSatisfy(digits.contains) }),
+              let amount = Decimal(string: answered, locale: Locale(identifier: "en_US_POSIX")) else { return false }
+        return amount == value
+    }
+
     /// What the buyer pays for `amount` after `discount` (a fraction of it), rounded up once
     /// to the currency's decimals.
     static func discounted(_ amount: Decimal, by discount: Decimal, currency: String) -> Decimal {
