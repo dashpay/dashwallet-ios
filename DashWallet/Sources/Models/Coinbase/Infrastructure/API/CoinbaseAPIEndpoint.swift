@@ -139,9 +139,6 @@ public enum CoinbaseEndpoint {
     case activePaymentMethods
     case placeBuyOrder(CoinbasePlaceBuyOrderRequest)
     case sendCoinsToWallet(accountId: String, verificationCode: String?, dto: CoinbaseTransactionsRequest)
-    case getBaseIdForUSDModel(String)
-    case swapTrade(CoinbaseSwapeTradeRequest)
-    case swapTradeCommit(String)
     case accountAddress(String)
     case createCoinbaseAccountAddress(String, network: String?)
     case getToken(String)
@@ -192,9 +189,6 @@ extension CoinbaseEndpoint: TargetType, AccessTokenAuthorizable {
         case .activePaymentMethods: return "api/v3/brokerage/payment_methods"
         case .placeBuyOrder: return "api/v3/brokerage/orders"
         case .sendCoinsToWallet(let accountId, _, _): return "/v2/accounts/\(accountId)/transactions"
-        case .getBaseIdForUSDModel: return "/v2/assets/prices"
-        case .swapTrade: return "/v2/trades"
-        case .swapTradeCommit(let tradeId): return "/v2/trades/\(tradeId)/commit"
         case .accountAddress(let accountId): return "/v2/accounts/\(accountId)/addresses"
         case .createCoinbaseAccountAddress(let accountId, _): return "/v2/accounts/\(accountId)/addresses"
         case .getToken, .refreshToken: return "/oauth2/token"
@@ -207,7 +201,7 @@ extension CoinbaseEndpoint: TargetType, AccessTokenAuthorizable {
 
     public var method: Moya.Method {
         switch self {
-        case .getToken, .placeBuyOrder, .sendCoinsToWallet, .swapTrade, .swapTradeCommit, .createCoinbaseAccountAddress, .refreshToken, .revokeToken, .deposit:
+        case .getToken, .placeBuyOrder, .sendCoinsToWallet, .createCoinbaseAccountAddress, .refreshToken, .revokeToken, .deposit:
             return .post
         default:
             return .get
@@ -241,8 +235,6 @@ extension CoinbaseEndpoint: TargetType, AccessTokenAuthorizable {
             return .requestParameters(parameters: ["token": token], encoding: URLEncoding.httpBody)
         case .sendCoinsToWallet(_, _, let dto):
             return .requestJSONEncodable(dto)
-        case .swapTrade(let dto):
-            return .requestJSONEncodable(dto)
         case .placeBuyOrder(let dto):
             return .requestJSONEncodable(dto)
         case .deposit(_, let dto):
@@ -254,8 +246,6 @@ extension CoinbaseEndpoint: TargetType, AccessTokenAuthorizable {
             return .requestPlain
         case .accounts:
             return .requestParameters(parameters: ["limit": 300, "order": "asc"], encoding: URLEncoding.default)
-        case .getBaseIdForUSDModel(let base):
-            return .requestParameters(parameters: [base: base, "filter": "holdable", "resolution": "latest"], encoding: URLEncoding.default)
         case .exchangeRates(let currency):
             return .requestParameters(parameters: ["currency": currency], encoding: URLEncoding.default)
         default:
