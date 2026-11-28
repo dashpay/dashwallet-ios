@@ -32,6 +32,8 @@ struct DashSpendConfirmationDialog: View {
     /// The currency the card is priced in.
     let currency: String
     let discount: Decimal
+    /// What the buyer pays in the card currency: the price the approval holds.
+    let payable: Decimal
     /// What the buyer pays, in duffs at the wallet's rate.
     let dashAmount: UInt64
     let quantities: [Decimal: Int]?
@@ -43,9 +45,7 @@ struct DashSpendConfirmationDialog: View {
     let onConfirm: () -> Void
     let onCancel: () -> Void
 
-    private var youPayAmount: Decimal {
-        GiftCardCurrency.discounted(originalPrice, by: discount, currency: currency)
-    }
+    private var youPayAmount: Decimal { payable }
     private var currencySymbol: String { GiftCardCurrency.symbol(for: currency) }
 
     private func fiat(_ amount: Decimal) -> String {
@@ -316,7 +316,7 @@ private struct DashSpendConfirmationDialogPreview: View {
                     merchantIconUrl: "",
                     originalPrice: 75.70,
                     currency: "USD",
-                    discount: 0.10,
+                    discount: 0.10, payable: 68.13,
                     dashAmount: 174_690_000,
                     quantities: [50: 1, 25: 2],
                     isWaiting: false,

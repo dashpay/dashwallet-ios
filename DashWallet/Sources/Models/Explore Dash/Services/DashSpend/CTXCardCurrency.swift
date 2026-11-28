@@ -22,14 +22,17 @@ struct CTXMerchantTerms: Equatable {
     let isFixed: Bool
     /// The card values of a fixed merchant, in the order CTX lists them.
     let denominations: [Decimal]
-    /// The limits of a range merchant; nil for one the answer does not state.
+    /// The limits of a range merchant.
     let minimum: Decimal?
     let maximum: Decimal?
+    /// A `min-max-major` merchant sells whole amounts only.
+    let wholeAmountsOnly: Bool
 
-    /// Nil when the answer cannot be used: it names no usable currency, one of its amounts
-    /// is not a plain number the currency can hold, or a range it states has no room (a
-    /// maximum of zero, or one below the minimum).
-    init?(currency: String?, isRange: Bool, denominations: [String]) {
+    /// Nil when the answer cannot be used to buy a card: it names no usable currency, one of
+    /// its amounts is not a plain number the currency can hold, or the amounts do not make
+    /// the terms of its type: at least one card value above zero for `fixed`; a minimum and
+    /// a maximum above zero and not below it for `min-max` and `min-max-major`.
+    init?(currency: String?, denominationsType: String, denominations: [String]) {
         guard let currency = GiftCardCurrency.normalize(currency) else { return nil }
 
         var amounts: [Decimal] = []
@@ -40,15 +43,39 @@ struct CTXMerchantTerms: Equatable {
             }
             amounts.append(amount)
         }
-        if isRange, amounts.count >= 2, amounts[1] <= 0 || amounts[1] < amounts[0] {
+
+        switch denominationsType {
+        case "fixed":
+            let values = amounts.filter { $0 > 0 }
+            guard !values.isEmpty else { return nil }
+            isFixed = true
+            self.denominations = values
+            minimum = nil
+            maximum = nil
+            wholeAmountsOnly = false
+        case "min-max", "min-max-major":
+            // The server sends a minimum and a maximum for both. A third entry, which the
+            // Android client expects for `min-max-major`, is not a limit.
+            let isMajor = denominationsType == "min-max-major"
+            guard amounts.count == 2 || (isMajor && amounts.count == 3),
+                  amounts[1] > 0, amounts[0] <= amounts[1] else { return nil }
+            isFixed = false
+            self.denominations = []
+            minimum = amounts[0]
+            maximum = amounts[1]
+            wholeAmountsOnly = isMajor
+        default:
             return nil
         }
-
         self.currency = currency
-        isFixed = !isRange
-        self.denominations = isRange ? [] : amounts.filter { $0 > 0 }
-        minimum = isRange ? amounts.first.flatMap { $0 > 0 ? $0 : nil } : nil
-        maximum = isRange ? amounts.dropFirst().first.flatMap { $0 > 0 ? $0 : nil } : nil
+    }
+
+    /// Whether CTX sells a card of `price` under these terms.
+    func allows(_ price: Decimal) -> Bool {
+        guard price > 0 else { return false }
+        if isFixed { return denominations.contains(price) }
+        guard let minimum, let maximum, price >= minimum, price <= maximum else { return false }
+        return !wholeAmountsOnly || GiftCardCurrency.isWhole(price)
     }
 }
 
@@ -78,8 +105,9 @@ struct CardCurrencyLoads {
         case superseded
         /// No answer for a merchant whose currency is confirmed: everything stays as it is.
         case kept
-        /// The load decided the state. `clearsSelection` when the amounts on screen are no
-        /// longer in the currency they were chosen in.
+        /// The load decided the state. `clearsSelection` when it changed after the first
+        /// load: what is selected was chosen for another currency, or while none was known.
+        /// The first load clears nothing; no currency was shown while it ran.
         case applied(clearsSelection: Bool)
     }
 
@@ -89,18 +117,7 @@ struct CardCurrencyLoads {
         return nil
     }
 
-    /// The currency the screen's amounts are in, or nil when it is unknown. Until the first
-    /// load ends the amounts are the explore database's, whose merchants are all USD.
-    var shown: String? {
-        switch state {
-        case .loading: return GiftCardCurrency.usd
-        case .known(let currency): return currency
-        case .unknown: return nil
-        }
-    }
-
-    /// Starts a load and returns its number. The state stays while it runs: a confirmed
-    /// currency, and also an unknown one, so a retry never shows the first load's USD.
+    /// Starts a load and returns its number. The state stays while it runs.
     mutating func begin() -> Int {
         latest += 1
         return latest
@@ -109,7 +126,7 @@ struct CardCurrencyLoads {
     mutating func finish(_ load: Int, _ finding: Finding) -> Outcome {
         guard load == latest else { return .superseded }
 
-        let shownBefore = shown
+        let before = state
         switch finding {
         case .currency(let currency):
             state = .known(currency)
@@ -119,7 +136,7 @@ struct CardCurrencyLoads {
             if confirmed != nil { return .kept }
             state = .unknown
         }
-        return .applied(clearsSelection: shown != shownBefore)
+        return .applied(clearsSelection: before != .loading && state != before)
     }
 }
 
@@ -132,7 +149,7 @@ enum GiftCardPurchaseBlock: Equatable {
     case rateMissing
 
     /// - Parameters:
-    ///   - currency: the currency the screen's amounts are in; nil when unknown.
+    ///   - currency: the confirmed card currency; nil when there is none.
     ///   - rate: the wallet's price of one Dash in a currency; nil when it has none.
     static func check(currency: String?, rate: (String) -> Decimal?) -> GiftCardPurchaseBlock? {
         guard let currency else { return .currencyUnconfirmed }

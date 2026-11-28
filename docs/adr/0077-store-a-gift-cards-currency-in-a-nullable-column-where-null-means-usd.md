@@ -39,8 +39,10 @@ The rows already on devices have no currency. All of them were bought while ever
 `DatabaseConnection.migrations()` like the table's earlier columns.
 
 - **Read:** `GiftCard.currency` is optional and read with `try?`, like the other added columns.
-  `GiftCardCurrency.ofSavedCard` turns NULL, or a value that is not a currency code in use, into USD.
-  Nothing else interprets the column.
+  `GiftCardCurrency.ofSavedCard` turns NULL into USD and keeps a stored three-letter code as it is,
+  also one the running system's currency list does not have. A stored value that is not such a code
+  has no currency: the price is shown as a number, never as dollars. Nothing else interprets the
+  column.
 - **Write:** a purchase stores the currency the order was made in. A whole-row write stores
   `COALESCE(new, stored)`, so a writer without a currency keeps the stored one and never puts NULL
   over it.

@@ -54,7 +54,8 @@ enum GiftCardPaymentGuard {
     struct Approval: Equatable {
         /// The confirmed price in duffs at `rate`.
         let amount: UInt64
-        /// The confirmed price in fiat (card value less the discount).
+        /// The confirmed price in fiat: the card value less the discount, rounded up to the
+        /// card currency's decimals. It is the figure the buyer is shown.
         let fiatAmount: Decimal
         /// Fiat price of one Dash that `amount` was computed with.
         let rate: Decimal
@@ -126,9 +127,9 @@ enum GiftCardPaymentGuard {
     /// Throws `rateUnavailableError` when the rate is missing, not a positive number, or not
     /// fresh, and when the converted amount is not a positive duff count: a quote cannot be
     /// compared against such a rate. The amount is rounded down to a whole duff.
-    static func approve(price: Decimal, discount: Decimal, rate: ExchangeRate,
+    static func approve(price: Decimal, discount: Decimal, currency: String, rate: ExchangeRate,
                         now: Date = Date()) throws -> Approval {
-        let fiatAmount = price * (1 - discount)
+        let fiatAmount = GiftCardCurrency.discounted(price, by: discount, currency: currency)
         guard fiatAmount.isFinite, fiatAmount > 0 else { throw DashSpendError.invalidAmount }
 
         guard let ratePrice = rate.price, ratePrice.isFinite, ratePrice > 0,

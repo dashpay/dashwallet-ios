@@ -67,6 +67,19 @@ enum GiftCardCurrency {
         fits(amount, decimals: fractionDigits(currency))
     }
 
+    static func isWhole(_ amount: Decimal) -> Bool {
+        fits(amount, decimals: 0)
+    }
+
+    /// An amount without a currency, for when the currency is not known.
+    static func number(_ amount: Decimal, locale: Locale = .current) -> String {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.locale = locale
+        formatter.maximumFractionDigits = 4
+        return formatter.string(from: NSDecimalNumber(decimal: amount)) ?? ""
+    }
+
     private static func fits(_ amount: Decimal, decimals: Int) -> Bool {
         guard amount.isFinite else { return false }
         var source = amount
@@ -137,21 +150,28 @@ enum GiftCardCurrency {
         formatter(for: currency, locale: locale).currencySymbol
     }
 
-    /// The currency of a saved card. One without a currency was bought when every card was USD.
-    static func ofSavedCard(_ stored: String?) -> String {
-        normalize(stored) ?? usd
+    /// The currency a saved card's price is in: USD for a card saved without one, when every
+    /// card was USD. A stored code is kept as it is, whether or not this system knows it.
+    /// Nil for a stored value that is not a three-letter code.
+    static func ofSavedCard(_ stored: String?) -> String? {
+        guard let stored else { return usd }
+        let code = stored.trimmingCharacters(in: .whitespacesAndNewlines).uppercased()
+        let letters = UInt8(ascii: "A")...UInt8(ascii: "Z")
+        return code.utf8.count == 3 && code.utf8.allSatisfy { letters.contains($0) } ? code : nil
     }
 
     /// Whether a provider's answer is for the currency ordered. The Dash amount in the answer
-    /// is paid as it stands, so every currency it names must be the one ordered. An answer
-    /// that names none is accepted for USD only, the currency of every order before answers
-    /// named one.
-    static func answerConfirms(ordered: String, reported: [String?]) -> Bool {
-        let named = reported
-            .compactMap { $0?.trimmingCharacters(in: .whitespacesAndNewlines) }
-            .filter { !$0.isEmpty }
-        guard !named.isEmpty else { return ordered == usd }
-        return named.allSatisfy { $0.caseInsensitiveCompare(ordered) == .orderedSame }
+    /// is paid as it stands, so every currency it names must be the one ordered, and it must
+    /// name the card's. An answer that does not name the card's currency is accepted for USD
+    /// only, the currency of every order before answers named one.
+    static func answerConfirms(ordered: String, payment: String?, card: String?) -> Bool {
+        func named(_ code: String?) -> String? {
+            let code = code?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+            return code.isEmpty ? nil : code
+        }
+        let isOrdered = { (code: String) in code.caseInsensitiveCompare(ordered) == .orderedSame }
+        guard [payment, card].compactMap(named).allSatisfy(isOrdered) else { return false }
+        return ordered == usd || named(card) != nil
     }
 
     /// What the buyer pays for `amount` after `discount` (a fraction of it), rounded up once

@@ -168,7 +168,8 @@ class GiftCardDetailsViewModel: ObservableObject {
     private func loadGiftCard() async {
         guard let card = await giftCardsDAO.get(byTxId: txId) else { return }
 
-        let formattedPrice = GiftCardCurrency.string(card.price, currency: GiftCardCurrency.ofSavedCard(card.currency))
+        let formattedPrice = GiftCardCurrency.ofSavedCard(card.currency)
+            .map { GiftCardCurrency.string(card.price, currency: $0) } ?? GiftCardCurrency.number(card.price)
         let displayCards = buildDisplayCards(from: card, fallbackFormattedPrice: formattedPrice)
         let isClaimLink = displayCards.first?.isClaimLink ?? (card.number?.starts(with: "http") ?? false)
         let barcodeImage = displayCards.first?.barcodeImage ?? imageFromBarcode(value: card.barcodeValue, format: card.barcodeFormat)

@@ -40,8 +40,11 @@ private final class StubCTXRepository: CTXGiftCardOrdering {
 
     /// A `GET merchants/{id}` body; `currency` nil leaves the field out.
     static func merchantJSON(currency: String?, type: String = "min-max",
-                             denominations: [String] = ["5", "500"]) -> String {
-        var body: [String: Any] = ["id": "merchant-1", "denominationsType": type, "denominations": denominations]
+                             denominations: [Any] = ["5", "500"], savings: Int = 0) -> String {
+        var body: [String: Any] = [
+            "id": "merchant-1", "denominationsType": type, "denominations": denominations,
+            "savingsPercentage": savings,
+        ]
         body["currency"] = currency
         return String(decoding: try! JSONSerialization.data(withJSONObject: body), as: UTF8.self)
     }
@@ -147,7 +150,21 @@ private final class StubPurchaseRecorder: GiftCardPurchaseRecording {
 /// depend on the reachability of the machine the tests run on.
 @MainActor
 private final class OnlineDashSpendPayViewModel: DashSpendPayViewModel {
+    /// The most the wallet can send; `nil` to ask the wallet.
+    var sendableDuffs: UInt64?
+
     override var isNetworkAvailable: Bool { true }
+
+    override func fundsRefusal(requestedDuffs: UInt64) -> SendAmountError? {
+        guard let sendableDuffs else { return super.fundsRefusal(requestedDuffs: requestedDuffs) }
+        return requestedDuffs > sendableDuffs ? .insufficientFunds : nil
+    }
+}
+
+/// The wallet's rates, which a test changes while a view model reads them.
+private final class Rates {
+    var prices: [String: Decimal]
+    init(_ prices: [String: Decimal]) { self.prices = prices }
 }
 
 /// The stores the production purchase recorder writes to, kept in memory.
@@ -237,7 +254,9 @@ final class DashSpendPurchaseTests: XCTestCase {
         let dependencies = DashSpendPayViewModel.Dependencies(
             ctx: ctx, piggyCards: piggyCards, payments: payments, purchases: recorder)
         let viewModel = DashSpendPayViewModel(
-            merchant: merchant, provider: provider, confirmedCurrency: "USD", exchangeRate: { _ in rate },
+            merchant: merchant, provider: provider,
+            confirmedTerms: CTXMerchantTerms(currency: "USD", denominationsType: "min-max", denominations: ["1", "1000"]),
+            exchangeRate: { _ in rate },
             dependencies: dependencies)
         // No sheet is on screen in these tests, so nothing reports its dismissal.
         viewModel.sheetDismissalWait = 0.01
@@ -256,7 +275,12 @@ final class DashSpendPurchaseTests: XCTestCase {
 
     /// A CTX view model on the stubs whose merchant is still to be loaded.
     private func ctxViewModel(rates: [String: Decimal] = DashSpendPurchaseTests.rates,
-                              onRate: @escaping (String) -> Void = { _ in }) -> DashSpendPayViewModel {
+                              onRate: @escaping (String) -> Void = { _ in }) -> OnlineDashSpendPayViewModel {
+        ctxViewModel(live: Rates(rates), onRate: onRate)
+    }
+
+    private func ctxViewModel(live rates: Rates,
+                              onRate: @escaping (String) -> Void = { _ in }) -> OnlineDashSpendPayViewModel {
         let retrievedAt = Int(Date().timeIntervalSince1970)
         let dependencies = DashSpendPayViewModel.Dependencies(
             ctx: ctx, piggyCards: piggyCards, payments: payments, purchases: recorder)
@@ -264,7 +288,7 @@ final class DashSpendPurchaseTests: XCTestCase {
             merchant: merchant, provider: .ctx,
             exchangeRate: { currency in
                 onRate(currency)
-                return GiftCardPaymentGuard.ExchangeRate(price: rates[currency], retrievedAt: retrievedAt)
+                return GiftCardPaymentGuard.ExchangeRate(price: rates.prices[currency], retrievedAt: retrievedAt)
             },
             dependencies: dependencies)
         viewModel.sheetDismissalWait = 0.01
@@ -272,7 +296,7 @@ final class DashSpendPurchaseTests: XCTestCase {
     }
 
     /// A CTX view model that has loaded a merchant with `json` as CTX's answer.
-    private func ctxViewModel(loading json: String) async -> DashSpendPayViewModel {
+    private func ctxViewModel(loading json: String) async -> OnlineDashSpendPayViewModel {
         let viewModel = ctxViewModel()
         ctx.merchantAnswer = .success(json)
         await viewModel.updateMerchantInfo()
@@ -307,7 +331,9 @@ final class DashSpendPurchaseTests: XCTestCase {
     func testNothingIsBoughtBeforeTheCurrencyIsConfirmed() {
         let viewModel = ctxViewModel()
 
-        XCTAssertEqual(viewModel.cardCurrency, "USD")
+        XCTAssertNil(viewModel.cardCurrency)
+        XCTAssertEqual(viewModel.currencySymbol, "")
+        XCTAssertNil(viewModel.error)
         XCTAssertThrowsError(try viewModel.beginPurchase(price: 25))
         XCTAssertNil(viewModel.purchaseSheet)
         assertNothingOrdered()
@@ -370,7 +396,7 @@ final class DashSpendPurchaseTests: XCTestCase {
     func testAPoundCardIsOrderedPaidAndRecordedInPounds() async throws {
         let viewModel = await ctxViewModel(loading: StubCTXRepository.merchantJSON(currency: "GBP"))
         XCTAssertEqual(viewModel.cardCurrency, "GBP")
-        XCTAssertEqual(viewModel.selectionResets, 1)
+        XCTAssertEqual(viewModel.selectionResets, 0)
         XCTAssertEqual(viewModel.minimumAmount, 5)
         XCTAssertEqual(viewModel.maximumAmount, 500)
 
@@ -487,7 +513,7 @@ final class DashSpendPurchaseTests: XCTestCase {
         // The last answer names no currency at all, which only a USD order accepts.
         let answers: [(payment: String?, card: String?)] = [
             (payment: "USD", card: "GBP"), (payment: "GBP", card: "USD"), (payment: nil, card: "EUR"),
-            (payment: nil, card: nil),
+            (payment: nil, card: nil), (payment: "GBP", card: nil),
         ]
         for answered in answers {
             let viewModel = await ctxViewModel(loading: StubCTXRepository.merchantJSON(currency: "GBP"))
@@ -521,7 +547,7 @@ final class DashSpendPurchaseTests: XCTestCase {
     /// back to "0". A currency change relies on that: "10.50" typed while the first load
     /// still showed dollars is not an amount of yen, and yen has no decimal key to edit it.
     func testClearingTheSelectionForAnotherCurrencyResetsTheTypedText() async {
-        let viewModel = ctxViewModel()
+        let viewModel = await ctxViewModel(loading: StubCTXRepository.merchantJSON(currency: "GBP"))
         let separator = Locale.current.decimalSeparator ?? "."
         viewModel.input = "10\(separator)50"
         XCTAssertEqual(viewModel.amount, decimal("10.5"))
@@ -541,7 +567,6 @@ final class DashSpendPurchaseTests: XCTestCase {
     /// shows no currency, and typing during it does not clear the message.
     func testARetryShowsNoCurrencyAndKeepsItsMessage() async {
         let viewModel = ctxViewModel()
-        XCTAssertEqual(viewModel.currencySymbol, GiftCardCurrency.symbol(for: "USD"))
         await viewModel.updateMerchantInfo()
         XCTAssertEqual(viewModel.error as? GiftCardPurchaseBlock, .currencyUnconfirmed)
 
@@ -587,6 +612,197 @@ final class DashSpendPurchaseTests: XCTestCase {
             XCTAssertThrowsError(try viewModel.beginPurchase(price: 25), "\(denominations)")
         }
         assertNothingOrdered()
+    }
+
+    // MARK: CTX, the price confirmed and the funds for it
+
+    /// $25 at 3.75% off is $24.0625. The buyer is shown $24.07, and that is the price the
+    /// approval holds, the Dash is computed from and a higher quote is compared with.
+    func testThePriceShownIsThePriceApprovedAndPaid() async throws {
+        let viewModel = await ctxViewModel(loading: StubCTXRepository.merchantJSON(currency: "USD", savings: 375))
+        let snapshot = try confirmation(of: 25, on: viewModel)
+
+        XCTAssertEqual(snapshot.approval.fiatAmount, decimal("24.07"))
+        XCTAssertEqual(snapshot.approval.amount, 60_175_000)
+
+        payments.requestedByURL = 60_175_000
+        _ = try await finish(startPurchase(snapshot, on: viewModel), on: viewModel)
+        XCTAssertEqual(payments.urlPayments.map(\.amount), [60_175_000])
+    }
+
+    /// 100 yen at 3.75% off is 96.25, shown as 97. A quote for 97 yen of Dash is the price
+    /// shown, so the buyer is not asked about it again.
+    func testAQuoteForThePriceShownInYenIsNotAskedAboutAgain() async throws {
+        let viewModel = await ctxViewModel(loading: StubCTXRepository.merchantJSON(
+            currency: "JPY", denominations: ["100", "5000"], savings: 375))
+        let snapshot = try confirmation(of: 100, on: viewModel)
+        XCTAssertEqual(snapshot.approval.fiatAmount, 97)
+        XCTAssertEqual(snapshot.approval.amount, 1_940_000)
+
+        ctx.answeredCurrencies = (payment: "JPY", card: "JPY")
+        payments.requestedByURL = 1_940_000
+        _ = try await finish(startPurchase(snapshot, on: viewModel), on: viewModel)
+        XCTAssertEqual(payments.urlPayments.map(\.amount), [1_940_000])
+    }
+
+    /// A 100 pound card at 10% off costs 90 pounds: 1.8 Dash at 50 pounds per Dash, not the
+    /// 2 Dash of its face value.
+    func testTheFundsCheckIsForThePricePaidNotTheFaceValue() async {
+        let viewModel = await ctxViewModel(loading: StubCTXRepository.merchantJSON(currency: "GBP", savings: 1000))
+
+        viewModel.sendableDuffs = 190_000_000
+        viewModel.input = "100"
+        XCTAssertNil(viewModel.error)
+
+        viewModel.sendableDuffs = 179_999_999
+        viewModel.input = "100"
+        XCTAssertEqual(viewModel.error as? SendAmountError, .insufficientFunds)
+
+        viewModel.sendableDuffs = 180_000_000
+        viewModel.input = "100"
+        XCTAssertNil(viewModel.error)
+    }
+
+    // MARK: CTX, a change of the rate
+
+    func testAFundsVerdictIsJudgedAgainWhenTheRateChanges() async {
+        let rates = Rates(Self.rates)
+        let viewModel = ctxViewModel(live: rates)
+        ctx.merchantAnswer = .success(StubCTXRepository.merchantJSON(currency: "GBP"))
+        await viewModel.updateMerchantInfo()
+        viewModel.sendableDuffs = 150_000_000
+        viewModel.input = "100"
+        XCTAssertEqual(viewModel.error as? SendAmountError, .insufficientFunds)
+
+        rates.prices["GBP"] = 100
+        viewModel.exchangeRatesDidChange()
+        XCTAssertNil(viewModel.error)
+    }
+
+    func testARateThatGoesMissingBlocksAFormWithoutAnError() async {
+        let rates = Rates(Self.rates)
+        let viewModel = ctxViewModel(live: rates)
+        ctx.merchantAnswer = .success(StubCTXRepository.merchantJSON(currency: "GBP"))
+        await viewModel.updateMerchantInfo()
+        viewModel.sendableDuffs = .max
+        viewModel.input = "100"
+        XCTAssertNil(viewModel.error)
+
+        rates.prices["GBP"] = nil
+        viewModel.exchangeRatesDidChange()
+        XCTAssertEqual(viewModel.error as? GiftCardPurchaseBlock, .rateMissing)
+
+        rates.prices["GBP"] = 50
+        viewModel.exchangeRatesDidChange()
+        XCTAssertNil(viewModel.error)
+    }
+
+    func testARateChangeLeavesAnErrorItDoesNotOwn() async {
+        let rates = Rates(Self.rates)
+        let viewModel = ctxViewModel(live: rates)
+        ctx.merchantAnswer = .success(StubCTXRepository.merchantJSON(currency: "GBP"))
+        await viewModel.updateMerchantInfo()
+        viewModel.error = DashSpendError.networkError
+
+        rates.prices["GBP"] = nil
+        viewModel.exchangeRatesDidChange()
+        guard case .networkError? = viewModel.error as? DashSpendError else {
+            return XCTFail("the error was replaced: \(String(describing: viewModel.error))")
+        }
+    }
+
+    // MARK: CTX, what the merchant sells
+
+    /// A card chosen from the list on screen while the merchant loads is dropped when CTX
+    /// no longer sells that value, and cannot be ordered.
+    func testACardCTXNoLongerSellsIsDroppedAndCannotBeOrdered() async throws {
+        let viewModel = await ctxViewModel(loading: StubCTXRepository.merchantJSON(
+            currency: "USD", type: "fixed", denominations: ["25", "50"]))
+        let resets = viewModel.selectionResets
+        viewModel.updateTotalAmount(25, quantities: [25: 1])
+        let snapshot = try confirmation(of: 25, quantities: [25: 1], on: viewModel)
+
+        ctx.merchantAnswer = .success(StubCTXRepository.merchantJSON(
+            currency: "USD", type: "fixed", denominations: ["50", "100"]))
+        await viewModel.updateMerchantInfo()
+
+        XCTAssertEqual(viewModel.selectionResets, resets + 1)
+        XCTAssertNil(viewModel.purchaseSheet)
+        XCTAssertThrowsError(try viewModel.beginPurchase(price: 25, quantities: [25: 1]))
+        await assertCancelled(startPurchase(snapshot, on: viewModel), on: viewModel)
+        assertNothingOrdered()
+    }
+
+    func testARefreshWithTheSameCardsKeepsTheSelection() async throws {
+        let json = StubCTXRepository.merchantJSON(currency: "USD", type: "fixed", denominations: ["25", "50"])
+        let viewModel = await ctxViewModel(loading: json)
+        let resets = viewModel.selectionResets
+        let snapshot = try confirmation(of: 25, quantities: [25: 1], on: viewModel)
+
+        await viewModel.updateMerchantInfo()
+
+        XCTAssertEqual(viewModel.selectionResets, resets)
+        XCTAssertEqual(viewModel.purchaseSheet, .confirm(snapshot))
+    }
+
+    func testAnAmountOutsideTheConfirmedLimitsIsRefusedBeforeAnOrder() async throws {
+        let viewModel = await ctxViewModel(loading: StubCTXRepository.merchantJSON(currency: "USD"))
+        XCTAssertThrowsError(try viewModel.beginPurchase(price: 4))
+        XCTAssertThrowsError(try viewModel.beginPurchase(price: 501))
+        XCTAssertNoThrow(try viewModel.beginPurchase(price: 500))
+
+        ctx.merchantAnswer = .success(StubCTXRepository.merchantJSON(currency: "USD", denominations: ["5", "100"]))
+        await viewModel.updateMerchantInfo()
+        XCTAssertNil(viewModel.purchaseSheet)
+        assertNothingOrdered()
+    }
+
+    /// CTX's own JSON, through the response model: a list the model cannot read, a list that
+    /// is missing and a list too short for its type all leave the merchant unusable, with
+    /// Try Again, and never with limits or cards from before.
+    func testDenominationsThatCannotBeReadOrAreIncompleteLeaveTheMerchantUnusable() async throws {
+        let answers: [String] = [
+            StubCTXRepository.merchantJSON(currency: "USD", denominations: [5, NSNull()]),
+            StubCTXRepository.merchantJSON(currency: "USD", denominations: ["5", 500]),
+            StubCTXRepository.merchantJSON(currency: "USD", denominations: []),
+            StubCTXRepository.merchantJSON(currency: "USD", denominations: ["5"]),
+            StubCTXRepository.merchantJSON(currency: "USD", type: "fixed", denominations: []),
+            StubCTXRepository.merchantJSON(currency: "USD", type: "fixed", denominations: [NSNull()]),
+            #"{"id": "merchant-1", "denominationsType": "min-max", "currency": "USD"}"#,
+            StubCTXRepository.merchantJSON(currency: "USD", type: "something-new"),
+        ]
+        for answer in answers {
+            let viewModel = await ctxViewModel(loading: StubCTXRepository.merchantJSON(currency: "USD"))
+            _ = try confirmation(of: 25, on: viewModel)
+
+            ctx.merchantAnswer = .success(answer)
+            await viewModel.updateMerchantInfo()
+
+            XCTAssertNil(viewModel.cardCurrency, answer)
+            XCTAssertTrue(viewModel.canRetryMerchantLoad, answer)
+            XCTAssertEqual(viewModel.minimumAmount, 0, answer)
+            XCTAssertEqual(viewModel.maximumAmount, 0, answer)
+            XCTAssertEqual(viewModel.denominations, [], answer)
+            XCTAssertNil(viewModel.purchaseSheet, answer)
+            XCTAssertThrowsError(try viewModel.beginPurchase(price: 25), answer)
+        }
+        assertNothingOrdered()
+    }
+
+    /// `min-max-major` is a range of whole amounts, not two fixed cards.
+    func testAMajorRangeMerchantIsARangeOfWholeAmounts() async throws {
+        for denominations in [[10, 100], [10, 100, 5]] {
+            let viewModel = await ctxViewModel(loading: StubCTXRepository.merchantJSON(
+                currency: "USD", type: "min-max-major", denominations: denominations))
+
+            XCTAssertFalse(viewModel.isFixedDenomination)
+            XCTAssertEqual(viewModel.denominations, [])
+            XCTAssertEqual(viewModel.minimumAmount, 10)
+            XCTAssertEqual(viewModel.maximumAmount, 100)
+            XCTAssertEqual(viewModel.amountFractionDigits, 0)
+            XCTAssertThrowsError(try viewModel.beginPurchase(price: decimal("25.5")))
+            XCTAssertEqual(try confirmation(of: 25, on: viewModel).currency, "USD")
+        }
     }
 
     func testARefreshWithoutAnAnswerKeepsTheConfirmedCurrency() async throws {
@@ -682,7 +898,7 @@ final class DashSpendPurchaseTests: XCTestCase {
         ctx.answerMerchantCall(0, with: StubCTXRepository.merchantJSON(currency: "GBP"))
         await older.value
         XCTAssertTrue(viewModel.isLoading)
-        XCTAssertEqual(viewModel.cardCurrency, "USD")
+        XCTAssertNil(viewModel.cardCurrency)
         XCTAssertEqual(viewModel.selectionResets, 0)
 
         ctx.answerMerchantCall(1, with: StubCTXRepository.merchantJSON(currency: "USD"))

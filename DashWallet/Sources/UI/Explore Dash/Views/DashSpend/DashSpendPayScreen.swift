@@ -379,6 +379,7 @@ private struct DashSpendPurchaseSheet: View {
                 originalPrice: snapshot.price,
                 currency: snapshot.currency,
                 discount: snapshot.discount,
+                payable: snapshot.approval.fiatAmount,
                 dashAmount: snapshot.approval.amount,
                 quantities: snapshot.quantities.isEmpty ? nil : snapshot.quantities,
                 isWaiting: isWaiting,

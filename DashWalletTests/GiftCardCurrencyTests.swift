@@ -158,7 +158,7 @@ final class GiftCardCurrencyTests: XCTestCase {
     // MARK: - What a merchant sells
 
     func testARangeMerchantsLimitsAreReadInItsCurrency() {
-        let terms = CTXMerchantTerms(currency: "GBP", isRange: true, denominations: ["5", "250.50"])
+        let terms = CTXMerchantTerms(currency: "GBP", denominationsType: "min-max", denominations: ["5", "250.50"])
         XCTAssertEqual(terms?.currency, "GBP")
         XCTAssertEqual(terms?.isFixed, false)
         XCTAssertEqual(terms?.minimum, 5)
@@ -167,7 +167,7 @@ final class GiftCardCurrencyTests: XCTestCase {
     }
 
     func testAFixedMerchantKeepsFractionalCardValues() {
-        let terms = CTXMerchantTerms(currency: "eur", isRange: false, denominations: ["10", "12.50", " 25 "])
+        let terms = CTXMerchantTerms(currency: "eur", denominationsType: "fixed", denominations: ["10", "12.50", " 25 "])
         XCTAssertEqual(terms?.currency, "EUR")
         XCTAssertEqual(terms?.isFixed, true)
         XCTAssertEqual(terms?.denominations, [10, decimal("12.5"), 25])
@@ -176,83 +176,119 @@ final class GiftCardCurrencyTests: XCTestCase {
     }
 
     func testKuwaitiDinarCardValuesKeepThreeDecimals() {
-        let terms = CTXMerchantTerms(currency: "KWD", isRange: false, denominations: ["1.125", "5"])
+        let terms = CTXMerchantTerms(currency: "KWD", denominationsType: "fixed", denominations: ["1.125", "5"])
         XCTAssertEqual(terms?.denominations, [decimal("1.125"), 5])
     }
 
     func testAnAnswerWithoutAUsableCurrencyIsUnusable() {
-        XCTAssertNil(CTXMerchantTerms(currency: nil, isRange: true, denominations: ["5", "100"]))
-        XCTAssertNil(CTXMerchantTerms(currency: "", isRange: true, denominations: ["5", "100"]))
-        XCTAssertNil(CTXMerchantTerms(currency: "  ", isRange: false, denominations: ["5"]))
-        XCTAssertNil(CTXMerchantTerms(currency: "ZZZ", isRange: false, denominations: ["5"]))
+        XCTAssertNil(CTXMerchantTerms(currency: nil, denominationsType: "min-max", denominations: ["5", "100"]))
+        XCTAssertNil(CTXMerchantTerms(currency: "", denominationsType: "min-max", denominations: ["5", "100"]))
+        XCTAssertNil(CTXMerchantTerms(currency: "  ", denominationsType: "fixed", denominations: ["5"]))
+        XCTAssertNil(CTXMerchantTerms(currency: "ZZZ", denominationsType: "fixed", denominations: ["5"]))
     }
 
     func testAnAnswerWithAnAmountThatIsNotANumberOfTheCurrencyIsUnusable() {
-        XCTAssertNil(CTXMerchantTerms(currency: "USD", isRange: false, denominations: ["10", "abc"]))
-        XCTAssertNil(CTXMerchantTerms(currency: "USD", isRange: false, denominations: ["1,000"]))
-        XCTAssertNil(CTXMerchantTerms(currency: "JPY", isRange: false, denominations: ["1000.5"]))
-        XCTAssertNil(CTXMerchantTerms(currency: "USD", isRange: true, denominations: ["5", "10.005"]))
+        XCTAssertNil(CTXMerchantTerms(currency: "USD", denominationsType: "fixed", denominations: ["10", "abc"]))
+        XCTAssertNil(CTXMerchantTerms(currency: "USD", denominationsType: "fixed", denominations: ["1,000"]))
+        XCTAssertNil(CTXMerchantTerms(currency: "JPY", denominationsType: "fixed", denominations: ["1000.5"]))
+        XCTAssertNil(CTXMerchantTerms(currency: "USD", denominationsType: "min-max", denominations: ["5", "10.005"]))
     }
 
     func testARangeWithoutRoomIsUnusable() {
-        XCTAssertNil(CTXMerchantTerms(currency: "USD", isRange: true, denominations: ["5", "0"]))
-        XCTAssertNil(CTXMerchantTerms(currency: "USD", isRange: true, denominations: ["0", "0"]))
-        XCTAssertNil(CTXMerchantTerms(currency: "USD", isRange: true, denominations: ["100", "5"]))
-        XCTAssertNotNil(CTXMerchantTerms(currency: "USD", isRange: true, denominations: ["5", "5"]))
+        XCTAssertNil(CTXMerchantTerms(currency: "USD", denominationsType: "min-max", denominations: ["5", "0"]))
+        XCTAssertNil(CTXMerchantTerms(currency: "USD", denominationsType: "min-max", denominations: ["0", "0"]))
+        XCTAssertNil(CTXMerchantTerms(currency: "USD", denominationsType: "min-max", denominations: ["100", "5"]))
+        XCTAssertNotNil(CTXMerchantTerms(currency: "USD", denominationsType: "min-max", denominations: ["5", "5"]))
     }
 
     func testAmountsThatAreNotFiniteOrAreNegativeAreUnusable() {
         for text in ["NaN", "nan", "inf", "Infinity", "-5", "-0.01", "1e400", String(repeating: "9", count: 60)] {
-            XCTAssertNil(CTXMerchantTerms(currency: "USD", isRange: true, denominations: ["5", text]), text)
-            XCTAssertNil(CTXMerchantTerms(currency: "USD", isRange: false, denominations: [text]), text)
+            XCTAssertNil(CTXMerchantTerms(currency: "USD", denominationsType: "min-max", denominations: ["5", text]), text)
+            XCTAssertNil(CTXMerchantTerms(currency: "USD", denominationsType: "fixed", denominations: [text]), text)
         }
     }
 
-    func testMissingLimitsAndZeroCardValuesAreLeftOut() {
-        let range = CTXMerchantTerms(currency: "USD", isRange: true, denominations: ["0"])
-        XCTAssertNotNil(range)
-        XCTAssertNil(range?.minimum)
-        XCTAssertNil(range?.maximum)
-
-        let fixed = CTXMerchantTerms(currency: "USD", isRange: false, denominations: ["0", "25"])
+    func testZeroCardValuesAreLeftOut() {
+        let fixed = CTXMerchantTerms(currency: "USD", denominationsType: "fixed", denominations: ["0", "25"])
         XCTAssertEqual(fixed?.denominations, [25])
+    }
+
+    /// Terms are known only when a card can be bought under them. The response model
+    /// decodes a list it cannot read, such as `[5, null]`, as an empty one.
+    func testAnAnswerWhoseAmountsDoNotMakeItsTermsIsUnusable() {
+        XCTAssertNil(CTXMerchantTerms(currency: "USD", denominationsType: "fixed", denominations: []))
+        XCTAssertNil(CTXMerchantTerms(currency: "USD", denominationsType: "fixed", denominations: ["0"]))
+        XCTAssertNil(CTXMerchantTerms(currency: "USD", denominationsType: "min-max", denominations: []))
+        XCTAssertNil(CTXMerchantTerms(currency: "USD", denominationsType: "min-max", denominations: ["5"]))
+        XCTAssertNil(CTXMerchantTerms(currency: "USD", denominationsType: "min-max", denominations: ["5", "50", "500"]))
+        XCTAssertNil(CTXMerchantTerms(currency: "USD", denominationsType: "min-max-major", denominations: ["5"]))
+        XCTAssertNil(CTXMerchantTerms(currency: "USD", denominationsType: "range", denominations: ["5", "500"]))
+        XCTAssertNil(CTXMerchantTerms(currency: "USD", denominationsType: "", denominations: ["25"]))
+    }
+
+    /// `min-max-major` is a range of whole amounts. The server sends a minimum and a maximum;
+    /// the limits are the first two entries when a third comes with them.
+    func testAMajorRangeIsARangeOfWholeAmounts() {
+        for denominations in [["10", "100"], ["10", "100", "5"]] {
+            let terms = CTXMerchantTerms(currency: "JPY", denominationsType: "min-max-major", denominations: denominations)
+            XCTAssertEqual(terms?.isFixed, false)
+            XCTAssertEqual(terms?.minimum, 10)
+            XCTAssertEqual(terms?.maximum, 100)
+            XCTAssertEqual(terms?.denominations, [])
+            XCTAssertEqual(terms?.wholeAmountsOnly, true)
+        }
+        let dollars = CTXMerchantTerms(currency: "USD", denominationsType: "min-max-major", denominations: ["10", "100"])
+        XCTAssertEqual(dollars?.allows(25), true)
+        XCTAssertEqual(dollars?.allows(decimal("25.5")), false)
+        XCTAssertEqual(CTXMerchantTerms(currency: "USD", denominationsType: "min-max", denominations: ["10", "100"])?
+            .allows(decimal("25.5")), true)
+    }
+
+    func testTermsAllowOnlyACardTheMerchantSells() {
+        let range = CTXMerchantTerms(currency: "USD", denominationsType: "min-max", denominations: ["5", "500"])
+        XCTAssertEqual(range?.allows(5), true)
+        XCTAssertEqual(range?.allows(500), true)
+        XCTAssertEqual(range?.allows(decimal("4.99")), false)
+        XCTAssertEqual(range?.allows(decimal("500.01")), false)
+        XCTAssertEqual(range?.allows(0), false)
+
+        let fixed = CTXMerchantTerms(currency: "USD", denominationsType: "fixed", denominations: ["25", "50"])
+        XCTAssertEqual(fixed?.allows(25), true)
+        XCTAssertEqual(fixed?.allows(50), true)
+        XCTAssertEqual(fixed?.allows(30), false)
+        XCTAssertEqual(fixed?.allows(0), false)
     }
 
     // MARK: - Which load names the currency
 
+    /// No currency is confirmed, or shown, until CTX has named one. The first load clears no
+    /// selection: nothing on screen was in a currency.
     func testTheFirstAnswerConfirmsTheCurrency() {
-        var loads = CardCurrencyLoads()
-        XCTAssertEqual(loads.state, .loading)
-        XCTAssertNil(loads.confirmed)
-        // The explore database's amounts, which are in USD, are on screen until then.
-        XCTAssertEqual(loads.shown, "USD")
+        for currency in ["USD", "GBP"] {
+            var loads = CardCurrencyLoads()
+            XCTAssertEqual(loads.state, .loading)
+            XCTAssertNil(loads.confirmed)
 
-        let load = loads.begin()
-        XCTAssertEqual(loads.finish(load, .currency("USD")), .applied(clearsSelection: false))
-        XCTAssertEqual(loads.state, .known("USD"))
-        XCTAssertEqual(loads.confirmed, "USD")
-    }
-
-    func testAnotherCurrencyThanTheOneOnScreenClearsTheSelection() {
-        var loads = CardCurrencyLoads()
-        let load = loads.begin()
-        XCTAssertEqual(loads.finish(load, .currency("GBP")), .applied(clearsSelection: true))
-        XCTAssertEqual(loads.shown, "GBP")
+            let load = loads.begin()
+            XCTAssertNil(loads.confirmed)
+            XCTAssertEqual(loads.finish(load, .currency(currency)), .applied(clearsSelection: false))
+            XCTAssertEqual(loads.state, .known(currency))
+            XCTAssertEqual(loads.confirmed, currency)
+        }
     }
 
     func testAFirstLoadWithoutAnAnswerLeavesTheCurrencyUnknown() {
         var loads = CardCurrencyLoads()
         let load = loads.begin()
-        XCTAssertEqual(loads.finish(load, .noAnswer), .applied(clearsSelection: true))
+        XCTAssertEqual(loads.finish(load, .noAnswer), .applied(clearsSelection: false))
         XCTAssertEqual(loads.state, .unknown)
         XCTAssertNil(loads.confirmed)
-        XCTAssertNil(loads.shown)
     }
 
     func testAnUnusableAnswerLeavesTheCurrencyUnknown() {
         var loads = CardCurrencyLoads()
         let load = loads.begin()
-        XCTAssertEqual(loads.finish(load, .unusable), .applied(clearsSelection: true))
+        XCTAssertEqual(loads.finish(load, .unusable), .applied(clearsSelection: false))
         XCTAssertEqual(loads.state, .unknown)
     }
 
@@ -290,7 +326,7 @@ final class GiftCardCurrencyTests: XCTestCase {
         let older = loads.begin()
         let newer = loads.begin()
 
-        XCTAssertEqual(loads.finish(newer, .currency("GBP")), .applied(clearsSelection: true))
+        XCTAssertEqual(loads.finish(newer, .currency("GBP")), .applied(clearsSelection: false))
         XCTAssertEqual(loads.finish(older, .currency("USD")), .superseded)
         XCTAssertEqual(loads.finish(older, .unusable), .superseded)
         XCTAssertEqual(loads.confirmed, "GBP")
@@ -303,20 +339,19 @@ final class GiftCardCurrencyTests: XCTestCase {
 
         XCTAssertEqual(loads.finish(older, .currency("USD")), .superseded)
         XCTAssertEqual(loads.state, .loading)
-        XCTAssertEqual(loads.finish(newer, .currency("GBP")), .applied(clearsSelection: true))
+        XCTAssertEqual(loads.finish(newer, .currency("GBP")), .applied(clearsSelection: false))
     }
 
-    /// Only the first load shows USD provisionally. A retry after an unknown currency shows
-    /// none until CTX names one.
-    func testTryingAgainAfterAnUnknownCurrencyShowsNoCurrencyWhileItLoads() {
+    /// A retry after an unknown currency confirms none while it runs, and what was selected
+    /// meanwhile is cleared when it names one.
+    func testTryingAgainAfterAnUnknownCurrencyConfirmsNoneWhileItLoads() {
         var loads = CardCurrencyLoads()
-        XCTAssertEqual(loads.finish(loads.begin(), .noAnswer), .applied(clearsSelection: true))
+        XCTAssertEqual(loads.finish(loads.begin(), .noAnswer), .applied(clearsSelection: false))
 
         let retry = loads.begin()
         XCTAssertEqual(loads.state, .unknown)
-        XCTAssertNil(loads.shown)
         XCTAssertNil(loads.confirmed)
-        XCTAssertEqual(GiftCardPurchaseBlock.check(currency: loads.shown, rate: { _ in 40 }), .currencyUnconfirmed)
+        XCTAssertEqual(GiftCardPurchaseBlock.check(currency: loads.confirmed, rate: { _ in 40 }), .currencyUnconfirmed)
 
         XCTAssertEqual(loads.finish(retry, .currency("USD")), .applied(clearsSelection: true))
         XCTAssertEqual(loads.confirmed, "USD")
@@ -324,11 +359,11 @@ final class GiftCardCurrencyTests: XCTestCase {
 
     func testARetryWithoutAnAnswerLeavesTheCurrencyUnknown() {
         var loads = CardCurrencyLoads()
-        XCTAssertEqual(loads.finish(loads.begin(), .unusable), .applied(clearsSelection: true))
+        XCTAssertEqual(loads.finish(loads.begin(), .unusable), .applied(clearsSelection: false))
 
         XCTAssertEqual(loads.finish(loads.begin(), .noAnswer), .applied(clearsSelection: false))
         XCTAssertEqual(loads.state, .unknown)
-        XCTAssertNil(loads.shown)
+        XCTAssertNil(loads.confirmed)
     }
 
     // MARK: - What blocks every purchase
@@ -400,25 +435,35 @@ final class GiftCardCurrencyTests: XCTestCase {
     // MARK: - The provider's answer and the saved card
 
     func testAnAnswerInTheOrderedCurrencyConfirmsTheOrder() {
-        XCTAssertTrue(GiftCardCurrency.answerConfirms(ordered: "GBP", reported: ["GBP", "gbp"]))
-        XCTAssertTrue(GiftCardCurrency.answerConfirms(ordered: "GBP", reported: [nil, " GBP "]))
-        XCTAssertTrue(GiftCardCurrency.answerConfirms(ordered: "USD", reported: ["USD", nil]))
+        XCTAssertTrue(GiftCardCurrency.answerConfirms(ordered: "GBP", payment: "GBP", card: "gbp"))
+        XCTAssertTrue(GiftCardCurrency.answerConfirms(ordered: "GBP", payment: nil, card: " GBP "))
+        XCTAssertTrue(GiftCardCurrency.answerConfirms(ordered: "USD", payment: "USD", card: "USD"))
     }
 
     func testAnAnswerThatNamesAnotherCurrencyDoesNotConfirmTheOrder() {
-        XCTAssertFalse(GiftCardCurrency.answerConfirms(ordered: "GBP", reported: ["USD", "GBP"]))
-        XCTAssertFalse(GiftCardCurrency.answerConfirms(ordered: "GBP", reported: ["GBP", "EUR"]))
-        XCTAssertFalse(GiftCardCurrency.answerConfirms(ordered: "GBP", reported: [nil, "USD"]))
-        XCTAssertFalse(GiftCardCurrency.answerConfirms(ordered: "USD", reported: ["GBP", nil]))
+        XCTAssertFalse(GiftCardCurrency.answerConfirms(ordered: "GBP", payment: "USD", card: "GBP"))
+        XCTAssertFalse(GiftCardCurrency.answerConfirms(ordered: "GBP", payment: "GBP", card: "EUR"))
+        XCTAssertFalse(GiftCardCurrency.answerConfirms(ordered: "GBP", payment: nil, card: "USD"))
+        XCTAssertFalse(GiftCardCurrency.answerConfirms(ordered: "USD", payment: "GBP", card: nil))
+        XCTAssertFalse(GiftCardCurrency.answerConfirms(ordered: "USD", payment: nil, card: "GBP"))
     }
 
-    /// Answers named no currency while every order was USD, so one that names none still
-    /// confirms a USD order. It confirms no other.
-    func testAnAnswerThatNamesNoCurrencyConfirmsOnlyAUSDOrder() {
-        for reported in [[], [nil, nil], ["", "  "]] as [[String?]] {
-            XCTAssertTrue(GiftCardCurrency.answerConfirms(ordered: "USD", reported: reported))
-            XCTAssertFalse(GiftCardCurrency.answerConfirms(ordered: "GBP", reported: reported))
-            XCTAssertFalse(GiftCardCurrency.answerConfirms(ordered: "JPY", reported: reported))
+    /// The card's currency is what was ordered, so an order in another currency than USD
+    /// is confirmed only by an answer that names it, whatever the payment currency says.
+    func testAnOrderInAnotherCurrencyNeedsTheCardCurrencyNamed() {
+        for missing in [nil, "", "  "] as [String?] {
+            XCTAssertFalse(GiftCardCurrency.answerConfirms(ordered: "GBP", payment: "GBP", card: missing))
+            XCTAssertFalse(GiftCardCurrency.answerConfirms(ordered: "GBP", payment: missing, card: missing))
+            XCTAssertTrue(GiftCardCurrency.answerConfirms(ordered: "GBP", payment: missing, card: "GBP"))
+        }
+    }
+
+    /// Answers named no currency while every order was USD, so a USD order keeps that.
+    func testAUSDOrderIsConfirmedByAnAnswerThatLeavesCurrenciesOut() {
+        for missing in [nil, "", "  "] as [String?] {
+            XCTAssertTrue(GiftCardCurrency.answerConfirms(ordered: "USD", payment: missing, card: missing))
+            XCTAssertTrue(GiftCardCurrency.answerConfirms(ordered: "USD", payment: "USD", card: missing))
+            XCTAssertTrue(GiftCardCurrency.answerConfirms(ordered: "USD", payment: missing, card: "USD"))
         }
     }
 
@@ -459,8 +504,21 @@ final class GiftCardCurrencyTests: XCTestCase {
 
     func testASavedCardWithoutACurrencyIsInDollars() {
         XCTAssertEqual(GiftCardCurrency.ofSavedCard(nil), "USD")
-        XCTAssertEqual(GiftCardCurrency.ofSavedCard(""), "USD")
+    }
+
+    /// A stored code is shown as stored, also one this system's currency list lacks.
+    func testASavedCardKeepsItsStoredCurrency() {
         XCTAssertEqual(GiftCardCurrency.ofSavedCard("GBP"), "GBP")
         XCTAssertEqual(GiftCardCurrency.ofSavedCard("JPY"), "JPY")
+        XCTAssertEqual(GiftCardCurrency.ofSavedCard(" gbp "), "GBP")
+        XCTAssertEqual(GiftCardCurrency.ofSavedCard("ZZZ"), "ZZZ")
+        XCTAssertNil(GiftCardCurrency.normalize("ZZZ"))
+    }
+
+    func testASavedCardWithAMalformedCurrencyHasNoneNotDollars() {
+        for stored in ["", "  ", "US", "USDX", "$", "U1D", "ÜSD"] {
+            XCTAssertNil(GiftCardCurrency.ofSavedCard(stored), stored)
+        }
+        XCTAssertEqual(GiftCardCurrency.number(decimal("1234.5"), locale: enUS), "1,234.5")
     }
 }

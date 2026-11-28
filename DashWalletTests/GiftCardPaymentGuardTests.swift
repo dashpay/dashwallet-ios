@@ -274,7 +274,8 @@ final class GiftCardPaymentGuardTests: XCTestCase {
 
     private func approve(price: String, discount: String,
                          rate: GiftCardPaymentGuard.ExchangeRate) throws -> GiftCardPaymentGuard.Approval {
-        try GiftCardPaymentGuard.approve(price: dash(price), discount: dash(discount), rate: rate, now: approvalTime)
+        try GiftCardPaymentGuard.approve(price: dash(price), discount: dash(discount), currency: "USD", rate: rate,
+                                         now: approvalTime)
     }
 
     private func assertRateUnavailable(_ rate: GiftCardPaymentGuard.ExchangeRate,
@@ -283,6 +284,22 @@ final class GiftCardPaymentGuardTests: XCTestCase {
             XCTAssertEqual((error as? DashSpendError)?.errorDescription,
                            GiftCardPaymentGuard.rateUnavailableError.errorDescription,
                            "unexpected error: \(error)", file: file, line: line)
+        }
+    }
+
+    /// The buyer is shown the price rounded up to the currency's decimals, and that is the
+    /// price approved: 24.0625 is 24.07 dollars, 96.25 is 97 yen.
+    func testApprovalHoldsThePriceRoundedUpToTheCurrencysDecimals() throws {
+        let dollars = try approve(price: "25", discount: "0.0375", rate: rate("40"))
+        XCTAssertEqual(dollars.fiatAmount, dash("24.07"))
+        XCTAssertEqual(dollars.amount, 60_175_000)
+
+        let yen = try GiftCardPaymentGuard.approve(price: 100, discount: dash("0.0375"), currency: "JPY",
+                                                   rate: rate("5000"), now: approvalTime)
+        XCTAssertEqual(yen.fiatAmount, 97)
+        XCTAssertEqual(yen.amount, 1_940_000)
+        guard case .asConfirmed = try yen.assess(requested: 1_940_000) else {
+            return XCTFail("the price shown was asked about again")
         }
     }
 
@@ -407,6 +424,9 @@ final class DashSpendPayApprovalTests: XCTestCase {
             website: nil, phone: nil, logoLocation: nil, coverImage: nil, source: nil)
     }
 
+    /// What CTX has confirmed the test merchant sells: any dollar amount these tests buy.
+    private static let usdTerms = CTXMerchantTerms(currency: "USD", denominationsType: "min-max", denominations: ["1", "1000"])
+
     private var usableRate: GiftCardPaymentGuard.ExchangeRate {
         GiftCardPaymentGuard.ExchangeRate(price: 40, retrievedAt: Int(Date().timeIntervalSince1970))
     }
@@ -422,7 +442,7 @@ final class DashSpendPayApprovalTests: XCTestCase {
         // Retrieved at the view model's own clock: a rate stamped by the real clock can be a
         // second ahead of a clock the test froze earlier, and a rate from the future is stale.
         let rate = rate ?? GiftCardPaymentGuard.ExchangeRate(price: 40, retrievedAt: Int(now().timeIntervalSince1970))
-        let viewModel = DashSpendPayViewModel(merchant: merchant, provider: provider, confirmedCurrency: "USD",
+        let viewModel = DashSpendPayViewModel(merchant: merchant, provider: provider, confirmedTerms: Self.usdTerms,
                                               exchangeRate: { _ in rate }, now: now)
         // No sheet is on screen in these tests, so nothing reports its dismissal.
         viewModel.sheetDismissalWait = 0.01
@@ -531,7 +551,7 @@ final class DashSpendPayApprovalTests: XCTestCase {
         XCTAssertEqual(snapshot.approval.fiatAmount, 25 * (1 - snapshot.discount))
         XCTAssertEqual(snapshot.approval.rate, 40)
         XCTAssertEqual(snapshot.approval.amount, try GiftCardPaymentGuard.approve(
-            price: 25, discount: snapshot.discount, rate: usableRate).amount)
+            price: 25, discount: snapshot.discount, currency: "USD", rate: usableRate).amount)
     }
 
     func testCancelOnTheConfirmSheetClosesIt() throws {
@@ -547,7 +567,7 @@ final class DashSpendPayApprovalTests: XCTestCase {
     func testPurchaseStopsBeforeTheProviderWhenTheConfirmedRateWentStale() async throws {
         var clock = Date()
         let rate = GiftCardPaymentGuard.ExchangeRate(price: 40, retrievedAt: Int(clock.timeIntervalSince1970))
-        let viewModel = DashSpendPayViewModel(merchant: merchant, provider: .ctx, confirmedCurrency: "USD",
+        let viewModel = DashSpendPayViewModel(merchant: merchant, provider: .ctx, confirmedTerms: Self.usdTerms,
                                               exchangeRate: { _ in rate }, now: { clock })
         try viewModel.beginPurchase(price: 25)
         guard case .confirm(let snapshot)? = viewModel.purchaseSheet else {
@@ -981,7 +1001,7 @@ final class DashSpendPurchaseSheetLayoutTests: XCTestCase {
     private func confirm(maxHeight: CGFloat?, quantities: [Decimal: Int]?) -> CGFloat {
         height(of: DashSpendConfirmationDialog(
             merchantName: "Merchant", merchantIconUrl: "", originalPrice: 200, currency: "USD", discount: 0.0375,
-            dashAmount: 493_700_000, quantities: quantities, isWaiting: false, maxHeight: maxHeight,
+            payable: 192.5, dashAmount: 493_700_000, quantities: quantities, isWaiting: false, maxHeight: maxHeight,
             onConfirm: {}, onCancel: {}))
     }
 
