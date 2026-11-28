@@ -50,7 +50,7 @@ where they disagree, ADR-0001 wins.
 | [0055](0055-keep-the-app-connect-rules-in-swift-until-android-shares-the-platform-wallet.md) | Keep the App Connect rules in Swift until Android shares the platform wallet | platform | Accepted | |
 | [0056](0056-know-no-app-and-ask-before-returning-to-one.md) | Know no app: show every app as unknown and ask before returning to it | ui | Accepted | |
 | [0057](0057-tell-a-connection-sheet-from-one-basis-and-placed-keys-only.md) | Tell a connection sheet from one basis, and claim access only from placed keys | ui | Accepted | |
-| [0058](0058-answer-a-login-without-a-username-with-the-pages-own-state.md) | Answer a login without a username with the page's own state, and open nothing | ui | Accepted | |
+| [0058](0058-answer-a-login-without-a-username-with-the-pages-own-state.md) | Answer a login without a username with the page's own state, and open nothing | ui | Superseded | [0078](0078-hold-a-login-while-the-username-is-unknown-and-answer-it-once-read.md) |
 | [0059](0059-route-every-app-log-line-through-dwlogger-with-an-os-logger-shaped-applogger.md) | Route every app log line through DWLogger with an os.Logger-shaped AppLogger | logging | Proposed | |
 | [0060](0060-redact-log-values-at-interpolation-with-os-logger-privacy-defaults.md) | Redact log values at interpolation with os.Logger's privacy defaults | logging | Proposed | |
 | [0061](0061-write-every-logged-error-as-a-type-case-and-code-summary.md) | Write every logged error as a type, case and code summary | logging | Proposed | |
@@ -65,6 +65,7 @@ where they disagree, ADR-0001 wins.
 | [0073](0073-make-the-sync-phase-write-the-same-catalog-as-the-xcode-app.md) | Make the sync phase write the same Catalog as the Xcode app, and compile only the shipped locales | l10n | Accepted | |
 | [0074](0074-report-a-kept-response-from-the-write-point-or-from-a-failed-lookup.md) | Report a kept response from the write point, or from the same predicate when the lookup fails | platform | Accepted | |
 | [0075](0075-turn-off-unattributed-dashpay-profile-keys-except-keys-that-cannot-be-checked.md) | Turn off unattributed DashPay profile keys with any disconnect, except keys that cannot be checked | keys | Accepted | |
+| [0078](0078-hold-a-login-while-the-username-is-unknown-and-answer-it-once-read.md) | Hold a login while the username is unknown, and answer it once the names are read | ui | Proposed | |
 
 Areas: `spv`, `platform`, `keys`, `storage`, `coinjoin`, `payments`, `swap`, `ui`, `l10n`, `build`, `process`, `logging`. Each ADR takes one; a new
 Area is added to this list in the PR that first needs it.

@@ -116,8 +116,10 @@ one-scan login possible, and with it DashConnect on mainnet once mainnet runs pr
   approve sheet with funding limit and expiry pickers that shows every app as unknown and asks
   before returning to it
   ([ADR-0056](../../adr/0056-know-no-app-and-ask-before-returning-to-one.md)). A login request on
-  a wallet without a username opens nothing; the page asks for a username
-  ([ADR-0058](../../adr/0058-answer-a-login-without-a-username-with-the-pages-own-state.md)). The
+  a wallet without a username opens nothing; the page asks for a username. One that comes while the
+  username is still unknown (a cold start from a link) waits until the names are read
+  ([ADR-0078](../../adr/0078-hold-a-login-while-the-username-is-unknown-and-answer-it-once-read.md),
+  superseding ADR-0058). The
   rules stay in Swift for now
   ([ADR-0055](../../adr/0055-keep-the-app-connect-rules-in-swift-until-android-shares-the-platform-wallet.md)).
 

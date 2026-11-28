@@ -42,7 +42,13 @@ final class DashConnectHostingController: UIHostingController<ConnectionsScreen>
         dashPayModel: DWDashPayProtocol? = nil
     ) {
         let viewModel = ConnectionsViewModel(
-            usernameState: { dashPayModel == nil ? .present : Self.activeIdentityUsernameState() })
+            usernameState: { dashPayModel == nil ? .present : Self.activeIdentityUsernameState() },
+            rereadUsername: { if dashPayModel != nil { Self.rereadActiveIdentityNames() } },
+            walletScope: {
+                ConnectionsViewModel.WalletScope(
+                    network: ConnectionsViewModel.WalletScope.activeChain,
+                    walletId: WalletEnvironment.activeWalletIdHex as String?)
+            })
         self.viewModel = viewModel
         pendingURI = uri
         pendingURIWasScanned = scanned
@@ -63,12 +69,45 @@ final class DashConnectHostingController: UIHostingController<ConnectionsScreen>
     private static func activeIdentityUsernameState() -> ConnectionsViewModel.UsernameState {
         #if DASHPAY
         let identity = DWCurrentUserIdentityInfo.shared.refreshedSnapshot()
-        guard identity.hasIdentity else { return .missing }
-        guard identity.namesAreLoaded else { return .unknown }
-        return identity.usernames.isEmpty ? .missing : .present
+        let recoveryPending = SwiftDashSDKHost.shared.wallet.flatMap { wallet in
+            SwiftDashSDKHost.shared.runningNetwork.map {
+                !DWSameSeedIdentityRecoveryCoordinator.shared.isSettled(walletId: wallet.walletId, network: $0)
+            }
+        } ?? true
+        return usernameState(
+            isLoading: identity.isLoading, recoveryPending: recoveryPending, hasIdentity: identity.hasIdentity,
+            namesAreLoaded: identity.namesAreLoaded, hasUsernames: !identity.usernames.isEmpty)
         #else
         return .present
         #endif
+    }
+
+    @MainActor
+    /// A held login's retry. Without an identity row the identity itself is
+    /// not known yet: identity recovery runs again if its last run on this
+    /// runtime ended without an answer. With one, the names are read again.
+    private static func rereadActiveIdentityNames() {
+        #if DASHPAY
+        let identityInfo = DWCurrentUserIdentityInfo.shared
+        if identityInfo.refreshedSnapshot().identityId == nil {
+            PlatformAddressSyncCoordinator.shared.retryIdentityRecovery()
+        } else {
+            identityInfo.syncFromNetwork()
+        }
+        #endif
+    }
+
+    /// No identity counts as missing only once the snapshot is read and
+    /// identity recovery has settled: while either is pending (the SDK not
+    /// started yet on a cold start from a link; a restored wallet whose
+    /// identity row is not recovered yet) the identity is not known to be
+    /// absent, so the state is unknown.
+    nonisolated static func usernameState(
+        isLoading: Bool, recoveryPending: Bool, hasIdentity: Bool, namesAreLoaded: Bool, hasUsernames: Bool
+    ) -> ConnectionsViewModel.UsernameState {
+        guard hasIdentity else { return isLoading || recoveryPending ? .unknown : .missing }
+        guard namesAreLoaded else { return .unknown }
+        return hasUsernames ? .present : .missing
     }
 
     private static func createUsername(

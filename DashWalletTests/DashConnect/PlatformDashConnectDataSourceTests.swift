@@ -1,5 +1,6 @@
 import Combine
 import Foundation
+import UIKit
 import XCTest
 @testable import dashpay
 @testable import SwiftDashSDK
@@ -1339,11 +1340,14 @@ private final class LoginApprovalSpy: DashConnectDataSource {
     }
 
     private var storedParseCount = 0
+    private var storedParsedContents: [String] = []
     private var storedHoldsVersionRead = false
     private var versionGate: CheckedContinuation<UInt32, Error>?
 
     /// How many times a scanned or opened request was handed to the parser.
     var parseCount: Int { lock.withLock { storedParseCount } }
+    /// What was handed to the parser, in order.
+    var parsedContents: [String] { lock.withLock { storedParsedContents } }
 
     /// When true, `protocolVersion()` suspends until `releaseVersionRead`.
     var holdsVersionRead: Bool {
@@ -1382,14 +1386,24 @@ private final class LoginApprovalSpy: DashConnectDataSource {
     func parseQR(_ content: String) async throws -> DashConnectQr {
         let failure = lock.withLock { () -> Error? in
             storedParseCount += 1
+            storedParsedContents.append(content)
             return storedParseFailure
         }
         if let failure { throw failure }
         return parsed ?? .login(loginRequest)
     }
 
+    private var storedResolvedCount = 0
+    /// Requests that went past the parse to be resolved for the sheet. A
+    /// held request is parsed once before it waits, so the parse count does
+    /// not tell whether it was taken.
+    var resolvedCount: Int { lock.withLock { storedResolvedCount } }
+
     func makeConnectionRequest(from loginRequest: DashKeyRequest) async -> ConnectionRequest {
-        lock.withLock { shown.count > 1 ? shown.removeFirst() : shown[0] }
+        lock.withLock {
+            storedResolvedCount += 1
+            return shown.count > 1 ? shown.removeFirst() : shown[0]
+        }
     }
 
     func approveLogin(_ request: DashKeyRequest, consent: ConnectionRequest) async throws -> DAppConnection {
@@ -1471,6 +1485,24 @@ final class ConnectionsViewModelStatusTests: XCTestCase {
 
         XCTAssertEqual(viewModel.rows(for: .active).map(\.id), ["active", "confirming", "undelivered"])
         XCTAssertEqual(viewModel.rows(for: .active).map(\.status), [.active, .confirming, .undelivered])
+    }
+
+    func testALoginWithUnreadNamesIsNotHeldBehindAConnectionSheet() async {
+        let spy = ConnectionStatusSpy(rows: [Self.row("app", .active)], history: [])
+        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false, usernameState: { .unknown })
+        await waitUntil { !viewModel.connections.isEmpty }
+        viewModel.showConnection(viewModel.rows(for: .active)[0])
+        viewModel.onURIReceived("dash-key:anything")
+
+        XCTAssertFalse(viewModel.isWaitingForUsername, "the open sheet answers it")
+        XCTAssertEqual(viewModel.connectionSheetMessage?.text, ConnectionsViewModel.usernameUnreadText)
+        XCTAssertEqual(viewModel.shownConnection?.id, "app")
+        XCTAssertNil(viewModel.message)
+
+        // Still going away: the same.
+        viewModel.hideConnection()
+        viewModel.onURIReceived("dash-key:anything")
+        XCTAssertFalse(viewModel.isWaitingForUsername)
     }
 
     func testARequestThatDoesNotReadLeavesTheConnectionSheetUp() async {
@@ -6917,17 +6949,218 @@ final class ConnectionsViewModelTermsTests: XCTestCase {
 
     // MARK: Username
 
-    func testALoginIsNotTakenWhileTheUsernameIsUnread() async {
+    func testALoginIsNotTakenWhileTheUsernameStaysUnread() async {
         let spy = LoginApprovalSpy(shown: [Self.request(platformTimeMs: Self.platformNow, expiresAt: Self.platformNow + 3_600_000)])
         let viewModel = ConnectionsViewModel(
-            dataSource: spy, featureUnavailable: false, usernameState: { .unknown }, now: { Self.phone })
+            dataSource: spy, featureUnavailable: false, usernameState: { .unknown }, now: { Self.phone },
+            usernameReadTimeout: .milliseconds(50))
 
         viewModel.onQRScanned("login")
+        XCTAssertTrue(viewModel.isWaitingForUsername)
+        XCTAssertNil(viewModel.message, "nothing is refused while the names may still load")
 
-        XCTAssertEqual(spy.parseCount, 0)
+        await waitUntil { viewModel.message != nil }
+        XCTAssertEqual(spy.resolvedCount, 0)
         XCTAssertNil(viewModel.pendingRequest)
+        XCTAssertFalse(viewModel.isWaitingForUsername)
         XCTAssertFalse(viewModel.needsUsername, "the user is not asked to create a name they may have")
         XCTAssertEqual(viewModel.message?.text, ConnectionsViewModel.usernameUnreadText)
+    }
+
+    func testALinkThatColdStartsTheWalletIsTakenOnceTheNamesAreRead() async {
+        for signal in [
+            Notification.Name.DWDashPayRegistrationStatusUpdated, SwiftDashSDKHost.runtimeDidStartNotification,
+            DWSameSeedIdentityRecoveryCoordinator.didSettleNotification,
+        ] {
+            var username = ConnectionsViewModel.UsernameState.unknown
+            let center = NotificationCenter()
+            let spy = LoginApprovalSpy(shown: [Self.request(platformTimeMs: Self.platformNow, expiresAt: Self.platformNow + 3_600_000)])
+            let viewModel = ConnectionsViewModel(
+                dataSource: spy, featureUnavailable: false, usernameState: { username }, now: { Self.phone },
+                notificationCenter: center)
+
+            viewModel.onURIReceived("login")
+            XCTAssertEqual(spy.resolvedCount, 0, "\(signal)")
+            XCTAssertTrue(viewModel.isWaitingForUsername, "\(signal)")
+
+            username = .present
+            center.post(name: signal, object: nil)
+            await waitUntil { viewModel.pendingRequest != nil }
+
+            XCTAssertNotNil(viewModel.pendingRequest, "\(signal)")
+            XCTAssertFalse(viewModel.isWaitingForUsername, "\(signal)")
+            XCTAssertNil(viewModel.message, "\(signal)")
+        }
+    }
+
+    func testAHeldLinkIsRefusedOnceTheNamesShowNoUsername() async {
+        var username = ConnectionsViewModel.UsernameState.unknown
+        let center = NotificationCenter()
+        let spy = LoginApprovalSpy(shown: [Self.request(platformTimeMs: Self.platformNow, expiresAt: Self.platformNow + 3_600_000)])
+        let viewModel = ConnectionsViewModel(
+            dataSource: spy, featureUnavailable: false, usernameState: { username }, now: { Self.phone },
+            notificationCenter: center)
+        viewModel.onURIReceived("login")
+
+        username = .missing
+        center.post(name: SwiftDashSDKHost.runtimeDidStartNotification, object: nil)
+        await waitUntil { viewModel.needsUsername }
+
+        XCTAssertEqual(spy.resolvedCount, 0)
+        XCTAssertNil(viewModel.pendingRequest)
+        XCTAssertFalse(viewModel.isWaitingForUsername)
+    }
+
+    func testAHeldLinkStartsTheNamesReadAgain() async {
+        var rereads = 0
+        let spy = LoginApprovalSpy(shown: [Self.request(platformTimeMs: Self.platformNow, expiresAt: Self.platformNow + 3_600_000)])
+        let viewModel = ConnectionsViewModel(
+            dataSource: spy, featureUnavailable: false, usernameState: { .unknown }, rereadUsername: { rereads += 1 },
+            now: { Self.phone })
+
+        viewModel.onURIReceived("first")
+        await waitUntil { rereads == 1 }
+        XCTAssertEqual(rereads, 1, "a read that failed before is not left to retry by itself")
+        viewModel.onURIReceived("second")
+        await waitUntil { rereads == 2 }
+        XCTAssertEqual(rereads, 2, "every held request has a read on its way")
+    }
+
+    /// A retry of the identity's recovery is capped, so only a request that
+    /// reads as one for this network may spend it: one that does not is
+    /// refused at once, with no read started.
+    func testAHeldLinkThatDoesNotReadSpendsNoRetry() async {
+        var rereads = 0
+        let spy = LoginApprovalSpy(shown: [Self.request(platformTimeMs: Self.platformNow, expiresAt: Self.platformNow + 3_600_000)])
+        spy.parseFailure = DashConnectPlatformError.unsupportedRequestNetwork(expected: .testnet, actual: .mainnet)
+        let viewModel = ConnectionsViewModel(
+            dataSource: spy, featureUnavailable: false, usernameState: { .unknown }, rereadUsername: { rereads += 1 },
+            now: { Self.phone })
+
+        viewModel.onURIReceived("dashpay://connect?malformed")
+        await waitUntil { viewModel.message != nil }
+
+        XCTAssertEqual(rereads, 0)
+        XCTAssertFalse(viewModel.isWaitingForUsername)
+        XCTAssertEqual(spy.resolvedCount, 0)
+        XCTAssertNotEqual(viewModel.message?.text, ConnectionsViewModel.usernameUnreadText, "it is refused for what it is")
+
+        spy.parseFailure = nil
+        viewModel.onURIReceived("login")
+        await waitUntil { rereads == 1 }
+        XCTAssertEqual(rereads, 1, "a request that reads still starts the read")
+        XCTAssertTrue(viewModel.isWaitingForUsername)
+    }
+
+    func testANewerLinkReplacesTheHeldOne() async {
+        var username = ConnectionsViewModel.UsernameState.unknown
+        let center = NotificationCenter()
+        let spy = LoginApprovalSpy(shown: [Self.request(platformTimeMs: Self.platformNow, expiresAt: Self.platformNow + 3_600_000)])
+        let viewModel = ConnectionsViewModel(
+            dataSource: spy, featureUnavailable: false, usernameState: { username }, now: { Self.phone },
+            notificationCenter: center)
+        viewModel.onURIReceived("first")
+        viewModel.onURIReceived("second")
+
+        username = .present
+        center.post(name: .DWDashPayRegistrationStatusUpdated, object: nil)
+        await waitUntil { viewModel.pendingRequest != nil }
+
+        XCTAssertEqual(spy.resolvedCount, 1)
+        XCTAssertEqual(spy.parsedContents.last, "second")
+    }
+
+    func testAnIdentityNotKnownYetIsUnknownNotMissing() {
+        typealias Host = DashConnectHostingController
+        func state(loading: Bool = false, recovering: Bool = false, identity: Bool, loaded: Bool, names: Bool)
+            -> ConnectionsViewModel.UsernameState {
+            Host.usernameState(
+                isLoading: loading, recoveryPending: recovering, hasIdentity: identity, namesAreLoaded: loaded,
+                hasUsernames: names)
+        }
+        XCTAssertEqual(state(loading: true, identity: false, loaded: false, names: false), .unknown,
+                       "the SDK has not started: the identity is not known to be absent")
+        XCTAssertEqual(state(recovering: true, identity: false, loaded: false, names: false), .unknown,
+                       "a restored wallet's identity row comes with recovery")
+        XCTAssertEqual(state(loading: true, identity: true, loaded: false, names: false), .unknown)
+        XCTAssertEqual(state(identity: false, loaded: false, names: false), .missing)
+        XCTAssertEqual(state(recovering: true, identity: true, loaded: true, names: true), .present,
+                       "an identity row in hand does not wait for recovery")
+        XCTAssertEqual(state(identity: true, loaded: true, names: false), .missing)
+        XCTAssertEqual(state(identity: true, loaded: true, names: true), .present)
+    }
+
+    func testAHeldLinkIsNotTakenUnderAnotherWallet() async {
+        for (from, to) in [(Self.scope("testnet", "a"), Self.scope("testnet", "b")),
+                           (Self.scope("testnet", "a"), Self.scope("mainnet", "a")),
+                           (Self.scope("testnet", nil), Self.scope("mainnet", "a")),
+                           (Self.scope("devnet-a", "x"), Self.scope("devnet-b", "x")),
+                           (Self.scope("devnet-a", nil), Self.scope("devnet-b", "x"))] {
+            var username = ConnectionsViewModel.UsernameState.unknown
+            var wallet = from
+            let center = NotificationCenter()
+            let spy = LoginApprovalSpy(shown: [Self.request(platformTimeMs: Self.platformNow, expiresAt: Self.platformNow + 3_600_000)])
+            let viewModel = ConnectionsViewModel(
+                dataSource: spy, featureUnavailable: false, usernameState: { username }, walletScope: { wallet },
+                now: { Self.phone }, notificationCenter: center)
+            viewModel.onURIReceived("login")
+
+            wallet = to
+            username = .present
+            center.post(name: SwiftDashSDKHost.runtimeDidStartNotification, object: nil)
+            await waitUntil { !viewModel.isWaitingForUsername }
+
+            XCTAssertEqual(spy.resolvedCount, 0, "a request is answered only under the wallet it came to: \(from) → \(to)")
+            XCTAssertNil(viewModel.pendingRequest)
+        }
+    }
+
+    func testALinkHeldBeforeTheWalletOpensGoesOnUnderTheWalletThatOpens() async {
+        var username = ConnectionsViewModel.UsernameState.unknown
+        var wallet = Self.scope("testnet", nil)
+        let center = NotificationCenter()
+        let spy = LoginApprovalSpy(shown: [Self.request(platformTimeMs: Self.platformNow, expiresAt: Self.platformNow + 3_600_000)])
+        let viewModel = ConnectionsViewModel(
+            dataSource: spy, featureUnavailable: false, usernameState: { username }, walletScope: { wallet },
+            now: { Self.phone }, notificationCenter: center)
+        viewModel.onURIReceived("login")
+        XCTAssertTrue(viewModel.isWaitingForUsername)
+
+        wallet = Self.scope("testnet", "a")
+        username = .present
+        center.post(name: SwiftDashSDKHost.runtimeDidStartNotification, object: nil)
+        await waitUntil { viewModel.pendingRequest != nil }
+
+        XCTAssertEqual(spy.resolvedCount, 1, "the kept wallet opening after a first-launch link is the wallet it came to")
+    }
+
+    func testALinkHeldBeforeTheWalletOpensIsDroppedWhenThatWalletIsSwitchedAway() async {
+        var username = ConnectionsViewModel.UsernameState.unknown
+        var wallet = Self.scope("testnet", nil)
+        let center = NotificationCenter()
+        let spy = LoginApprovalSpy(shown: [Self.request(platformTimeMs: Self.platformNow, expiresAt: Self.platformNow + 3_600_000)])
+        var reads = 0
+        let viewModel = ConnectionsViewModel(
+            dataSource: spy, featureUnavailable: false, usernameState: { reads += 1; return username },
+            walletScope: { wallet }, now: { Self.phone }, notificationCenter: center)
+        viewModel.onURIReceived("login")
+
+        wallet = Self.scope("testnet", "a")
+        let readsBeforeTheWalletOpened = reads
+        center.post(name: SwiftDashSDKHost.runtimeDidStartNotification, object: nil)
+        await waitUntil { reads > readsBeforeTheWalletOpened }
+        XCTAssertTrue(viewModel.isWaitingForUsername)
+        wallet = Self.scope("testnet", "b")
+        username = .present
+        center.post(name: SwiftDashSDKHost.runtimeDidStartNotification, object: nil)
+        await waitUntil { !viewModel.isWaitingForUsername }
+
+        XCTAssertEqual(spy.resolvedCount, 0, "once a wallet opened, a switch to another drops the held request")
+        XCTAssertNil(viewModel.pendingRequest)
+    }
+
+    private static func scope(_ network: String, _ walletId: String?) -> ConnectionsViewModel.WalletScope {
+        ConnectionsViewModel.WalletScope(network: network, walletId: walletId)
     }
 
     func testALoginIsNotApprovedWhileTheUsernameIsUnread() async {
@@ -7102,5 +7335,125 @@ final class ConnectionsViewModelTermsTests: XCTestCase {
         while !condition(), Date() < deadline {
             try? await Task.sleep(nanoseconds: 2_000_000)
         }
+    }
+}
+
+@MainActor
+final class MainTabbarMoreStackTests: XCTestCase {
+    func testOnlyAWalletSwitchDropsTheMoreStack() {
+        let same = MainTabbarController.isTheSameWallet
+        XCTAssertTrue(same(("testnet", nil), ("testnet", "a")), "the kept wallet opening on a first launch")
+        XCTAssertTrue(same(("testnet", "a"), ("testnet", "a")), "the same wallet started again")
+        XCTAssertFalse(same(("testnet", "a"), ("testnet", "b")))
+        XCTAssertFalse(same(("testnet", "a"), ("mainnet", "a")))
+        XCTAssertFalse(same(("testnet", nil), ("mainnet", "a")))
+        XCTAssertFalse(same(("devnet-a", "x"), ("devnet-b", "x")), "one seed has one wallet id on every devnet")
+        XCTAssertFalse(same(("devnet-a", nil), ("devnet-b", "x")))
+    }
+
+    func testAddingTabsKeepsTheScreensOpenOnMore() {
+        let oldMenu = UIViewController()
+        let connections = UIViewController()
+        let more = BaseNavigationController(rootViewController: oldMenu)
+        more.pushViewController(connections, animated: false)
+        let newMenu = UIViewController()
+
+        let kept = MainTabbarController.moreNavigation(menu: newMenu, keepingStackOf: more)
+
+        XCTAssertTrue(kept === more, "the screens' own references to their navigation stay valid")
+        XCTAssertEqual(kept.viewControllers, [newMenu, connections])
+    }
+
+    func testANewLayoutStartsAtTheMenu() {
+        let menu = UIViewController()
+        XCTAssertEqual(MainTabbarController.moreNavigation(menu: menu, keepingStackOf: nil).viewControllers, [menu])
+    }
+}
+
+final class IdentityRecoveryLedgerTests: XCTestCase {
+    private let context = "testnet:aa"
+
+    func testARunThatFailsLeavesNoAnswerAndMayBeRetried() {
+        var ledger = IdentityRecoveryLedger()
+        XCTAssertFalse(ledger.mayRetry(context), "no run yet: the startup's own run is not raced")
+        ledger.runStarted(context)
+        XCTAssertFalse(ledger.hasAnswer(context))
+        XCTAssertTrue(ledger.mayRetry(context), "Platform was down: a waiting login may ask again")
+        XCTAssertFalse(ledger.isSettled(context))
+    }
+
+    func testAskedRetriesAreCapped() {
+        var ledger = IdentityRecoveryLedger()
+        ledger.runStarted(context)
+        for _ in 0..<IdentityRecoveryLedger.maxAskedRetries {
+            XCTAssertTrue(ledger.runStarted(context, askedRetry: true))
+        }
+        XCTAssertFalse(ledger.mayRetry(context))
+        XCTAssertFalse(ledger.runStarted(context, askedRetry: true), "each asked run may scan the seed without a budget")
+    }
+
+    /// An asked retry counts only once it runs: one a stop, a wipe or a
+    /// start's own run cancels before it starts never reaches `runStarted`,
+    /// and asking alone costs nothing.
+    func testARetryCancelledBeforeItRunsCostsNothing() {
+        var ledger = IdentityRecoveryLedger()
+        ledger.runStarted(context)
+        for _ in 0..<5 { XCTAssertTrue(ledger.mayRetry(context), "asked, then cancelled before it ran") }
+        for _ in 0..<IdentityRecoveryLedger.maxAskedRetries {
+            XCTAssertTrue(ledger.runStarted(context, askedRetry: true))
+        }
+        XCTAssertFalse(ledger.mayRetry(context))
+    }
+
+    /// Two devnets are two chains: one seed's wallet id is the same on both,
+    /// and neither the held login's scope nor recovery's answers may carry
+    /// over.
+    @MainActor
+    func testTwoDevnetsAreTwoChains() {
+        let key = DevnetConfiguration.devnetNameKey
+        let saved = UserDefaults.standard.object(forKey: key)
+        defer {
+            if let saved { UserDefaults.standard.set(saved, forKey: key) } else { UserDefaults.standard.removeObject(forKey: key) }
+        }
+        let walletId = Data(repeating: 0xAB, count: 32)
+        DevnetConfiguration.setDevnetName("chain-a")
+        let a = (SwiftDashSDK.Network.devnet.persistenceScope,
+                 DWSameSeedIdentityRecoveryCoordinator.contextKey(walletId: walletId, network: .devnet))
+        DevnetConfiguration.setDevnetName("chain-b")
+        let b = (SwiftDashSDK.Network.devnet.persistenceScope,
+                 DWSameSeedIdentityRecoveryCoordinator.contextKey(walletId: walletId, network: .devnet))
+        XCTAssertNotEqual(a.0, b.0)
+        XCTAssertNotEqual(a.1, b.1)
+    }
+
+    func testASettledAnswerEndsTheRetries() {
+        var ledger = IdentityRecoveryLedger()
+        ledger.runStarted(context)
+        ledger.settle(context, answered: true)
+        XCTAssertTrue(ledger.hasAnswer(context))
+        XCTAssertFalse(ledger.mayRetry(context))
+    }
+
+    func testTheRetryCapSettlesWithoutAnAnswer() {
+        var ledger = IdentityRecoveryLedger()
+        ledger.runStarted(context)
+        ledger.settle(context, answered: false)
+        XCTAssertTrue(ledger.isSettled(context), "the cap still stops the unbudgeted scan")
+        XCTAssertFalse(ledger.mayRetry(context))
+        XCTAssertFalse(ledger.hasAnswer(context), "an identity was found: it is not known absent")
+
+        ledger.settle(context, answered: true)
+        XCTAssertTrue(ledger.hasAnswer(context), "a later adoption that confirms the row answers it")
+    }
+
+    func testForgettingAWalletClearsItsContexts() {
+        var ledger = IdentityRecoveryLedger()
+        ledger.runStarted(context)
+        ledger.settle("mainnet:aa", answered: false)
+        ledger.runStarted("testnet:bb")
+        ledger.forget { $0.hasSuffix(":aa") }
+        XCTAssertFalse(ledger.mayRetry(context))
+        XCTAssertFalse(ledger.isSettled("mainnet:aa"))
+        XCTAssertTrue(ledger.mayRetry("testnet:bb"))
     }
 }

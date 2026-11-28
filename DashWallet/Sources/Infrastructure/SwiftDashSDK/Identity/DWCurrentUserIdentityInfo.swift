@@ -1005,11 +1005,17 @@ enum SameSeedIdentityRecoveryPipeline {
     /// `allowDiscovery: false` adopts and refreshes whatever identity rows
     /// exist locally without ever scanning — for a readiness verdict that
     /// says a scan cannot succeed (`.discoveryFailed`).
+    /// `managedIdentityIds`: the identities the SDK wallet already manages.
+    /// Its discovery reports only identities it did not manage before, so
+    /// an empty scan over an empty local store is no proof of absence while
+    /// the wallet manages one (a same-runtime retry after an earlier run
+    /// loaded it): those ids are acted on instead.
     static func run(
         knownIdentityIds: [Data] = [],
         allowDiscovery: Bool = true,
         localIdentityIds: () -> [Data],
         discover: () async throws -> [Data],
+        managedIdentityIds: () throws -> [Data] = { [] },
         refreshNames: ([Data]) async throws -> Void,
         adopt: () -> Bool
     ) async throws -> Outcome {
@@ -1028,6 +1034,9 @@ enum SameSeedIdentityRecoveryPipeline {
             // as a hydration fallback instead of losing the same launch.
             if identityIds.isEmpty {
                 identityIds = discoveredIds
+            }
+            if identityIds.isEmpty {
+                identityIds = try managedIdentityIds()
             }
         }
         // A cancelled run stops before the name refresh: its owner is tearing
@@ -1197,13 +1206,79 @@ enum StartupIdentityRecoveryPolicy {
 /// removed and re-imported in the same session gets its attempt back.
 /// Failures remain retryable on the next runtime start. A readiness verdict
 /// with a known identity always adopts, settled or not.
+/// What the identity recovery knows per wallet-and-network context, apart
+/// from the runs in flight.
+struct IdentityRecoveryLedger {
+    /// No more runs this process (the settled memo).
+    private var settled: Set<String> = []
+    /// Settled by the retry cap with an identity found but its row never
+    /// confirmed: no more runs, yet the identity is not known absent.
+    private var settledUnanswered: Set<String> = []
+    /// The last run ended without settling: it threw, or left the context
+    /// open.
+    private var open: Set<String> = []
+    /// Runs a waiting reader asked for. Each one may scan the seed without
+    /// a budget, so they are capped (`maxAskedRetries`).
+    private var askedRetries: [String: Int] = [:]
+    static let maxAskedRetries = 2
+
+    func isSettled(_ context: String) -> Bool { settled.contains(context) }
+
+    /// Found an identity whose row is confirmed, or proved there is none.
+    func hasAnswer(_ context: String) -> Bool {
+        settled.contains(context) && !settledUnanswered.contains(context)
+    }
+
+    /// Ran, did not settle, and the asked runs are not used up: an explicit
+    /// retry may run it again.
+    func mayRetry(_ context: String) -> Bool {
+        open.contains(context) && !settled.contains(context)
+            && askedRetries[context, default: 0] < Self.maxAskedRetries
+    }
+
+    /// The run starts: open until it settles it. An asked retry is counted
+    /// here, when it actually runs, not when it was asked for, so one a stop
+    /// cancels before it starts costs nothing; false when it may not run.
+    @discardableResult
+    mutating func runStarted(_ context: String, askedRetry: Bool = false) -> Bool {
+        if askedRetry {
+            guard mayRetry(context) else { return false }
+            askedRetries[context, default: 0] += 1
+        }
+        open.insert(context)
+        return true
+    }
+
+    /// `answered` is false only for the retry cap's settle without a
+    /// confirmed identity row.
+    mutating func settle(_ context: String, answered: Bool) {
+        settled.insert(context)
+        open.remove(context)
+        askedRetries[context] = nil
+        if answered { settledUnanswered.remove(context) } else { settledUnanswered.insert(context) }
+    }
+
+    mutating func forget(where matches: (String) -> Bool) {
+        settled = settled.filter { !matches($0) }
+        settledUnanswered = settledUnanswered.filter { !matches($0) }
+        open = open.filter { !matches($0) }
+        askedRetries = askedRetries.filter { !matches($0.key) }
+    }
+}
+
 @MainActor
 final class DWSameSeedIdentityRecoveryCoordinator {
     static let shared = DWSameSeedIdentityRecoveryCoordinator()
 
+    /// Posted on the main actor when a recovery run ends, whatever it
+    /// found: a reader that waited for it (a held DashConnect login) reads
+    /// the identity again. An adopted identity also posts the registration
+    /// update (`reconcileRecoveredIdentity`).
+    static let didSettleNotification = Notification.Name("org.dashfoundation.dash.identityRecoveryDidSettle")
+
     private static let logger = AppLogger(category: "swift-sdk-migration.identity-recovery")
 
-    private var completedContexts: Set<String> = []
+    private var ledger = IdentityRecoveryLedger()
     private var activeContexts: Set<String> = []
     /// Readiness verdicts recorded by `DashPayContactAddressReadiness` for
     /// the current runtime start. `recoverIfNeeded` removes the verdict for
@@ -1237,13 +1312,31 @@ final class DWSameSeedIdentityRecoveryCoordinator {
         startupVerdicts.removeAll()
     }
 
+    /// Whether this process has an answer for `walletId`'s identity on
+    /// `network`: found one, or proved there is none. Until then a wallet
+    /// without an identity row may still own one (a restore, a reinstall):
+    /// a failed run leaves it unanswered, and so does one settled by the
+    /// retry cap with an identity whose row the store never confirmed.
+    func isSettled(walletId: Data, network: Network) -> Bool {
+        ledger.hasAnswer(Self.contextKey(walletId: walletId, network: network))
+    }
+
+    /// Whether a reader still waiting for the identity may ask for another
+    /// run: the last run for `walletId` on `network` ended without settling,
+    /// none is running, and the asked runs are not used up. Not counted
+    /// here: `recoverIfNeeded(askedRetry: true)` counts it once it runs.
+    func mayRetry(walletId: Data, network: Network) -> Bool {
+        let contextKey = Self.contextKey(walletId: walletId, network: network)
+        return !activeContexts.contains(contextKey) && ledger.mayRetry(contextKey)
+    }
+
     /// Drop everything remembered about `walletId` on every network. Called
     /// on wallet deletion: walletIds are deterministic per mnemonic+network,
     /// so a phrase removed and re-imported must not inherit a settled
     /// context.
     func forgetWallet(walletId: Data) {
         let suffix = ":" + walletId.hexEncodedString()
-        completedContexts = completedContexts.filter { !$0.hasSuffix(suffix) }
+        ledger.forget { $0.hasSuffix(suffix) }
         startupVerdicts = startupVerdicts.filter { !$0.key.hasSuffix(suffix) }
         unpersistedAttempts = unpersistedAttempts.filter { !$0.key.hasSuffix(suffix) }
     }
@@ -1262,7 +1355,8 @@ final class DWSameSeedIdentityRecoveryCoordinator {
     func recoverIfNeeded(
         wallet: ManagedPlatformWallet,
         modelContainer: ModelContainer,
-        network: Network
+        network: Network,
+        askedRetry: Bool = false
     ) async {
         let walletId = wallet.walletId
         let contextKey = Self.contextKey(walletId: walletId, network: network)
@@ -1300,7 +1394,8 @@ final class DWSameSeedIdentityRecoveryCoordinator {
             readinessDiscoveredThisStart: verdict?.discovered ?? false,
             hasLocalIdentity: Self.hasLocalIdentity(walletId: walletId, modelContainer: modelContainer)) {
         case .skipSettled:
-            completedContexts.insert(contextKey)
+            ledger.settle(contextKey, answered: true)
+            NotificationCenter.default.post(name: Self.didSettleNotification, object: nil)
             Self.logger.info(
                 "🪪 IDENT-RECOVERY :: skipped — startup readiness proved this seed owns no identity")
             return
@@ -1311,7 +1406,7 @@ final class DWSameSeedIdentityRecoveryCoordinator {
             allowDiscovery = true
         case .runPipeline:
             allowDiscovery = true
-            guard !completedContexts.contains(contextKey) else {
+            guard !ledger.isSettled(contextKey) else {
                 restoreVerdict()
                 return
             }
@@ -1320,14 +1415,21 @@ final class DWSameSeedIdentityRecoveryCoordinator {
             // it: adopt and refresh whatever identity rows exist locally,
             // never scan.
             allowDiscovery = false
-            guard !completedContexts.contains(contextKey) else {
+            guard !ledger.isSettled(contextKey) else {
                 restoreVerdict()
                 return
             }
         }
 
+        guard ledger.runStarted(contextKey, askedRetry: askedRetry) else {
+            restoreVerdict()
+            return
+        }
         activeContexts.insert(contextKey)
-        defer { activeContexts.remove(contextKey) }
+        defer {
+            activeContexts.remove(contextKey)
+            NotificationCenter.default.post(name: Self.didSettleNotification, object: nil)
+        }
 
         // DWLogger, unlike `Self.logger`, reaches the diagnostic log export.
         let logTag = "🪪 IDENT-RECOVERY [\(walletHex.prefix(8))]"
@@ -1347,6 +1449,7 @@ final class DWSameSeedIdentityRecoveryCoordinator {
                         "🪪 IDENT-RECOVERY :: wallet=\(walletHex.prefix(8), privacy: .public) no local identities; scanning seed from index 0")
                     return try await wallet.discoverIdentities(startIndex: 0)
                 },
+                managedIdentityIds: { try wallet.inMemoryIdentityIds() },
                 refreshNames: { identityIds in
                     for identityId in identityIds {
                         try Task.checkCancellation()
@@ -1375,7 +1478,7 @@ final class DWSameSeedIdentityRecoveryCoordinator {
                 Self.logger.warning(
                     "🪪 IDENT-RECOVERY :: no local identity to adopt and scanning was not allowed; leaving the context open")
             } else if outcome.identityCount == 0 || outcome.identitiesPersisted {
-                completedContexts.insert(contextKey)
+                ledger.settle(contextKey, answered: true)
                 unpersistedAttempts[contextKey] = nil
             } else {
                 // Acted on ids the store has not confirmed: leave the context
@@ -1387,7 +1490,7 @@ final class DWSameSeedIdentityRecoveryCoordinator {
                 let attempts = (unpersistedAttempts[contextKey] ?? 0) + 1
                 unpersistedAttempts[contextKey] = attempts
                 if attempts >= StartupIdentityRecoveryPolicy.maxUnpersistedAttempts {
-                    completedContexts.insert(contextKey)
+                    ledger.settle(contextKey, answered: false)
                     Self.logger.error(
                         "🪪 IDENT-RECOVERY :: identity still not persisted after \(attempts, privacy: .public) attempt(s); settling for this process")
                 } else {
@@ -1420,8 +1523,10 @@ final class DWSameSeedIdentityRecoveryCoordinator {
         }
     }
 
-    private static func contextKey(walletId: Data, network: Network) -> String {
-        "\(network.rawValue):" + walletId.hexEncodedString()
+    /// Per chain: two devnets share `Network.devnet` and, for one seed, the
+    /// wallet id, yet an identity on one is no answer for the other.
+    static func contextKey(walletId: Data, network: Network) -> String {
+        "\(network.persistenceScope):" + walletId.hexEncodedString()
     }
 
     /// Existence check for the startup-budget decision. Queried from the

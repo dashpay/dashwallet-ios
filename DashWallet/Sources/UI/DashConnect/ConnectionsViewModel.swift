@@ -75,6 +75,26 @@ struct ConnectionSheetItem: Identifiable, Equatable {
 
 @MainActor
 final class ConnectionsViewModel: ObservableObject {
+    /// The wallet a held request came to: its network, and the active
+    /// wallet's id once one is open (nil before a first launch opens it).
+    struct WalletScope: Equatable {
+        /// The chain: `activeChain` when built for the app.
+        let network: String
+        let walletId: String?
+
+        /// The active chain: the network, and on devnet its configured name,
+        /// since two devnets are two chains where one seed has the same
+        /// wallet id. The tab bar's More stack is kept by the same value.
+        static var activeChain: String { WalletEnvironment.network?.persistenceScope ?? "" }
+
+        /// Whether a request held under this scope goes on under `now`: same
+        /// network, and the same wallet, or the first one to open if none was
+        /// open when it came.
+        func admits(_ now: WalletScope) -> Bool {
+            network == now.network && (walletId == nil || walletId == now.walletId)
+        }
+    }
+
     /// What the wallet knows of the active identity's usernames.
     enum UsernameState: Equatable {
         case present
@@ -159,6 +179,17 @@ final class ConnectionsViewModel: ObservableObject {
     /// The active identity's names are not read yet: a login request is
     /// not taken or approved until they are, and is not told to create one.
     private(set) var usernameUnknown = false
+    /// A request that came while the names were unread waits for them
+    /// (`holdUntilTheUsernameIsRead`); the page shows it is working.
+    @Published private(set) var isWaitingForUsername = false
+    /// The waiting request. A newer one replaces it.
+    private var heldRequest: (content: String, byLink: Bool, walletScope: WalletScope)?
+    /// Which hold `heldRequest` is: a check that finishes after a newer
+    /// request replaced it does nothing.
+    private var heldRequestGeneration = 0
+    private var usernameReadWait: Task<Void, Never>?
+    /// How long a held request waits for the names before it is refused.
+    private let usernameReadTimeout: Duration
     @Published var pendingRequest: ConnectionRequest? {
         didSet {
             // Terms belong to one request, by its ephemeral key: a sheet for
@@ -252,6 +283,12 @@ final class ConnectionsViewModel: ObservableObject {
 
     private let dataSource: any DashConnectDataSource
     private let usernameState: @MainActor () -> UsernameState
+    /// Starts the names' read again when the last one failed; one still
+    /// running is left alone.
+    private let rereadUsername: @MainActor () -> Void
+    /// The active wallet and network. A held request goes on only under the
+    /// ones it came to.
+    private let walletScope: @MainActor () -> WalletScope
     private let now: () -> Date
     private var pendingLoginRequest: DashKeyRequest?
     /// Opens an App Connect request's return URL.
@@ -300,14 +337,20 @@ final class ConnectionsViewModel: ObservableObject {
         featureUnavailable: Bool? = nil,
         openURL: (@MainActor (URL) -> Void)? = nil,
         usernameState: @escaping @MainActor () -> UsernameState = { .present },
+        rereadUsername: @escaping @MainActor () -> Void = {},
+        walletScope: @escaping @MainActor () -> WalletScope = { WalletScope(network: "", walletId: nil) },
         now: @escaping () -> Date = Date.init,
-        notificationCenter: NotificationCenter = .default
+        notificationCenter: NotificationCenter = .default,
+        usernameReadTimeout: Duration = .seconds(30)
     ) {
+        self.usernameReadTimeout = usernameReadTimeout
         // Every network: a request is refused while the network's Platform
         // protocol is below the one App Connect needs (14).
         let computedFeatureUnavailable = featureUnavailable ?? false
         self.featureUnavailable = computedFeatureUnavailable
         self.usernameState = usernameState
+        self.rereadUsername = rereadUsername
+        self.walletScope = walletScope
         let username = usernameState()
         self.needsUsername = username == .missing
         self.usernameUnknown = username == .unknown
@@ -330,11 +373,20 @@ final class ConnectionsViewModel: ObservableObject {
             .store(in: &cancellables)
 
         // The identity's names may still be loading when the page opens:
-        // they are read again once they load, or the identity changes.
-        notificationCenter.publisher(for: .DWDashPayRegistrationStatusUpdated)
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] _ in self?.refreshUsername() }
-            .store(in: &cancellables)
+        // they are read again once they load, or the identity changes. On a
+        // cold start from a link the SDK is not running yet either, and its
+        // start is the only signal when the names come from its cache. A
+        // restored wallet's identity is known only once recovery settles.
+        var identitySignals = [Notification.Name.DWDashPayRegistrationStatusUpdated, SwiftDashSDKHost.runtimeDidStartNotification]
+        #if DASHPAY
+        identitySignals.append(DWSameSeedIdentityRecoveryCoordinator.didSettleNotification)
+        #endif
+        for name in identitySignals {
+            notificationCenter.publisher(for: name)
+                .receive(on: DispatchQueue.main)
+                .sink { [weak self] _ in self?.refreshUsername() }
+                .store(in: &cancellables)
+        }
     }
 
     /// The rows of `tab`. A disconnected app is listed while it is not a row.
@@ -590,11 +642,94 @@ final class ConnectionsViewModel: ObservableObject {
     }
 
     /// Reads again whether the wallet has a username, for a page coming back
-    /// from creating one.
+    /// from creating one. A request held for the names goes on once they
+    /// are read.
     func refreshUsername() {
+        bindHeldRequestToTheOpenedWallet()
+        readUsername()
+        guard !usernameUnknown, let held = takeHeldRequest() else { return }
+        DWLogger.log("🔗 DASHCONNECT :: held request goes on: the username was read")
+        receive(held.content, byLink: held.byLink)
+    }
+
+    private func readUsername() {
         let username = usernameState()
         needsUsername = username == .missing
         usernameUnknown = username == .unknown
+    }
+
+    /// A login request while the names are unread (a link that cold-starts
+    /// the wallet comes before the SDK runs) waits for them instead of being
+    /// refused; `refreshUsername` takes it on. If they are still unread after
+    /// `usernameReadTimeout`, it is refused as before.
+    private func holdUntilTheUsernameIsRead(_ content: String, byLink: Bool) {
+        DWLogger.log("🔗 DASHCONNECT :: request held: the username is not read yet")
+        heldRequest = (content, byLink, walletScope())
+        heldRequestGeneration &+= 1
+        let generation = heldRequestGeneration
+        isWaitingForUsername = true
+        // A read that failed earlier is not tried again by itself: the
+        // request that waits for it starts it, once it reads as a request
+        // for this wallet's network. The parse is local; one that does not
+        // read is refused now, and never spends a retry of the identity's
+        // recovery (`rereadUsername`), which is capped.
+        Task { [weak self] in
+            guard let self else { return }
+            do {
+                _ = try await dataSource.parseQR(content)
+            } catch {
+                guard generation == heldRequestGeneration, heldRequest != nil else { return }
+                DWLogger.log("🔗 DASHCONNECT :: held request refused: it does not read (\(type(of: error)))")
+                _ = takeHeldRequest()
+                showRequestFailure(error)
+                return
+            }
+            guard generation == heldRequestGeneration, heldRequest != nil else { return }
+            rereadUsername()
+        }
+        usernameReadWait?.cancel()
+        let timeout = usernameReadTimeout
+        usernameReadWait = Task { [weak self] in
+            try? await Task.sleep(for: timeout)
+            guard !Task.isCancelled else { return }
+            self?.usernameReadTimedOut()
+        }
+    }
+
+    private func usernameReadTimedOut() {
+        guard let held = takeHeldRequest() else { return }
+        readUsername()
+        if usernameUnknown {
+            DWLogger.log("🔗 DASHCONNECT :: held request refused: the username was not read in time")
+            answerWithoutUsername()
+        } else {
+            receive(held.content, byLink: held.byLink)
+        }
+    }
+
+    /// A request held before any wallet was open (a first launch that opens
+    /// the kept wallet) belongs to the wallet that opens first: from then on
+    /// a switch to another wallet drops it.
+    private func bindHeldRequestToTheOpenedWallet() {
+        guard let held = heldRequest, held.walletScope.walletId == nil else { return }
+        let now = walletScope()
+        guard now.walletId != nil, held.walletScope.admits(now) else { return }
+        heldRequest = (held.content, held.byLink, now)
+    }
+
+    /// The held request, gone from the page either way. Nil when it came
+    /// under another wallet or network: it is not answered under this one.
+    private func takeHeldRequest() -> (content: String, byLink: Bool)? {
+        guard let held = heldRequest else { return nil }
+        heldRequest = nil
+        isWaitingForUsername = false
+        usernameReadWait?.cancel()
+        usernameReadWait = nil
+        guard held.walletScope.admits(walletScope()) else {
+            DWLogger.log("🔗 DASHCONNECT :: held request dropped: the wallet or network changed")
+            return nil
+        }
+        return (held.content, held.byLink)
     }
 
     /// Why a login is not taken or approved without a known username, or
@@ -609,17 +744,25 @@ final class ConnectionsViewModel: ObservableObject {
         guard !featureUnavailable else { return }
         // Read before the request: the page shows whether to create a
         // username, and a request needs one unless it is a state transition.
-        refreshUsername()
+        // A newer request replaces one still waiting for the names.
+        readUsername()
+        _ = takeHeldRequest()
         // Without a username only a `dash-st:` request goes on. A key
         // registration runs: it completes a two-QR login this wallet
         // approved already, and fails without that approved row
         // (`pendingApprovedConnectionForKeyRegistration`). A token purchase
         // is refused once parsed, before the network is read for it
         // (`handleStateTransition`). Any other request is not approved
-        // (`answerWithoutUsername`).
+        // (`answerWithoutUsername`), or waits while the names are unread.
         if needsUsername || usernameUnknown,
            !DashConnectUri.isStUri(content.trimmingCharacters(in: .whitespacesAndNewlines)) {
-            answerWithoutUsername()
+            // Only with nothing else on the page: a sheet that is up (or
+            // going) or work under way keeps its own answer, as before.
+            if usernameUnknown, !isBusyWithAnotherRequest, !isConnectionSheetOnScreen {
+                holdUntilTheUsernameIsRead(content, byLink: byLink)
+            } else {
+                answerWithoutUsername()
+            }
             return
         }
 
@@ -734,18 +877,22 @@ final class ConnectionsViewModel: ObservableObject {
                 }
             } catch {
                 guard generation == requestGeneration else { return }
-                let failure = ConnectionsScreenMessage(
-                    kind: .error,
-                    text: String(localized: "Could not complete the DashConnect request: \(error.localizedDescription)", comment: "DashConnect")
-                )
-                // A request that did not read leaves an open connection's
-                // sheet up, and says so on it.
-                if shownConnection != nil {
-                    connectionSheetMessage = failure
-                } else {
-                    message = failure
-                }
+                showRequestFailure(error)
             }
+        }
+    }
+
+    private func showRequestFailure(_ error: Error) {
+        let failure = ConnectionsScreenMessage(
+            kind: .error,
+            text: String(localized: "Could not complete the DashConnect request: \(error.localizedDescription)", comment: "DashConnect")
+        )
+        // A request that did not read leaves an open connection's
+        // sheet up, and says so on it.
+        if shownConnection != nil {
+            connectionSheetMessage = failure
+        } else {
+            message = failure
         }
     }
 

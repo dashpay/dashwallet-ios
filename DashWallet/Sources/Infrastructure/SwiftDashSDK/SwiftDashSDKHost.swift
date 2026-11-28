@@ -324,6 +324,12 @@ extension SwiftDashSDKHost {
 
 @MainActor
 final class SwiftDashSDKHost {
+    /// Posted on the main actor once a runtime is published: its wallet,
+    /// network and store can be read from now on. A reader that saw the
+    /// identity as still loading reads it again (DashConnect holds a link
+    /// that cold-started the wallet until then).
+    static let runtimeDidStartNotification = Notification.Name("org.dashfoundation.dash.swiftDashSDKRuntimeDidStart")
+
 
     // MARK: - Singleton
 
@@ -1971,6 +1977,7 @@ final class SwiftDashSDKHost {
         modelContainer = handles.modelContainer
         runningNetwork = handles.network
         ContestedUsernameFee.shared.runtimeDidStart()
+        NotificationCenter.default.post(name: Self.runtimeDidStartNotification, object: nil)
         protocolCompatibility.attach(
             client: SwiftDashSDKProtocolCompatibilityClient(sdk: handles.sdk),
             network: String(describing: handles.network))

@@ -201,6 +201,12 @@ class MainTabbarController: UITabBarController {
     }
     #endif
 
+    #if DASHPAY
+    /// The wallet the tabs were built for; nil walletId while none was open
+    /// (a cold start before the runtime binds one).
+    private var tabsBuiltForWallet: (network: String, walletId: String?) = ("", nil)
+    #endif
+
     @objc
     init(homeModel: DWHomeProtocol) {
         super.init(nibName: nil, bundle: nil)
@@ -209,6 +215,7 @@ class MainTabbarController: UITabBarController {
         configureControllers()
         
         #if DASHPAY
+        tabsBuiltForWallet = Self.activeWallet()
         NotificationCenter.default.publisher(for: .DWDashPayRegistrationStatusUpdated)
             .sink { [weak self] _ in
                 self?.reconfigureDashPayTabsIfNeeded()
@@ -224,7 +231,7 @@ class MainTabbarController: UITabBarController {
         NotificationCenter.default.publisher(for: SwiftDashSDKWalletState.activeWalletDidChangeNotification)
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
-                self?.reconfigureDashPayTabsForActiveWalletChange()
+                self?.reconfigureDashPayTabsForActiveWalletChange(keepingTheSameWalletsMoreStack: true)
             }
             .store(in: &cancellableBag)
 
@@ -258,7 +265,19 @@ class MainTabbarController: UITabBarController {
 
 // MARK: - Private
 extension MainTabbarController {
-    private func configureControllers() {
+    /// The More tab's navigation: `previous` with `menu` as its new root and
+    /// every screen pushed over the old one kept, or a new one.
+    static func moreNavigation(
+        menu: UIViewController, keepingStackOf previous: BaseNavigationController?
+    ) -> BaseNavigationController {
+        guard let previous else { return BaseNavigationController(rootViewController: menu) }
+        previous.setViewControllers([menu] + previous.viewControllers.dropFirst(), animated: false)
+        return previous
+    }
+
+    /// With `previousMore`, the More tab keeps that navigation controller and
+    /// the screens pushed on it; only its menu is built anew.
+    private func configureControllers(keepingMoreStackOf previousMore: BaseNavigationController? = nil) {
         var viewControllers: [UIViewController] = []
         // The bar is hidden by children — the payments landing does it while it
         // is up — and hiding outlives the child that asked for it. A rebuild
@@ -352,7 +371,7 @@ extension MainTabbarController {
         menuVC.delegate = self
         menuNavigationController = menuVC
 
-        nvc = BaseNavigationController(rootViewController: menuVC)
+        nvc = Self.moreNavigation(menu: menuVC, keepingStackOf: previousMore)
         nvc.tabBarItem = item
         moreTabIndex = viewControllers.count
         viewControllers.append(nvc)
@@ -389,7 +408,12 @@ extension MainTabbarController {
     /// because the previously-selected tab index may not exist under the new
     /// wallet's tab set (the +2 shift `reconfigureDashPayTabsPreservingSelection`
     /// applies assumes tabs were added, which doesn't hold on removal).
-    private func reconfigureDashPayTabsForActiveWalletChange() {
+    ///
+    /// `keepingTheSameWalletsMoreStack`: a change that is no switch — the
+    /// wallet the tabs were built for starts again, or the first wallet opens
+    /// (a first launch that keeps the wallets) — keeps the More tab's screens,
+    /// so a DashConnect page holding a login for that wallet stays.
+    private func reconfigureDashPayTabsForActiveWalletChange(keepingTheSameWalletsMoreStack: Bool = false) {
         // A successful full wipe posts the wallet-removed change while the
         // recover/reset flow that initiated it is still awaiting the wiper's
         // barrier inside this tab stack. Rebuilding here would deallocate
@@ -406,16 +430,44 @@ extension MainTabbarController {
             pendingDashPayTabReconfiguration = true
             return
         }
-        configureControllers()
-        selectedIndex = 0
+        let wallet = Self.activeWallet()
+        let builtFor = tabsBuiltForWallet
+        if keepingTheSameWalletsMoreStack, Self.isTheSameWallet(builtFor: builtFor, now: wallet),
+           let previousMore = viewControllers?.first(where: { $0 === menuNavigationController?.navigationController })
+               as? BaseNavigationController {
+            let moreWasSelected = selectedViewController === previousMore
+            configureControllers(keepingMoreStackOf: previousMore)
+            selectedIndex = moreWasSelected ? (viewControllers?.firstIndex { $0 === previousMore } ?? 0) : 0
+        } else {
+            configureControllers()
+            selectedIndex = 0
+        }
+        tabsBuiltForWallet = wallet
         view.setNeedsLayout()
         view.layoutIfNeeded()
     }
 
+    private static func activeWallet() -> (network: String, walletId: String?) {
+        (ConnectionsViewModel.WalletScope.activeChain, SwiftDashSDKHost.shared.wallet?.walletId.hexEncodedString())
+    }
+
+    /// Whether a change from the wallet the tabs were built for to `now` is
+    /// no switch: the same wallet on the same chain, or the first wallet to
+    /// open on that chain. The rule a held DashConnect login goes on by.
+    nonisolated static func isTheSameWallet(
+        builtFor: (network: String, walletId: String?), now: (network: String, walletId: String?)
+    ) -> Bool {
+        ConnectionsViewModel.WalletScope(network: builtFor.network, walletId: builtFor.walletId)
+            .admits(ConnectionsViewModel.WalletScope(network: now.network, walletId: now.walletId))
+    }
+
+    /// The same wallet gains its DashPay tabs: a screen open on More (a
+    /// DashConnect page holding a login until the names are read) stays.
     private func reconfigureDashPayTabsPreservingSelection() {
         let previousIndex = selectedIndex
         pendingDashPayTabReconfiguration = false
-        configureControllers()
+        let previousMore = viewControllers?.first { $0 === menuNavigationController?.navigationController } as? BaseNavigationController
+        configureControllers(keepingMoreStackOf: previousMore)
         selectedIndex = previousIndex == 0 ? 0 : previousIndex + 2
         view.setNeedsLayout()
         view.layoutIfNeeded()

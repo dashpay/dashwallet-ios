@@ -630,6 +630,144 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
             .init(discoveredCount: 0, identityCount: 1, adopted: true, identitiesPersisted: true))
     }
 
+    /// The SDK's discovery reports only identities it did not manage yet: a
+    /// same-runtime retry over an empty store finds nothing new for an
+    /// identity an earlier run loaded. That is no proof of absence; the
+    /// managed identity is acted on, and its row stays unconfirmed.
+    func testAnEmptyScanIsNoProofOfAbsenceWhileTheWalletManagesAnIdentity() async throws {
+        let identityId = Data(repeating: 0x21, count: 32)
+        var refreshedIdentityIds: [Data] = []
+
+        let outcome = try await SameSeedIdentityRecoveryPipeline.run(
+            localIdentityIds: { [] },
+            discover: { [] },
+            managedIdentityIds: { [identityId] },
+            refreshNames: { refreshedIdentityIds = $0 },
+            adopt: { false })
+
+        XCTAssertEqual(refreshedIdentityIds, [identityId])
+        XCTAssertEqual(outcome.identityCount, 1, "not the zero count that settles with an answer")
+        XCTAssertFalse(outcome.identitiesPersisted)
+
+        let absent = try await SameSeedIdentityRecoveryPipeline.run(
+            localIdentityIds: { [] }, discover: { [] }, managedIdentityIds: { [] },
+            refreshNames: { _ in XCTFail("nothing to refresh") }, adopt: { false })
+        XCTAssertEqual(absent.identityCount, 0, "nothing found and nothing managed: proven absent")
+    }
+
+    /// A managed-identity read that fails leaves the run unanswered: it throws.
+    func testAFailedManagedIdentityReadAnswersNothing() async {
+        do {
+            _ = try await SameSeedIdentityRecoveryPipeline.run(
+                localIdentityIds: { [] }, discover: { [] },
+                managedIdentityIds: { throw CoreLifecycleTestError.start },
+                refreshNames: { _ in }, adopt: { false })
+            XCTFail("expected the read's error")
+        } catch {}
+    }
+
+    /// A recovery run that replaces the one in the slot starts only after
+    /// that one returned, and cancelling the new one reaches the old one, so
+    /// waiting on the slot waits for both.
+    func testARecoveryRunWaitsForTheOneItReplaces() async {
+        var events: [String] = []
+        var release: CheckedContinuation<Void, Never>?
+        let first = Task { @MainActor in
+            await withCheckedContinuation { release = $0 }
+            events.append("first ended cancelled=\(Task.isCancelled)")
+        }
+        while release == nil { await Task.yield() }
+
+        let second = IdentityRecoveryRuns.chained(after: first, cancellingIt: false) {
+            events.append("second ran")
+        }
+        for _ in 0..<20 { await Task.yield() }
+        XCTAssertEqual(events, [], "the retry does not run beside the run it follows")
+
+        second.cancel()
+        release?.resume()
+        await second.value
+        XCTAssertEqual(events, ["first ended cancelled=true", "second ran"])
+    }
+
+    /// A start's own run cancels the run it replaces at once, and still
+    /// waits for it.
+    func testAStartsRecoveryCancelsAndJoinsTheRunItReplaces() async {
+        var events: [String] = []
+        var release: CheckedContinuation<Void, Never>?
+        let retry = Task { @MainActor in
+            await withCheckedContinuation { release = $0 }
+            events.append("retry ended cancelled=\(Task.isCancelled)")
+        }
+        while release == nil { await Task.yield() }
+
+        let start = IdentityRecoveryRuns.chained(after: retry, cancellingIt: true) {
+            events.append("start ran")
+        }
+        for _ in 0..<20 { await Task.yield() }
+        XCTAssertEqual(events, [])
+        release?.resume()
+        await start.value
+        XCTAssertEqual(events, ["retry ended cancelled=true", "start ran"])
+    }
+
+    /// A start's awaited run sits in the slot like a background one: the
+    /// wiper's and a stop's cancel reaches it and waits for it.
+    func testTheWipersCancelReachesTheStartsAwaitedRun() async {
+        let runs = IdentityRecoveryRuns()
+        var events: [String] = []
+        var started = false
+        let start = runs.startRun {
+            started = true
+            // Stands for the discovery: it checks for cancellation between steps.
+            while !Task.isCancelled { await Task.yield() }
+            events.append("start's run saw the cancel")
+        }
+        let awaitingStart = Task { @MainActor in
+            await withTaskCancellationHandler { await start.value } onCancel: { start.cancel() }
+            events.append("start went on")
+        }
+        while !started { await Task.yield() }
+
+        await runs.cancelAndAwait()
+        XCTAssertEqual(events, ["start's run saw the cancel"], "nothing writes for the wallet after the wipe's wait")
+        XCTAssertNil(runs.task)
+        await awaitingStart.value
+    }
+
+    /// After a stop's, a wipe's or a network switch's cancel, a retry is
+    /// refused, and one queued before it does not run; a new binding allows
+    /// them again.
+    func testARetryDoesNotRunAfterAStopOrWipeOrSwitch() async {
+        let runs = IdentityRecoveryRuns()
+        var ran = 0
+        var release: CheckedContinuation<Void, Never>?
+        runs.startRun { await withCheckedContinuation { release = $0 } }
+        while release == nil { await Task.yield() }
+        XCTAssertTrue(runs.retry(stillCurrent: { true }) { ran += 1 }, "queued behind the start's run")
+
+        runs.cancel()  // `prepareForNetworkSwitch`
+        release?.resume()
+        await runs.cancelAndAwait()  // `performStop` / the wiper
+        XCTAssertEqual(ran, 0, "the queued retry does not scan the wallet being torn down")
+        XCTAssertFalse(runs.retry(stillCurrent: { true }) { ran += 1 })
+
+        runs.allowRetries()
+        XCTAssertTrue(runs.retry(stillCurrent: { true }) { ran += 1 })
+        await runs.task?.value
+        XCTAssertEqual(ran, 1)
+    }
+
+    /// A retry whose lifecycle generation is gone by the time it may run
+    /// does not run.
+    func testARetryForAnOldGenerationDoesNotRun() async {
+        let runs = IdentityRecoveryRuns()
+        var ran = false
+        XCTAssertTrue(runs.retry(stillCurrent: { false }) { ran = true })
+        await runs.task?.value
+        XCTAssertFalse(ran)
+    }
+
     // MARK: - StartupIdentityRecoveryPolicy
 
     private static let allStatuses: [WalletStartupStatus] = [
