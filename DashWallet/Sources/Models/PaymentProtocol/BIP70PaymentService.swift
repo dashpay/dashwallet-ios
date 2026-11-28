@@ -43,9 +43,10 @@ protocol ReceiveAddressProviding {
     func receiveAddress() -> String?
 }
 
-/// PIN / biometric gate. Returns on success; throws `BIP70Error.authCancelled` on user cancel.
+/// PIN / biometric gate for a send of `spendAmount` duffs. Returns on success; throws
+/// `BIP70Error.authCancelled` on user cancel.
 protocol SendAuthorizing {
-    func authorize() async throws
+    func authorize(spendAmount: UInt64) async throws
 }
 
 // MARK: - Single-use guard
@@ -167,7 +168,7 @@ final class BIP70PaymentService {
     /// always blocked regardless of this flag.
     private let allowUntrustedUnsigned: Bool
 
-    init(transport: PaymentProtocolTransporting = PaymentProtocolTransport(),
+    init(transport: PaymentProtocolTransporting = PaymentProtocolTransport(requiresHTTPS: false),
          verifier: PaymentRequestVerifier = PaymentRequestVerifier(),
          wallet: WalletSending,
          receiveAddress: ReceiveAddressProviding,
@@ -233,7 +234,13 @@ final class BIP70PaymentService {
         let recipients = try ScriptAddressCodec.resolveOutputs(details.outputs, network: network)
         guard !recipients.isEmpty else { throw BIP70Error.malformedRequest }
 
-        let amount = recipients.reduce(UInt64(0)) { $0 + $1.amount }
+        // A request whose outputs do not sum within UInt64 is malformed, not a crash.
+        var amount: UInt64 = 0
+        for recipient in recipients {
+            let (sum, overflowed) = amount.addingReportingOverflow(recipient.amount)
+            guard !overflowed else { throw BIP70Error.malformedRequest }
+            amount = sum
+        }
         return Confirmation(
             merchantName: verdict.commonName,
             isSecure: verdict.isSecure,
@@ -273,9 +280,7 @@ final class BIP70PaymentService {
         try Self.assertNotExpired(confirmation.request.details.expires, now: now)
 
         // 2. A signed merchant request with nowhere to POST is invalid.
-        if confirmation.isSecure, confirmation.paymentURL == nil {
-            throw BIP70Error.missingPaymentURL
-        }
+        try Self.assertSignedRequestHasPaymentURL(confirmation)
 
         // 3. Claim the single-use send slot AFTER the pre-spend checks (so an expired/no-URL
         //    request stays freely retryable). A concurrent double-tap or a re-tap after a
@@ -358,17 +363,48 @@ final class BIP70PaymentService {
                           callbackURL: callbackURL)
     }
 
-    /// One-shot entry for headless flows (CTX gift cards): authorize, then prepare + send.
+    /// One-shot entry for headless flows (CTX gift cards): prepare, let the caller check the
+    /// prepared request, authorize, then send.
+    ///
+    /// The request is fetched and verified BEFORE the PIN/biometric prompt, so the user
+    /// authorizes a request the caller has already accepted. A throw from `validate` ends the
+    /// flow with no prompt shown and nothing built.
+    /// - Parameter validate: the caller's own acceptance check on the prepared request (for
+    ///   example, that `Confirmation.amount` matches what the user approved). It may suspend
+    ///   to ask the user. This layer holds no such policy; it only runs the hook.
+    /// - Parameter now: the clock. It is read before the fetch, once the request is prepared,
+    ///   once `validate` returns, and after the prompt: a request that expires while it is
+    ///   fetched or while `validate` waits gets no prompt, and one that expires while the
+    ///   prompt is open is not sent.
     func confirmAndSendHeadless(from requestURL: URL,
                                 scheme: String,
                                 network: PaymentNetwork,
                                 callbackScheme: String? = nil,
-                                now: Date = Date(),
-                                awaitAcceptance: Bool = true) async throws -> SendResult {
-        try await auth.authorize()
+                                now: () -> Date = { Date() },
+                                awaitAcceptance: Bool = true,
+                                validate: ((Confirmation) async throws -> Void)? = nil) async throws -> SendResult {
         let confirmation = try await prepareForConfirmation(from: requestURL, scheme: scheme,
-                                                            network: network, callbackScheme: callbackScheme, now: now)
-        return try await confirmAndSend(confirmation, now: now, awaitAcceptance: awaitAcceptance)
+                                                            network: network, callbackScheme: callbackScheme, now: now())
+        return try await authorizeAndSend(confirmation, now: now, awaitAcceptance: awaitAcceptance, validate: validate)
+    }
+
+    /// The headless flow from a prepared request on: the checks that need no prompt, the
+    /// caller's `validate`, the PIN/biometric prompt, then the send.
+    ///
+    /// A signed request with no payment URL is refused here, before `validate` and before the
+    /// prompt, so the user is asked nothing about a request that `confirmAndSend` would refuse.
+    func authorizeAndSend(_ confirmation: Confirmation,
+                          now: () -> Date = { Date() },
+                          awaitAcceptance: Bool = true,
+                          validate: ((Confirmation) async throws -> Void)? = nil) async throws -> SendResult {
+        try Self.assertNotExpired(confirmation.request.details.expires, now: now())
+        try Self.assertSignedRequestHasPaymentURL(confirmation)
+        if let validate {
+            try await validate(confirmation)
+            try Self.assertNotExpired(confirmation.request.details.expires, now: now())
+        }
+        try await auth.authorize(spendAmount: confirmation.amount)
+        return try await confirmAndSend(confirmation, now: now(), awaitAcceptance: awaitAcceptance)
     }
 
     // MARK: Helpers
@@ -392,6 +428,12 @@ final class BIP70PaymentService {
         if verdict.isExpired { return .expired }
         assertionFailure("Failed BIP70 verdict without a reason")
         return .untrustedCertificate(.untrustedChain)
+    }
+
+    private static func assertSignedRequestHasPaymentURL(_ confirmation: Confirmation) throws {
+        if confirmation.isSecure, confirmation.paymentURL == nil {
+            throw BIP70Error.missingPaymentURL
+        }
     }
 
     private static func assertNotExpired(_ expires: UInt64, now: Date) throws {

@@ -162,23 +162,23 @@ struct ShieldedActivityItem: Identifiable {
 
     var title: String {
         if isAwaitingTransparentReceipt || (kind == .withdrawal && !isExternalDestination) {
-            return NSLocalizedString("Internal Transfer", comment: "Transaction within the wallet, transfer of own funds")
+            return String(localized: "Internal Transfer", comment: "Transaction within the wallet, transfer of own funds")
         }
         switch kind {
         case .shield, .shieldFromAssetLock:
-            return NSLocalizedString("Shielded", comment: "Shielded activity: funds moved into the private shielded balance")
+            return String(localized: "Shielded", comment: "Shielded activity: funds moved into the private shielded balance")
         case .received:
-            return NSLocalizedString("Received", comment: "")
+            return String(localized: "Received", comment: "")
         case .sent:
-            return NSLocalizedString("Sent", comment: "")
+            return String(localized: "Sent", comment: "")
         case .unshield, .withdrawal:
             return isExternalDestination
-                ? NSLocalizedString("Sent", comment: "")
-                : NSLocalizedString("Unshielded", comment: "Shielded activity: funds moved out of the private shielded balance")
+                ? String(localized: "Sent", comment: "")
+                : String(localized: "Unshielded", comment: "Shielded activity: funds moved out of the private shielded balance")
         case .identityCreate:
-            return NSLocalizedString("Identity registration", comment: "Asset lock funding a DashPay identity registration")
+            return String(localized: "Identity registration", comment: "Asset lock funding a DashPay identity registration")
         case .shieldedSpend:
-            return NSLocalizedString("Shielded Spend", comment: "Shielded activity: a spend restored from on-chain data whose exact type is unknown")
+            return String(localized: "Shielded Spend", comment: "Shielded activity: a spend restored from on-chain data whose exact type is unknown")
         }
     }
 
@@ -189,7 +189,7 @@ struct ShieldedActivityItem: Identifiable {
         if let memoText { return memoText }
         switch kind {
         case .shield, .shieldFromAssetLock:
-            return NSLocalizedString("Platform → Shielded", comment: "Transfer of own funds from the Platform balance into the private shielded balance")
+            return String(localized: "Platform → Shielded", comment: "Transfer of own funds from the Platform balance into the private shielded balance")
         case .unshield, .withdrawal, .sent:
             if isExternalDestination {
                 // External destination: show where the money went,
@@ -198,19 +198,19 @@ struct ShieldedActivityItem: Identifiable {
                 if let address = destinationAddress {
                     return String(address.prefix(6)) + "…" + String(address.suffix(6))
                 }
-                return NSLocalizedString("Shielded", comment: "Shielded activity: funds moved into the private shielded balance")
+                return String(localized: "Shielded", comment: "Shielded activity: funds moved into the private shielded balance")
             }
             switch kind {
             case .unshield:
-                return NSLocalizedString("Shielded → Platform", comment: "Transfer of own funds from the private shielded balance to the Platform balance")
+                return String(localized: "Shielded → Platform", comment: "Transfer of own funds from the private shielded balance to the Platform balance")
             case .withdrawal:
-                return NSLocalizedString("Shielded → Transparent", comment: "Transfer of own funds from the private shielded balance back to the transparent wallet")
+                return String(localized: "Shielded → Transparent", comment: "Transfer of own funds from the private shielded balance back to the transparent wallet")
             default:
                 // A Sent row whose recipient couldn't be decoded.
-                return NSLocalizedString("Shielded", comment: "Shielded activity: funds moved into the private shielded balance")
+                return String(localized: "Shielded", comment: "Shielded activity: funds moved into the private shielded balance")
             }
         case .received, .identityCreate, .shieldedSpend:
-            return NSLocalizedString("Shielded", comment: "Shielded activity: funds moved into the private shielded balance")
+            return String(localized: "Shielded", comment: "Shielded activity: funds moved into the private shielded balance")
         }
     }
 
@@ -260,15 +260,15 @@ struct ShieldedActivityItem: Identifiable {
     /// script couldn't be decoded); a Sent entry names its decoded
     /// recipient and stays route-less when the counterparty didn't decode.
     var internalMoveRoute: (source: String, destination: String)? {
-        let platform = NSLocalizedString("Your Platform balance", comment: "Shielded activity: source/destination of an internal move")
-        let shielded = NSLocalizedString("Your Shielded balance", comment: "Shielded activity: source/destination of an internal move")
-        let transparent = NSLocalizedString("Your Transparent balance", comment: "Shielded activity: source/destination of an internal move")
+        let platform = String(localized: "Your Platform balance", comment: "Shielded activity: source/destination of an internal move")
+        let shielded = String(localized: "Your Shielded balance", comment: "Shielded activity: source/destination of an internal move")
+        let transparent = String(localized: "Your Transparent balance", comment: "Shielded activity: source/destination of an internal move")
         switch kind {
         case .shield: return (platform, shielded)
         case .shieldFromAssetLock: return (transparent, shielded)
         case .unshield, .withdrawal:
             if isExternalDestination {
-                let fallback = NSLocalizedString("External address", comment: "Shielded activity: destination outside this wallet whose exact address is unknown")
+                let fallback = String(localized: "External address", comment: "Shielded activity: destination outside this wallet whose exact address is unknown")
                 return (shielded, destinationAddress ?? fallback)
             }
             return kind == .unshield ? (shielded, platform) : (shielded, transparent)
@@ -296,9 +296,9 @@ struct ShieldedActivityItem: Identifiable {
 
     var trailingStatusText: String? {
         switch status {
-        case .pending: return NSLocalizedString("Pending", comment: "")
-        case .failed: return NSLocalizedString("Failed", comment: "")
-        case .unknown: return NSLocalizedString("Unknown", comment: "")
+        case .pending: return String(localized: "Pending", comment: "")
+        case .failed: return String(localized: "Failed", comment: "")
+        case .unknown: return String(localized: "Unknown", comment: "")
         case .confirmed: return nil
         }
     }
@@ -389,7 +389,7 @@ struct ShieldedActivityDetailsView: View {
 
             VStack(spacing: 0) {
                 if let details = item.detailsText {
-                    infoRow(NSLocalizedString("Type", comment: ""), details)
+                    infoRow(String(localized: "Type", comment: ""), details)
                 }
                 // Internal moves are self-originated BY CONSTRUCTION: the
                 // shield/unshield kinds are only ever live-recorded for
@@ -398,28 +398,28 @@ struct ShieldedActivityDetailsView: View {
                 // an old own-shield resurfaces as plain "Received").
                 // Saying From/To here is therefore a guarantee, not a guess.
                 if let route = item.internalMoveRoute {
-                    infoRow(NSLocalizedString("From", comment: ""), route.source)
+                    infoRow(String(localized: "From", comment: ""), route.source)
                     if item.isExternalDestination, let address = item.destinationAddress {
-                        copyableRow(NSLocalizedString("To", comment: ""), address)
+                        copyableRow(String(localized: "To", comment: ""), address)
                     } else {
-                        infoRow(NSLocalizedString("To", comment: ""), route.destination)
+                        infoRow(String(localized: "To", comment: ""), route.destination)
                     }
                     // Internal unshields still name the exact receiving
                     // address (the counterparty the SDK recorded), not
                     // just "your Platform balance".
                     if !item.isExternalDestination, let address = item.destinationAddress {
-                        copyableRow(NSLocalizedString("Address", comment: ""), address)
+                        copyableRow(String(localized: "Address", comment: ""), address)
                     }
                 }
                 infoRow(
-                    NSLocalizedString("Status", comment: ""),
-                    item.trailingStatusText ?? NSLocalizedString("Confirmed", comment: ""))
+                    String(localized: "Status", comment: ""),
+                    item.trailingStatusText ?? String(localized: "Confirmed", comment: ""))
                 if let height = item.blockHeight {
-                    infoRow(NSLocalizedString("Block", comment: "Block height of a confirmed shielded operation"), "\(height)")
+                    infoRow(String(localized: "Block", comment: "Block height of a confirmed shielded operation"), "\(height)")
                 }
                 if let fee = item.feeDuffs, fee > 0 {
                     HStack {
-                        Text(NSLocalizedString("Network fee", comment: ""))
+                        Text(String(localized: "Network fee", comment: ""))
                             .font(.footnote)
                             .foregroundColor(.dash.tertiaryText)
                         Spacer()
@@ -428,13 +428,13 @@ struct ShieldedActivityDetailsView: View {
                     .padding(.vertical, 10)
                 }
                 if let identityId = item.createdIdentityIdHex {
-                    copyableRow(NSLocalizedString("Identity ID", comment: "Identities"), identityId)
+                    copyableRow(String(localized: "Identity ID", comment: "Identities"), identityId)
                 }
                 infoRow(
-                    NSLocalizedString("Date", comment: ""),
+                    String(localized: "Date", comment: ""),
                     item.hasKnownDate
                         ? DWDateFormatter.sharedInstance.longString(from: item.date)
-                        : NSLocalizedString("Unknown", comment: "Restored shielded operation whose original date is not recoverable"))
+                        : String(localized: "Unknown", comment: "Restored shielded operation whose original date is not recoverable"))
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 6)
@@ -444,7 +444,7 @@ struct ShieldedActivityDetailsView: View {
             .padding(.top, 24)
 
             if item.kind == .shieldedSpend {
-                Text(NSLocalizedString("Restored wallets can't always recover the operation type. This entry was reconstructed from on-chain note data.", comment: "Shielded activity"))
+                Text(String(localized: "Restored wallets can't always recover the operation type. This entry was reconstructed from on-chain note data.", comment: "Shielded activity"))
                     .font(.caption)
                     .foregroundColor(.dash.tertiaryText)
                     .multilineTextAlignment(.center)

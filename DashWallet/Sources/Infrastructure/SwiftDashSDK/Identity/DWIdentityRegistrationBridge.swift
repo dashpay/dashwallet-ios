@@ -26,7 +26,6 @@
 
 import Combine
 import Foundation
-import OSLog
 import SwiftDashSDK
 
 extension Notification.Name {
@@ -119,9 +118,7 @@ public final class DWIdentityRegistrationBridge: NSObject {
     @objc public static let stateChangedNotification =
         NSNotification.Name("DWIdentityRegistrationBridgeStateChangedNotification")
 
-    private static let logger = Logger(
-        subsystem: "org.dashfoundation.dash",
-        category: "swift-sdk-migration.identity-bridge")
+    private static let logger = AppLogger(category: "swift-sdk-migration.identity-bridge")
 
     // MARK: - Cached @objc state
 
@@ -264,7 +261,7 @@ public final class DWIdentityRegistrationBridge: NSObject {
         let temporaryUsername = sanitizedTemporaryUsername(for: username)
         let verificationURL = sanitizedVerificationURL(for: username)
         let authorizedTopUpDuffs = authorizedTopUpDuffs
-        Self.logger.info("🪪 IDENT-BRIDGE :: startCreateUsername username=\(username, privacy: .public) funding=\(source.logLabel, privacy: .public) temporary=\(temporaryUsername ?? "none", privacy: .public) verified=\(verificationURL != nil, privacy: .public)")
+        Self.logger.info("🪪 IDENT-BRIDGE :: startCreateUsername contested=\(DWContestedNameStatusService.isContestedLabel(username)) funding=\(source.logLabel, privacy: .public) temporary=\(temporaryUsername == nil ? "none" : "set", privacy: .public) verified=\(verificationURL != nil, privacy: .public)")
         Task { @MainActor in
             do {
                 let identityId = try await DWIdentityRegistrationCoordinator.shared.startCreateUsername(
@@ -290,7 +287,7 @@ public final class DWIdentityRegistrationBridge: NSObject {
         let source = preferredFundingSource
         let temporaryUsername = sanitizedTemporaryUsername(for: username)
         let authorizedTopUpDuffs = authorizedTopUpDuffs
-        Self.logger.info("🪪 IDENT-BRIDGE :: retry username=\(username, privacy: .public) funding=\(source.logLabel, privacy: .public)")
+        Self.logger.info("🪪 IDENT-BRIDGE :: retry contested=\(DWContestedNameStatusService.isContestedLabel(username)) funding=\(source.logLabel, privacy: .public)")
         Task { @MainActor in
             do {
                 let identityId = try await DWIdentityRegistrationCoordinator.shared.retry(
@@ -351,7 +348,7 @@ public final class DWIdentityRegistrationBridge: NSObject {
         guard let temporary = pendingTemporaryUsername else { return nil }
         guard DWContestedNameStatusService.isContestedLabel(username),
               !DWContestedNameStatusService.isContestedLabel(temporary) else {
-            Self.logger.warning("🪪 IDENT-BRIDGE :: dropping stale temporary username \(temporary, privacy: .public) for submission of \(username, privacy: .public)")
+            Self.logger.warning("🪪 IDENT-BRIDGE :: dropping a stale temporary username for this submission")
             pendingTemporaryUsername = nil
             return nil
         }
@@ -367,12 +364,12 @@ public final class DWIdentityRegistrationBridge: NSObject {
         // other name — after the user went back and retyped, or abandoned the
         // sheet — must not inherit it.
         guard pending.label == Self.verificationKey(username) else {
-            Self.logger.warning("🪪 IDENT-BRIDGE :: dropping a verification link captured for another label before submitting \(username, privacy: .public)")
+            Self.logger.warning("🪪 IDENT-BRIDGE :: dropping a verification link captured for another label before submitting")
             pendingVerification = nil
             return nil
         }
         guard DWContestedNameStatusService.isContestedLabel(username) else {
-            Self.logger.warning("🪪 IDENT-BRIDGE :: dropping stale verification link for submission of \(username, privacy: .public)")
+            Self.logger.warning("🪪 IDENT-BRIDGE :: dropping a stale verification link for a non-contested submission")
             pendingVerification = nil
             return nil
         }

@@ -301,10 +301,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
 
     private let collaborators: Collaborators
 
-    /// `DWLogger`, not `os.Logger`: a failed registration has to be readable
-    /// from the "Share application logs" export, which ships only the
-    /// DWLogger files.
-    private static let logger = CoordinatorLog()
+    private static let logger = AppLogger(category: "identity-registration")
 
     /// v1 pins identityIndex to 0; dashwallet only ever has one
     /// DashPay identity per wallet.
@@ -580,17 +577,17 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         var errorDescription: String? {
             switch self {
             case .noWallet:
-                return NSLocalizedString("Wallet is not ready for identity registration", comment: "DashPay")
+                return String(localized: "Wallet is not ready for identity registration", comment: "DashPay")
             case .noNetwork:
-                return NSLocalizedString("Network is not configured", comment: "DashPay")
+                return String(localized: "Network is not configured", comment: "DashPay")
             case .noModelContainer:
-                return NSLocalizedString("Storage is not configured", comment: "DashPay")
+                return String(localized: "Storage is not configured", comment: "DashPay")
             case .noSDK:
-                return NSLocalizedString("SDK is not initialized", comment: "DashPay")
+                return String(localized: "SDK is not initialized", comment: "DashPay")
             case .authCancelled:
-                return NSLocalizedString("Authentication cancelled", comment: "DashPay")
+                return String(localized: "Authentication cancelled", comment: "DashPay")
             case .authFailed:
-                return NSLocalizedString("Authentication failed", comment: "DashPay")
+                return String(localized: "Authentication failed", comment: "DashPay")
             case .keyDerivation(let underlying):
                 return underlying.localizedDescription
             case .identityRegistration(let underlying):
@@ -598,8 +595,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             case .dpnsRegistration(let underlying):
                 return underlying.localizedDescription
             case .purchaseCompletedInOriginalContext(let name, _):
-                return String.localizedStringWithFormat(
-                    NSLocalizedString("“%@” was purchased successfully. Switch back to the original wallet and network to see it. Do not purchase it again.", comment: "DashPay purchase context changed"), name)
+                return String(localized: "“\(name)” was purchased successfully. Switch back to the original wallet and network to see it. Do not purchase it again.", comment: "DashPay purchase context changed")
             case .purchase(let underlying):
                 // Marketplace-typed failures (price changed, delisted,
                 // insufficient credits) get their friendly wording.
@@ -612,71 +608,44 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                     / PlatformPaymentIdentityFundingPolicy.creditsPerDuff
                 let availableDuffs =
                     available / PlatformPaymentIdentityFundingPolicy.creditsPerDuff
-                return String.localizedStringWithFormat(
-                    NSLocalizedString(
-                        "Platform Payment needs at least %@ DASH available; you have %@ DASH. Add funds to Platform and try again.",
-                        comment: "DashPay Platform Payment funding shortfall"),
-                    requiredDuffs.dashAmount.formattedDashAmountWithoutCurrencySymbol,
-                    availableDuffs.dashAmount.formattedDashAmountWithoutCurrencySymbol)
+                return String(localized: "Platform Payment needs at least \(requiredDuffs.dashAmount.formattedDashAmountWithoutCurrencySymbol) DASH available; you have \(availableDuffs.dashAmount.formattedDashAmountWithoutCurrencySymbol) DASH. Add funds to Platform and try again.", comment: "DashPay Platform Payment funding shortfall")
             case .insufficientShieldedBalance:
-                return NSLocalizedString("Not enough shielded balance to register an identity", comment: "DashPay")
+                return String(localized: "Not enough shielded balance to register an identity", comment: "DashPay")
             case .shieldedBalanceImmature(let readyAt):
                 let time = DateFormatter.localizedString(from: readyAt, dateStyle: .none, timeStyle: .short)
-                return String.localizedStringWithFormat(
-                    NSLocalizedString("Your shielded balance is still maturing. It will be ready around %@.", comment: "DashPay"),
-                    time)
+                return String(localized: "Your shielded balance is still maturing. It will be ready around \(time).", comment: "DashPay")
             case .shieldedPoolTooSmall(let currentNotes):
-                return String.localizedStringWithFormat(
-                    NSLocalizedString("The shared privacy pool is still growing (%ld of %ld deposits). Try again once it reaches the minimum.", comment: "DashPay"),
-                    Int(currentNotes), Int(ShieldedIdentityFundingReadiness.minimumPoolNotes))
+                return String(localized: "The shared privacy pool is still growing (\(Int(currentNotes)) of \(Int(ShieldedIdentityFundingReadiness.minimumPoolNotes)) deposits). Try again once it reaches the minimum.", comment: "DashPay")
             case .noShieldedFallbackAddress:
-                return NSLocalizedString("No Platform address is available yet for the shielded registration fallback. Try again after the wallet finishes syncing.", comment: "DashPay")
+                return String(localized: "No Platform address is available yet for the shielded registration fallback. Try again after the wallet finishes syncing.", comment: "DashPay")
             case .shieldedCreateUnconfirmed:
-                return NSLocalizedString("The registration was submitted but its result couldn't be confirmed. Wait a minute for the wallet to sync, then try again — don't resubmit immediately.", comment: "DashPay")
+                return String(localized: "The registration was submitted but its result couldn't be confirmed. Wait a minute for the wallet to sync, then try again — don't resubmit immediately.", comment: "DashPay")
             case .platformWriteUnconfirmed:
-                return NSLocalizedString(
-                    "The operation may have been submitted, but its result could not be confirmed. Wait for the wallet to sync and check your identity and balances before continuing. Do not fund another identity or repeat the payment.",
+                return String(
+                    localized: "The operation may have been submitted, but its result could not be confirmed. Wait for the wallet to sync and check your identity and balances before continuing. Do not fund another identity or repeat the payment.",
                     comment: "DashPay registration or purchase result unknown")
             case .missingInvitation:
-                return NSLocalizedString("This invitation link is not valid.", comment: "DashPay Invitations")
+                return String(localized: "This invitation link is not valid.", comment: "DashPay Invitations")
             case .alreadyInFlight:
-                return NSLocalizedString("Identity registration already in progress", comment: "DashPay")
+                return String(localized: "Identity registration already in progress", comment: "DashPay")
             case .contextChanged:
-                return NSLocalizedString("The active wallet or identity changed. Please try again.", comment: "DashPay registration recovery")
+                return String(localized: "The active wallet or identity changed. Please try again.", comment: "DashPay registration recovery")
             case .usernameUnavailable:
-                return NSLocalizedString("This username is no longer available. Please choose another one.", comment: "DashPay registration recovery")
+                return String(localized: "This username is no longer available. Please choose another one.", comment: "DashPay registration recovery")
             case .invalidTemporaryUsername:
-                return NSLocalizedString("The temporary username must not itself require voting.", comment: "Usernames")
+                return String(localized: "The temporary username must not itself require voting.", comment: "Usernames")
             case .identityTopUp(let underlying):
                 return underlying.localizedDescription
             case .identityBalanceUnavailable:
-                return NSLocalizedString("Couldn’t check your identity balance. Check your connection and try again.", comment: "DashPay: existing identity top-up before a username")
+                return String(localized: "Couldn’t check your identity balance. Check your connection and try again.", comment: "DashPay: existing identity top-up before a username")
             case .insufficientCoreBalanceForTopUp(let neededDuffs, let availableDuffs):
-                return String.localizedStringWithFormat(
-                    NSLocalizedString(
-                        "Your identity needs %@ DASH more to register this name, but only %@ DASH can be sent from your wallet. Add funds and try again.",
-                        comment: "DashPay: existing identity top-up before a username"),
-                    neededDuffs.dashAmount.formattedDashAmountWithoutCurrencySymbol,
-                    availableDuffs.dashAmount.formattedDashAmountWithoutCurrencySymbol)
+                return String(localized: "Your identity needs \(neededDuffs.dashAmount.formattedDashAmountWithoutCurrencySymbol) DASH more to register this name, but only \(availableDuffs.dashAmount.formattedDashAmountWithoutCurrencySymbol) DASH can be sent from your wallet. Add funds and try again.", comment: "DashPay: existing identity top-up before a username")
             case .shieldedTopUpUnavailable(let neededDuffs):
-                return String.localizedStringWithFormat(
-                    NSLocalizedString(
-                        "Your identity needs %@ DASH more to register this name, and it can’t be added from your Shielded balance here. Use Top Up in My Profile, then try again.",
-                        comment: "DashPay: existing identity top-up before a username"),
-                    neededDuffs.dashAmount.formattedDashAmountWithoutCurrencySymbol)
+                return String(localized: "Your identity needs \(neededDuffs.dashAmount.formattedDashAmountWithoutCurrencySymbol) DASH more to register this name, and it can’t be added from your Shielded balance here. Use Top Up in My Profile, then try again.", comment: "DashPay: existing identity top-up before a username")
             case .topUpNotConfirmed(let neededDuffs):
-                return String.localizedStringWithFormat(
-                    NSLocalizedString(
-                        "Registering this name needs %@ DASH from your wallet to top up your identity, and that amount was not confirmed. Nothing was sent. Try again to confirm it.",
-                        comment: "DashPay: existing identity top-up before a username"),
-                    neededDuffs.dashAmount.formattedDashAmountWithoutCurrencySymbol)
+                return String(localized: "Registering this name needs \(neededDuffs.dashAmount.formattedDashAmountWithoutCurrencySymbol) DASH from your wallet to top up your identity, and that amount was not confirmed. Nothing was sent. Try again to confirm it.", comment: "DashPay: existing identity top-up before a username")
             case .topUpExceedsConfirmed(let neededDuffs, let confirmedDuffs):
-                return String.localizedStringWithFormat(
-                    NSLocalizedString(
-                        "Registering this name now needs %1$@ DASH from your wallet, more than the %2$@ DASH you confirmed. Nothing was sent. Try again to confirm the new amount.",
-                        comment: "DashPay: existing identity top-up before a username"),
-                    neededDuffs.dashAmount.formattedDashAmountWithoutCurrencySymbol,
-                    confirmedDuffs.dashAmount.formattedDashAmountWithoutCurrencySymbol)
+                return String(localized: "Registering this name now needs \(neededDuffs.dashAmount.formattedDashAmountWithoutCurrencySymbol) DASH from your wallet, more than the \(confirmedDuffs.dashAmount.formattedDashAmountWithoutCurrencySymbol) DASH you confirmed. Nothing was sent. Try again to confirm the new amount.", comment: "DashPay: existing identity top-up before a username")
             }
         }
     }
@@ -732,7 +701,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         /// confirmation: what the confirmation sheet showed. nil = none shown.
         authorizedTopUpDuffs: UInt64? = nil
     ) async throws -> Identifier {
-        Self.logger.info("🪪 IDENT-COORD :: startCreateUsername username=\(username) funding=\(fundingSource.logLabel) temporary=\(temporaryUsername ?? "none")")
+        Self.logger.info("🪪 IDENT-COORD :: startCreateUsername contested=\(DWContestedNameStatusService.isContestedLabel(username)) funding=\(fundingSource.logLabel, privacy: .public) temporary=\(temporaryUsername == nil ? "none" : "set", privacy: .public)")
         // An overlapping start is rejected before it touches the attempt's
         // state: the proof link belongs to the request already running, and
         // overwriting it would publish another URL under that request's
@@ -750,7 +719,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             guard DWContestedNameStatusService.isContestedLabel(username),
                   !DWContestedNameStatusService.isContestedLabel(temporaryUsername)
             else {
-                Self.logger.error("🪪 IDENT-COORD :: invalid temporary username pairing main=\(username) temporary=\(temporaryUsername)")
+                Self.logger.error("🪪 IDENT-COORD :: invalid temporary username pairing mainContested=\(DWContestedNameStatusService.isContestedLabel(username)) temporaryContested=\(DWContestedNameStatusService.isContestedLabel(temporaryUsername))")
                 throw CoordinatorError.invalidTemporaryUsername
             }
         }
@@ -802,7 +771,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             walletId: wallet.walletId,
             modelContainer: modelContainer)
         if let recoveryLock {
-            Self.logger.info("🪪 IDENT-COORD :: recoverable Core registration found status=\(recoveryLock.statusRaw)")
+            Self.logger.info("🪪 IDENT-COORD :: recoverable Core registration found status=\(recoveryLock.statusRaw, privacy: .public)")
         }
 
         // Single-flight guard. The FFI calls we're about to make
@@ -855,7 +824,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             ?? ContestedUsernameFee.shared.amounts)
             .newIdentityFundingDuffs(isContested: isContestedSubmission, fromShielded: false)
         Self.logger.info(
-            "🪪 IDENT-COORD :: contested=\(isContestedSubmission) identityFundingDuffs=\(requiredIdentityFundingDuffs)")
+            "🪪 IDENT-COORD :: contested=\(isContestedSubmission, privacy: .public) identityFundingDuffs=\(requiredIdentityFundingDuffs, privacy: .private)")
         // Asset-lock polling only applies to the Core-funded path —
         // the Platform Payment path never writes a `PersistentAssetLock`
         // row, and polling would just keep `assetLockStatus` pegged at
@@ -917,9 +886,9 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                 identityIndex: Self.pinnedIdentityIndex,
                 specifications: dashPaySpecifications,
                 network: network))
-            Self.logger.info("🪪 IDENT-COORD :: pre-derived \(pubkeys.count) keys including DashPay contact pair")
+            Self.logger.info("🪪 IDENT-COORD :: pre-derived \(pubkeys.count, privacy: .public) keys including DashPay contact pair")
         } catch {
-            Self.logger.error("🪪 IDENT-COORD :: key derivation failed: \(String(describing: error))")
+            Self.logger.error("🪪 IDENT-COORD :: key derivation failed: \(error)")
             failedAtPhase = .processingPayment
             lastErrorMessage = error.localizedDescription
             newController.enterFailed(error.localizedDescription)
@@ -955,9 +924,9 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                                         username: username, invitationURI: invitationURI,
                                         requiredIdentityFundingDuffs: requiredIdentityFundingDuffs),
                 recoveryLock: recoveryLock)
-            Self.logger.info("🪪 IDENT-COORD :: identity created, id=\(identityId.map { String(format: "%02x", $0) }.joined().prefix(8))…")
+            Self.logger.info("🪪 IDENT-COORD :: identity created, id=\(identityId.map { String(format: "%02x", $0) }.joined().prefix(8), privacy: .public)…")
         } catch {
-            Self.logger.error("🪪 IDENT-COORD :: identity creation failed: \(String(describing: error))")
+            Self.logger.error("🪪 IDENT-COORD :: identity creation failed: \(error)")
             throw reportIdentityCreationFailure(error, controller: newController)
         }
 
@@ -1031,7 +1000,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                 walletId: wallet.walletId,
                 modelContainer: modelContainer,
                 targetCredits: targetCredits)
-            Self.logger.info("🪪 IDENT-COORD :: PP inputs=\(inputs.count) targetCredits=\(targetCredits)")
+            Self.logger.info("🪪 IDENT-COORD :: PP inputs=\(inputs.count, privacy: .public) targetCredits=\(targetCredits, privacy: .private)")
             do {
                 let created = try await wallet.registerIdentityFromAddresses(
                     inputs: inputs,
@@ -1069,13 +1038,34 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             guard let invitationURI else {
                 throw CoordinatorError.missingInvitation
             }
-            let managed = try await wallet.claimInvitation(
-                uri: invitationURI,
-                identityIndex: Self.pinnedIdentityIndex,
-                identityPubkeys: pubkeys,
-                signer: signer,
-                nowUnix: UInt32(Date().timeIntervalSince1970))
-            identityId = try managed.getId()
+            do {
+                let managed = try await wallet.claimInvitation(
+                    uri: invitationURI,
+                    identityIndex: Self.pinnedIdentityIndex,
+                    identityPubkeys: pubkeys,
+                    signer: signer,
+                    nowUnix: UInt32(Date().timeIntervalSince1970))
+                identityId = try managed.getId()
+            } catch let claimError {
+                // The SDK refuses a repeated claim instead of adopting the
+                // identity an earlier claim created. When that earlier claim
+                // was this wallet's and its result was lost before the
+                // identity was stored, the identity sits at the pinned slot:
+                // probe it and continue as an existing-identity recovery.
+                guard let landed = InvitationClaimFailure.earlierClaim(claimError),
+                      let existingId = try? await wallet.loadIdentity(atIndex: Self.pinnedIdentityIndex)
+                else {
+                    throw claimError
+                }
+                Self.logger.info("🪪 IDENT-COORD :: invitation claim refused, identity found at index \(Self.pinnedIdentityIndex) — recovering it")
+                // Only the wallet's own record says this voucher paid for the
+                // identity. A bare "consumed" report leaves the invitation to
+                // the Home card's status query.
+                if landed == .recordedByThisWallet {
+                    PendingInvitationStore.shared.retireConsumed(normalizedURI: invitationURI)
+                }
+                return existingId
+            }
             // The voucher is spent now, whatever happens to the username
             // next: from here on this is an ordinary "identity exists,
             // username required" recovery, not an invitation. Cleared by the
@@ -1102,7 +1092,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             walletId: wallet.walletId,
             modelContainer: modelContainer)
         {
-            Self.logger.info("🪪 IDENT-COORD :: recovery — local identity exists at index \(Self.pinnedIdentityIndex), skipping IdentityCreate")
+            Self.logger.info("🪪 IDENT-COORD :: recovery — local identity exists at index \(Self.pinnedIdentityIndex, privacy: .public), skipping IdentityCreate")
             identityId = existingId
             reconcileConsumedRecoveryLock(
                 recoveryLock,
@@ -1118,7 +1108,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             if let platformIdentityId = try await wallet.loadIdentity(
                 atIndex: Self.pinnedIdentityIndex)
             {
-                Self.logger.info("🪪 IDENT-COORD :: recovery — Platform identity found at index \(Self.pinnedIdentityIndex), skipping IdentityCreate")
+                Self.logger.info("🪪 IDENT-COORD :: recovery — Platform identity found at index \(Self.pinnedIdentityIndex, privacy: .public), skipping IdentityCreate")
                 identityId = platformIdentityId
                 reconcileConsumedRecoveryLock(
                     recoveryLock,
@@ -1131,12 +1121,12 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                         domain: "DWIdentityRegistrationCoordinator",
                         code: -2,
                         userInfo: [
-                            NSLocalizedDescriptionKey: NSLocalizedString(
-                                "The pending registration payment could not be restored.",
+                            NSLocalizedDescriptionKey: String(
+                                localized: "The pending registration payment could not be restored.",
                                 comment: "DashPay registration recovery")
                         ])
                 }
-                Self.logger.info("🪪 IDENT-COORD :: recovery — resuming original asset lock vout=\(outPoint.vout)")
+                Self.logger.info("🪪 IDENT-COORD :: recovery — resuming original asset lock vout=\(outPoint.vout, privacy: .public)")
                 let result = try await wallet.resumeIdentityWithAssetLock(
                     outPointTxid: outPoint.txidWire,
                     outPointVout: outPoint.vout,
@@ -1340,8 +1330,8 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             case .unknown:
                 throw CoordinatorError.availabilityCheck(NSError(
                     domain: "DWIdentityRegistrationCoordinator", code: -1,
-                    userInfo: [NSLocalizedDescriptionKey: NSLocalizedString(
-                        "Could not check username availability. Please try again.", comment: "DashPay registration recovery")]))
+                    userInfo: [NSLocalizedDescriptionKey: String(
+                        localized: "Could not check username availability. Please try again.", comment: "DashPay registration recovery")]))
             case .fresh:
                 break
             }
@@ -1376,7 +1366,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         } catch DWIdentityAuthorizer.AuthError.cancelled {
             throw DWIdentityAuthorizer.AuthError.cancelled
         } catch {
-            Self.logger.error("🪪 IDENT-COORD :: username step failed: \(String(describing: error))")
+            Self.logger.error("🪪 IDENT-COORD :: username step failed: \(error)")
             isFundingExistingIdentity = false
             let isTopUpFailure = (error as? CoordinatorError)?.isIdentityTopUp == true
             failedAtPhase = isTopUpFailure ? .processingPayment : .registrationUsername
@@ -1415,7 +1405,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
     /// attempt stops rather than guess.
     ///
     /// Sources: Core builds a new asset lock (`topUpIdentityWithFunding`),
-    /// Platform spends DIP-17 address credits (`topUpFromAddresses`, inputs
+    /// Platform spends DIP-17 address credits (`topUpIdentityFromAddresses`, inputs
     /// planned by `PlatformPaymentIdentityFundingPolicy`). Shielded has no
     /// top-up route in this flow — the SDK's pool top-up is not wired into
     /// the app — so it fails here, before anything is broadcast.
@@ -1432,11 +1422,11 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         do {
             heldCredits = try await wallet.refreshIdentityBalance(identityId: identityId)
         } catch {
-            Self.logger.error("🪪 IDENT-COORD :: identity balance read failed: \(String(describing: error))")
+            Self.logger.error("🪪 IDENT-COORD :: identity balance read failed: \(error)")
             throw CoordinatorError.identityTopUp(CoordinatorError.identityBalanceUnavailable)
         }
         let topUpDuffs = Self.identityTopUpDuffs(requiredCredits: requiredCredits, heldCredits: heldCredits)
-        Self.logger.info("🪪 IDENT-COORD :: existing identity requiredCredits=\(requiredCredits) heldCredits=\(heldCredits) topUpDuffs=\(topUpDuffs) authorized=\(plan.authorizedDuffs.map(String.init) ?? "none") source=\(plan.source.logLabel)")
+        Self.logger.info("🪪 IDENT-COORD :: existing identity requiredCredits=\(requiredCredits, privacy: .private) heldCredits=\(heldCredits, privacy: .private) topUpDuffs=\(topUpDuffs, privacy: .private) authorized=\(plan.authorizedDuffs == nil ? "none" : AppLogMessage.redacted, privacy: .public) source=\(plan.source.logLabel, privacy: .public)")
         switch Self.topUpDecision(neededDuffs: topUpDuffs, authorizedDuffs: plan.authorizedDuffs) {
         case .notNeeded:
             return
@@ -1475,7 +1465,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                     walletId: wallet.walletId,
                     modelContainer: plan.modelContainer,
                     targetCredits: topUpDuffs * PlatformPaymentIdentityFundingPolicy.creditsPerDuff)
-                _ = try await wallet.topUpFromAddresses(
+                _ = try await wallet.topUpIdentityFromAddresses(
                     identityId: identityId,
                     inputs: inputs,
                     addressSigner: signer)
@@ -1487,10 +1477,10 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                 break
             }
         } catch {
-            Self.logger.error("🪪 IDENT-COORD :: existing identity top-up failed: \(String(describing: error))")
+            Self.logger.error("🪪 IDENT-COORD :: existing identity top-up failed: \(error)")
             throw Self.identityTopUpFailure(error)
         }
-        Self.logger.info("🪪 IDENT-COORD :: existing identity topped up by \(topUpDuffs) duffs")
+        Self.logger.info("🪪 IDENT-COORD :: existing identity topped up by \(topUpDuffs, privacy: .private) duffs")
         DWCurrentUserIdentityInfo.shared.refreshFromSDK()
         isFundingExistingIdentity = false
         newController.enterInFlight()
@@ -1593,7 +1583,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                         identityId: identityId, name: username, signer: signer,
                         maxContestFund: maxContestFund)
                 })
-            Self.logger.info("🪪 IDENT-COORD :: DPNS name registered: \(username)")
+            Self.logger.info("🪪 IDENT-COORD :: DPNS name registered: \(username, privacy: .public)")
             // A request for another name is now on Platform: an earlier one's
             // missing instant name is no longer what to report. Settled here,
             // after authorization and the write, so a cancelled or refused
@@ -1615,7 +1605,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                 identityId: identityId, network: network, wallet: wallet)
             throw error
         } catch {
-            Self.logger.error("🪪 IDENT-COORD :: DPNS registration failed: \(String(describing: error))")
+            Self.logger.error("🪪 IDENT-COORD :: DPNS registration failed: \(error)")
             let error = Self.preservingUnconfirmedOutcome(error)
             // A submitted write may still enter voting. Retain its provisional
             // bookmark and promotion intent for normal name reconciliation.
@@ -1652,7 +1642,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         //      `handlePhaseChange` — they run when
         //      `checkPendingContestResolution()` detects the win and
         //      calls `DWContestedNameStatusService.finalizeWon(username:)`.
-        Self.logger.info("🪪 IDENT-COORD :: contested=\(isContestedSubmission) label=\(username)")
+        Self.logger.info("🪪 IDENT-COORD :: contested=\(isContestedSubmission, privacy: .public) label=\(username, privacy: .public)")
         if isContestedSubmission && nameState != .owned {
             // Persist a conservative network-scoped deadline together with
             // the label BEFORE the first vote-state read. Platform can
@@ -1668,7 +1658,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                 _ = try await wallet.syncContestedDpnsNames(identityId: identityId)
                 Self.logger.info("🪪 IDENT-COORD :: contested-names cache synced")
             } catch {
-                Self.logger.warning("🪪 IDENT-COORD :: syncContestedDpnsNames failed: \(String(describing: error))")
+                Self.logger.warning("🪪 IDENT-COORD :: syncContestedDpnsNames failed: \(error)")
             }
             do {
                 if let voteState = try await wallet.fetchContestVoteState(
@@ -1678,7 +1668,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                         .recordVotingEndTime(voteState.endTime, label: username, network: network, walletId: wallet.walletId)
                 }
             } catch {
-                Self.logger.warning("🪪 IDENT-COORD :: initial contest vote-state fetch failed: \(String(describing: error))")
+                Self.logger.warning("🪪 IDENT-COORD :: initial contest vote-state fetch failed: \(error)")
             }
         }
 
@@ -1714,7 +1704,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                     // failed before.
                     UsernamePrefs.shared.clearFailedCompanion(forContestedLabel: username)
                 }
-                Self.logger.info("🪪 IDENT-COORD :: temporary DPNS name registered: \(temporaryUsername)")
+                Self.logger.info("🪪 IDENT-COORD :: temporary DPNS name registered: \(temporaryUsername, privacy: .public)")
                 // Push the new label into the identity read model right
                 // away (same post-registration refresh the marketplace's
                 // `register(label:)` does) so profile/username surfaces
@@ -1722,7 +1712,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                 DWCurrentUserIdentityInfo.shared.refreshFromSDK()
             } catch {
                 temporaryUsernameError = error.localizedDescription
-                Self.logger.error("🪪 IDENT-COORD :: temporary DPNS registration failed: \(String(describing: error))")
+                Self.logger.error("🪪 IDENT-COORD :: temporary DPNS registration failed: \(error)")
                 // Kept past this attempt: the form has usually handed off to
                 // the status row by now, so Request details is where the user
                 // learns the instant name is missing and can try it again.
@@ -1766,7 +1756,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             } catch CoordinatorError.contextChanged {
                 Self.logger.info("🪪 IDENT-COORD :: identity-verify publish skipped: registration context changed")
             } catch {
-                Self.logger.error("🪪 IDENT-COORD :: identity-verify publish failed: \(String(describing: error))")
+                Self.logger.error("🪪 IDENT-COORD :: identity-verify publish failed: \(error)")
             }
         }
 
@@ -1818,8 +1808,8 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             // Preserve the successful result and original scoped bookkeeping;
             // never mirror it into a newly selected wallet or report failure.
             resetState()
-            completedRegistrationContextMessage = NSLocalizedString(
-                "The name request succeeded for the original identity. Switch back to the original wallet and network to see its status.",
+            completedRegistrationContextMessage = String(
+                localized: "The name request succeeded for the original identity. Switch back to the original wallet and network to see its status.",
                 comment: "DashPay registration context changed")
             Self.logger.info("DPNS completed in original context; current UI reconciliation deferred")
             return identityId
@@ -1901,7 +1891,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
     /// deferral branch in `handlePhaseChange` cannot trigger).
     @discardableResult
     func startPurchaseUsername(name: String, priceCredits: UInt64) async throws -> Identifier {
-        Self.logger.info("🪪 IDENT-COORD :: startPurchaseUsername name=\(name) priceCredits=\(priceCredits)")
+        Self.logger.info("🪪 IDENT-COORD :: startPurchaseUsername priceCredits=\(priceCredits, privacy: .private)")
 
         guard let wallet = SwiftDashSDKHost.shared.wallet else {
             throw CoordinatorError.noWallet
@@ -1927,7 +1917,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         // funding FFI calls race to their terminal even if we stop
         // observing, and two funding attempts must never overlap.
         guard !isAttemptActive else {
-            Self.logger.warning("🪪 IDENT-COORD :: rejecting concurrent purchase; phase=\(String(describing: phase))")
+            Self.logger.warning("🪪 IDENT-COORD :: rejecting concurrent purchase; phase=\(AppLogMessage.caseName(of: phase) ?? "-", privacy: .public)")
             throw CoordinatorError.alreadyInFlight
         }
         // Before the PIN prompt: the Core lock this purchase would build
@@ -1995,7 +1985,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                     container: modelContainer)
                 let shortfallDuffs = Self.purchaseTopUpDuffs(priceCredits: priceCredits, heldCredits: heldCredits)
                 if shortfallDuffs > 0 {
-                    Self.logger.info("🪪 IDENT-COORD :: purchase top-up shortfallDuffs=\(shortfallDuffs)")
+                    Self.logger.info("🪪 IDENT-COORD :: purchase top-up shortfallDuffs=\(shortfallDuffs, privacy: .private)")
                     _ = try await AssetLockInputLimit.mappingRefusal(Self.coreInputCheck(amountDuffs: shortfallDuffs)) {
                         try await wallet.topUpIdentityWithFunding(
                             identityId: existingId,
@@ -2031,7 +2021,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                 identityId = result.0
             }
         } catch {
-            Self.logger.error("🪪 IDENT-COORD :: purchase funding failed: \(String(describing: error))")
+            Self.logger.error("🪪 IDENT-COORD :: purchase funding failed: \(error)")
             let error = Self.preservingUnconfirmedOutcome(error)
             failedAtPhase = assetLockStatus < 2 ? .processingPayment : .creatingID
             lastErrorMessage = error.localizedDescription
@@ -2050,13 +2040,13 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                 name: normalizedName,
                 expectedPriceCredits: priceCredits,
                 signer: signer)
-            Self.logger.info("🪪 IDENT-COORD :: purchased \(name) for \(priceCredits) credits")
+            Self.logger.info("🪪 IDENT-COORD :: purchased \(name, privacy: .public) for \(priceCredits, privacy: .private) credits")
             // Bought now: an earlier lost contest for it no longer hides it.
             // The label as asked for; the store matches DPNS-normalized forms.
             DWContestedNameStatusService.shared.clearRejected(
                 label: name, for: network, identityId: identityId, walletId: wallet.walletId)
         } catch {
-            Self.logger.error("🪪 IDENT-COORD :: purchase failed: \(String(describing: error))")
+            Self.logger.error("🪪 IDENT-COORD :: purchase failed: \(error)")
             failedAtPhase = .registrationUsername
             let coordError = CoordinatorError.purchase(Self.preservingUnconfirmedOutcome(error))
             lastErrorMessage = coordError.localizedDescription
@@ -2079,7 +2069,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         } catch {
             // The reconcile falls back to persisted rows; the Home-appear
             // syncFromNetwork retries the cache pull.
-            Self.logger.warning("🪪 IDENT-COORD :: post-purchase syncDpnsNames failed: \(String(describing: error))")
+            Self.logger.warning("🪪 IDENT-COORD :: post-purchase syncDpnsNames failed: \(error)")
         }
         let adoptedInCurrentContext = UsernamePurchaseCompletion.reconcileIfCurrent(
             isCurrent: {
@@ -2137,7 +2127,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         temporaryUsername: String? = nil,
         authorizedTopUpDuffs: UInt64? = nil
     ) async throws -> Identifier {
-        Self.logger.info("🪪 IDENT-COORD :: retry username=\(username) funding=\(fundingSource.logLabel)")
+        Self.logger.info("🪪 IDENT-COORD :: retry contested=\(DWContestedNameStatusService.isContestedLabel(username)) funding=\(fundingSource.logLabel, privacy: .public)")
         return try await startCreateUsername(
             username,
             fundingSource: fundingSource,
@@ -2164,7 +2154,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         do {
             return try await sdk.dpnsCheckAvailability(name: name)
         } catch {
-            Self.logger.error("🪪 IDENT-COORD :: dpns availability check failed: \(String(describing: error))")
+            Self.logger.error("🪪 IDENT-COORD :: dpns availability check failed: \(error)")
             throw CoordinatorError.availabilityCheck(error)
         }
     }
@@ -2326,7 +2316,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         } catch {
             // Transient: the scope stays marked for this launch, and the next
             // one retries. Recovery must not turn into a per-appear query.
-            Self.logger.info("🪪 IDENT-COORD :: contest recovery — list failed: \(String(describing: error))")
+            Self.logger.info("🪪 IDENT-COORD :: contest recovery — list failed: \(error)")
             return
         }
 
@@ -2353,7 +2343,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             if let endTime = contest.endTime {
                 service.recordVotingEndTime(endTime, label: label, network: network, walletId: walletId)
             }
-            Self.logger.info("🪪 IDENT-COORD :: contest recovery — restored bookmark for \(label)")
+            Self.logger.info("🪪 IDENT-COORD :: contest recovery — restored bookmark for \(label, privacy: .public)")
         }
 
         // The bookmarks are the originating wallet's either way; the UI is
@@ -2412,7 +2402,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                 try await DWCurrentUserIdentityInfo.shared.rehydrateLegacyContests(
                     wallet: wallet, network: expectedNetwork, container: container)
             } catch {
-                Self.logger.warning("Legacy contest ownership is still unknown: \(error.localizedDescription)")
+                Self.logger.warning("Legacy contest ownership is still unknown: \(error)")
             }
         }
         // A marker an earlier launch left before its DPNS write is settled
@@ -2496,7 +2486,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                 }
             }
         } catch {
-            Self.logger.warning("🪪 IDENT-COORD :: contest check for \(label) failed (retry on next trigger): \(String(describing: error))")
+            Self.logger.warning("🪪 IDENT-COORD :: contest check for \(label, privacy: .public) failed (retry on next trigger): \(error)")
             return
         }
 
@@ -2518,12 +2508,12 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                   for: expectedNetwork, identityId: identityId, walletId: wallet.walletId, confirmedOnly: true)
                   .contains(where: { DWContestedNameStatusService.labelsMatch($0, label) })
         else {
-            Self.logger.info("🪪 IDENT-COORD :: contest check for \(label) became stale after network/submission change")
+            Self.logger.info("🪪 IDENT-COORD :: contest check for \(label, privacy: .public) became stale after network/submission change")
             return
         }
         switch outcome {
         case .won:
-            Self.logger.info("🪪 IDENT-COORD :: contest WON for \(label) — finalizing")
+            Self.logger.info("🪪 IDENT-COORD :: contest WON for \(label, privacy: .public) — finalizing")
             UsernamePrefs.shared.clearFailedCompanion(forContestedLabel: label)
             // The approved ending needs a record of its own. The row reached
             // Voting by clearing both the in-flight and the completed record,
@@ -2541,7 +2531,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                 walletId: wallet.walletId)
         case .lostVote, .blocked:
             let reason = (outcome == .blocked) ? "blocked by the network" : "won by another identity"
-            Self.logger.info("🪪 IDENT-COORD :: contest for \(label) \(reason) — clearing its bookmark; a new registration attempt is viable")
+            Self.logger.info("🪪 IDENT-COORD :: contest for \(label, privacy: .public) \(reason, privacy: .public) — clearing its bookmark; a new registration attempt is viable")
             // Kept out of the identity's names before the bookmark that hid it
             // goes: the SDK still lists the label as the identity's.
             DWContestedNameStatusService.shared.recordRejected(
@@ -2597,7 +2587,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         } catch CoordinatorError.usernameUnavailable {
             state = nil
         } catch {
-            Self.logger.warning("🪪 IDENT-COORD :: provisional \(label) lookup failed (retry on next trigger): \(String(describing: error))")
+            Self.logger.warning("🪪 IDENT-COORD :: provisional label lookup failed (retry on next trigger): \(error)")
             return
         }
         if state == .owned {
@@ -2615,11 +2605,11 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
 
         switch state {
         case .voting:
-            Self.logger.info("🪪 IDENT-COORD :: provisional \(label) is in the vote — confirmed")
+            Self.logger.info("🪪 IDENT-COORD :: provisional \(label, privacy: .public) is in the vote — confirmed")
             service.recordSubmission(
                 label: label, network: expectedNetwork, identityId: identityId, walletId: wallet.walletId)
         case .owned:
-            Self.logger.info("🪪 IDENT-COORD :: provisional \(label) is already ours — finalizing")
+            Self.logger.info("🪪 IDENT-COORD :: provisional \(label, privacy: .public) is already ours — finalizing")
             service.finalizeWon(
                 username: label, network: expectedNetwork, identityId: identityId, walletId: wallet.walletId)
             return // finalizeWon announces the change itself
@@ -2629,10 +2619,10 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             guard !service.isAwaitingUnconfirmedSubmission(
                 label: label, network: expectedNetwork, walletId: wallet.walletId)
             else {
-                Self.logger.info("🪪 IDENT-COORD :: provisional \(label) not visible yet after an unknown result — marker kept")
+                Self.logger.info("🪪 IDENT-COORD :: provisional label not visible yet after an unknown result — marker kept")
                 return
             }
-            Self.logger.info("🪪 IDENT-COORD :: provisional \(label) was never submitted — marker dropped")
+            Self.logger.info("🪪 IDENT-COORD :: provisional label was never submitted — marker dropped")
             service.clearPending(label: label, for: expectedNetwork, walletId: wallet.walletId)
         }
         NotificationCenter.default.post(name: .DWDashPayRegistrationStatusUpdated, object: nil)
@@ -2682,7 +2672,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                     // carries `promoteOnWin`: `finalizeWon` makes the
                     // contested name main if the vote is won; a lost vote
                     // leaves the companion in place.
-                    Self.logger.info("🪪 IDENT-COORD :: completed (contested) — temporary username \(temporaryUsername) becomes main")
+                    Self.logger.info("🪪 IDENT-COORD :: completed (contested) — temporary username \(temporaryUsername, privacy: .public) becomes main")
                     DWCurrentUserIdentityInfo.shared.promoteToMainName(
                         temporaryUsername, identityId: completedIdentityId, walletId: walletId, network: network)
                 } else {
@@ -2762,10 +2752,10 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             guard let row = rows.first else { return }
             if assetLockStatus != row.statusRaw {
                 assetLockStatus = row.statusRaw
-                Self.logger.debug("🪪 IDENT-COORD :: assetLockStatus → \(row.statusRaw)")
+                Self.logger.info("🪪 IDENT-COORD :: assetLockStatus → \(row.statusRaw, privacy: .public)")
             }
         } catch {
-            Self.logger.warning("🪪 IDENT-COORD :: asset-lock poll failed: \(String(describing: error))")
+            Self.logger.warning("🪪 IDENT-COORD :: asset-lock poll failed: \(error)")
         }
     }
 
@@ -2929,7 +2919,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             // Identity + DPNS recovery can still complete. Leaving the row
             // pending is recoverable and safer than turning this local
             // bookkeeping failure into another registration failure.
-            Self.logger.warning("🪪 IDENT-COORD :: recovery — failed to reconcile asset lock: \(String(describing: error))")
+            Self.logger.warning("🪪 IDENT-COORD :: recovery — failed to reconcile asset lock: \(error)")
         }
     }
 
@@ -2978,14 +2968,24 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         return Data(SHA256.hash(data: first))
     }
 
-    /// The Platform Wallet FFI currently folds DPP consensus errors into a
-    /// message-bearing `PlatformWalletError`, so this is the narrowest
-    /// recoverable classification available to the app. Keep both the DPP
-    /// type name and its stable user-facing text for compatibility across
-    /// SDK revisions.
+    /// Whether Platform refused an address-funded registration because the
+    /// funding addresses hold too little together: the consensus code when
+    /// the error carries one. One address holding less than the amount drawn
+    /// from it is a different refusal, and the wallet's total does not
+    /// describe it.
+    ///
+    /// TODO(platform-error-codes): the wallet layer reports this
+    /// registration's failure as text with no consensus code, so the DPP
+    /// type name and its message are matched as well.
     nonisolated static func isPlatformAddressInsufficientFunds(
         _ error: Error
     ) -> Bool {
+        // A consensus code decides alone: the text is read only for an
+        // error that carries none.
+        if let refusal = PlatformRefusal.of(error) { return refusal == .combinedAddressBalanceTooLow }
+        // An unconfirmed registration may have landed: its text names no
+        // shortfall.
+        guard PlatformRefusal.textMayNameRefusal(error) else { return false }
         let message = error.localizedDescription
         return message.localizedCaseInsensitiveContains(
             "AddressesNotEnoughFundsError")
@@ -3006,7 +3006,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                 walletId: walletId,
                 modelContainer: modelContainer)
         } catch {
-            Self.logger.error("🪪 IDENT-COORD :: PP account fetch failed: \(String(describing: error))")
+            Self.logger.error("🪪 IDENT-COORD :: PP account fetch failed: \(error)")
             throw CoordinatorError.identityRegistration(error)
         }
         do {
@@ -3087,7 +3087,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             throw CoordinatorError.noShieldedFallbackAddress
         }
 
-        Self.logger.info("🪪 IDENT-COORD :: shielded create denomination=\(denomination) contested=\(contested)")
+        Self.logger.info("🪪 IDENT-COORD :: shielded create denomination=\(denomination, privacy: .private) contested=\(contested, privacy: .public)")
         do {
             let identityId = try await manager.shieldedIdentityCreateFromPool(
                 walletId: walletId,
@@ -3105,7 +3105,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                 .refreshShieldedBalanceAfterSpend(using: manager)
             return identityId
         } catch let unconfirmed as ShieldedIdentityCreateUnconfirmedError {
-            Self.logger.warning("🪪 IDENT-COORD :: shielded create unconfirmed id=\(unconfirmed.identityId.map { String(format: "%02x", $0) }.joined().prefix(8))…")
+            Self.logger.warning("🪪 IDENT-COORD :: shielded create unconfirmed id=\(unconfirmed.identityId.map { String(format: "%02x", $0) }.joined().prefix(8), privacy: .public)…")
             PlatformAddressSyncCoordinator.shared
                 .refreshShieldedBalanceAfterSpend(using: manager)
             throw CoordinatorError.shieldedCreateUnconfirmed
@@ -3137,13 +3137,4 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         }
         return Data([row.addressType]) + row.addressHash
     }
-}
-
-/// `os.Logger`-shaped front for `DWLogger`. DWLogger records every line at
-/// info, so the level travels as a text tag instead.
-private struct CoordinatorLog {
-    func debug(_ message: String) { DWLogger.log(message) }
-    func info(_ message: String) { DWLogger.log(message) }
-    func warning(_ message: String) { DWLogger.log("WARNING " + message) }
-    func error(_ message: String) { DWLogger.log("ERROR " + message) }
 }

@@ -73,11 +73,11 @@ extension MerchantsListSegment {
     var title: String {
         switch self {
         case .online:
-            return NSLocalizedString("Online", comment: "Online")
+            return String(localized: "Online", comment: "Online")
         case .nearby:
-            return NSLocalizedString("Nearby", comment: "Nearby")
+            return String(localized: "Nearby", comment: "Nearby")
         case .all:
-            return NSLocalizedString("All", comment: "All")
+            return String(localized: "All", comment: "All")
         }
     }
 

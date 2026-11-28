@@ -932,8 +932,8 @@ class HomeViewModel: ObservableObject {
         // == false`, date == .distantPast) collect under one dedicated
         // trailing group instead of a spurious epoch-day header; the
         // distantPast sentinel makes both sorts place them last.
-        let unknownDateKey = NSLocalizedString(
-            "Date unknown",
+        let unknownDateKey = String(
+            localized: "Date unknown",
             comment: "History group header for restored shielded operations whose original date is not recoverable")
         let groupedItems = Dictionary(
             grouping: items.sorted(by: { lhs, rhs in
@@ -1364,7 +1364,9 @@ extension HomeViewModel {
         let suppressed = WalletEnvironment.network.map {
             CoinJoinRecovery.shared.isSweepPromptSuppressed(currentBalanceDuffs: balance, for: $0)
         } ?? false
-        DWLogger.log("HomeViewModel: sweep dialog check — \(balance) duffs (\(String(format: "%.6f", Double(balance) / Double(kOneDash))) DASH), viableFloor \(viableFloor), above=\(balance > viableFloor), suppressed=\(suppressed), syncDone=\(syncModel.state == .syncDone), alreadyShown=\(coinJoinSweepDialogShown)")
+        DWLogger.log("HomeViewModel: sweep dialog check — viableFloor \(viableFloor), "
+            + "above=\(balance > viableFloor), suppressed=\(suppressed), "
+            + "syncDone=\(syncModel.state == .syncDone), alreadyShown=\(coinJoinSweepDialogShown)")
         guard !coinJoinSweepDialogShown,
               syncModel.state == .syncDone,
               balance > viableFloor,

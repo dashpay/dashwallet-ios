@@ -21,15 +21,12 @@
 //
 
 import Foundation
-import OSLog
 import SwiftDashSDK
 
 @objc(DWSwiftDashSDKCoinJoinBalanceReader)
 final class SwiftDashSDKCoinJoinBalanceReader: NSObject {
 
-    private static let logger = Logger(
-        subsystem: "org.dashfoundation.dash",
-        category: "swift-sdk-migration.coinjoin-balance")
+    private static let logger = AppLogger(category: "swift-sdk-migration.coinjoin-balance")
 
     /// `AccountTypeTagFFI.CoinJoin` discriminant — see
     /// `platform-wallet-ffi.h` (`ACCOUNT_TYPE_TAG_FFI_COIN_JOIN = 1`).
@@ -74,7 +71,7 @@ final class SwiftDashSDKCoinJoinBalanceReader: NSObject {
         let total = coinJoinEntries.reduce(UInt64(0)) { $0 &+ $1.confirmed &+ $1.unconfirmed }
 
         Self.logger.info(
-            "🪙 CJBAL :: coinjoin spendable balance = \(total, privacy: .public) duffs across \(coinJoinEntries.count, privacy: .public) entry(ies)")
+            "🪙 CJBAL :: coinjoin spendable balance = \(total, privacy: .private) duffs across \(coinJoinEntries.count, privacy: .public) entry(ies)")
 
         return total
     }

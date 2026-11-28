@@ -119,13 +119,11 @@ extension HomeViewController {
     /// `viewModel` is captured by the action so it outlives the alert.
     private func confirmWalletSwitch(to row: WalletRow, viewModel: WalletsViewModel) {
         let alert = UIAlertController(
-            title: NSLocalizedString("Switch Wallet", comment: "Wallets"),
-            message: String(
-                format: NSLocalizedString("Would you like to switch to \"%@\"? You can always switch back later.", comment: "Wallets"),
-                row.displayName),
+            title: String(localized: "Switch Wallet", comment: "Wallets"),
+            message: String(localized: "Would you like to switch to \"\(row.displayName)\"? You can always switch back later.", comment: "Wallets"),
             preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel))
-        alert.addAction(UIAlertAction(title: NSLocalizedString("Switch", comment: "Wallets"), style: .default) { _ in
+        alert.addAction(UIAlertAction(title: String(localized: "Cancel", comment: ""), style: .cancel))
+        alert.addAction(UIAlertAction(title: String(localized: "Switch", comment: "Wallets"), style: .default) { _ in
             viewModel.switchWallet(to: row.walletId)
         })
         present(alert, animated: true)
@@ -181,7 +179,7 @@ extension HomeViewController {
         let controller = CreateUsernameViewController(invitation: invitation, invitationURI: uri, invitationAmountDuffs: amountDuffs)
         controller.completionHandler = { [weak self] result in
             guard result else { return }
-            self?.view.dw_showInfoHUD(withText: NSLocalizedString("Username was successfully requested", comment: "Usernames"), offsetForNavBar: true)
+            self?.view.dw_showInfoHUD(withText: String(localized: "Username was successfully requested", comment: "Usernames"), offsetForNavBar: true)
         }
         navigationController?.pushViewController(controller, animated: true)
     }
@@ -240,9 +238,9 @@ extension HomeViewController {
         let controller = CreateUsernameViewController(dashPayModel: model.dashPayModel, definedUsername: definedUsername)
         controller.completionHandler = { result in
             if (result) {
-                self.view.dw_showInfoHUD(withText: NSLocalizedString("Username was successfully requested", comment: "Usernames"), offsetForNavBar:true)
+                self.view.dw_showInfoHUD(withText: String(localized: "Username was successfully requested", comment: "Usernames"), offsetForNavBar:true)
             } else {
-                self.view.dw_showInfoHUD(withText: NSLocalizedString("Your request was cancelled", comment: "Usernames"), offsetForNavBar:true)
+                self.view.dw_showInfoHUD(withText: String(localized: "Your request was cancelled", comment: "Usernames"), offsetForNavBar:true)
             }
         }
         self.navigationController?.pushViewController(controller, animated: true)
@@ -271,7 +269,7 @@ extension HomeViewController {
         let controller = MerchantListViewController()
         controller.initialSegment = .all
         controller.customNavBar = MerchantListViewController.CustomNavBarConfiguration(
-            title: NSLocalizedString("Where to Spend", comment: ""),
+            title: String(localized: "Where to Spend", comment: ""),
             leading: .close,
             onBack: { [weak controller] in controller?.dismiss(animated: true) },
             onInfo: nil
@@ -361,7 +359,7 @@ extension HomeViewController {
             return
         }
 
-        view.dw_showProgressHUD(withMessage: NSLocalizedString("Requesting tDash…", comment: "Testnet faucet"))
+        view.dw_showProgressHUD(withMessage: String(localized: "Requesting tDash…", comment: "Testnet faucet"))
         Task { @MainActor in
             let outcome = await TestnetFaucet().requestCoreDash(address: address)
             self.view.dw_hideProgressHUD()
@@ -371,9 +369,7 @@ extension HomeViewController {
                     ? String(format: "%.0f", amount)
                     : String(format: "%.4f", amount)
                 self.view.dw_showInfoHUD(
-                    withText: String(
-                        format: NSLocalizedString("%@ tDash requested — it will arrive shortly", comment: "Testnet faucet"),
-                        dash),
+                    withText: String(localized: "\(dash) tDash requested — it will arrive shortly", comment: "Testnet faucet"),
                     offsetForNavBar: true)
             case .rateLimited(let message):
                 self.openWebFaucetFallback(address: address, reason: message)
@@ -406,7 +402,7 @@ extension HomeViewController {
 
     private func shortcutSelectionSheetView(for position: Int) -> AnyView {
         let usedTypes = Set(HomeViewModel.shared.shortcutItems.map { $0.type })
-        let sheet = DashUIKit.BottomSheet(title: NSLocalizedString("Select option", comment: ""),
+        let sheet = DashUIKit.BottomSheet(title: String(localized: "Select option", comment: ""),
                                 showBackButton: .constant(false)) {
             ShortcutSelectionView(usedTypes: usedTypes) { [weak self] selectedType in
                 self?.applyShortcutCustomization(type: selectedType, at: position)
@@ -441,14 +437,14 @@ extension HomeViewController {
 
     func showBackupWarningThenSelect(position: Int) {
         let alert = UIAlertController(
-            title: NSLocalizedString("Back Up Your Wallet", comment: ""),
-            message: NSLocalizedString("You haven't backed up your recovery phrase yet. Would you like to back up now before removing this shortcut?", comment: ""),
+            title: String(localized: "Back Up Your Wallet", comment: ""),
+            message: String(localized: "You haven't backed up your recovery phrase yet. Would you like to back up now before removing this shortcut?", comment: ""),
             preferredStyle: .alert
         )
-        alert.addAction(UIAlertAction(title: NSLocalizedString("Back Up Now", comment: ""), style: .default) { [weak self] _ in
+        alert.addAction(UIAlertAction(title: String(localized: "Back Up Now", comment: ""), style: .default) { [weak self] _ in
             self?.secureWalletAction()
         })
-        alert.addAction(UIAlertAction(title: NSLocalizedString("Skip", comment: ""), style: .destructive) { [weak self] _ in
+        alert.addAction(UIAlertAction(title: String(localized: "Skip", comment: ""), style: .destructive) { [weak self] _ in
             self?.presentShortcutSelection(for: position)
         })
         present(alert, animated: true)

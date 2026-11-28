@@ -259,7 +259,7 @@ final class VotingKeysViewModelTests: XCTestCase {
         source.nodeResolution = .partial
         vm.rowsChanged()
         XCTAssertEqual(vm.ticked, [Data([1])])
-        XCTAssertEqual(vm.castCaption, NSLocalizedString("1 vote will be cast", comment: "Voting"))
+        XCTAssertEqual(vm.castCaption, String(localized: "1 vote will be cast", comment: "Voting"))
 
         vm.confirm()
         XCTAssertEqual(source.confirmed, [Data([1]), Data([2])])
@@ -294,13 +294,13 @@ final class VotingKeysViewModelTests: XCTestCase {
         vm.toggle(node(2))
         source.votesToCastResult = 1
 
-        XCTAssertEqual(vm.castCaption, NSLocalizedString("1 vote will be cast", comment: "Voting"))
+        XCTAssertEqual(vm.castCaption, String(localized: "1 vote will be cast", comment: "Voting"))
 
         source.votesToCastResult = 0
         XCTAssertNil(vm.castCaption)
 
         source.votesToCastResult = nil
-        XCTAssertEqual(vm.castCaption, String(format: NSLocalizedString("%d votes will be cast", comment: "Voting"), 2))
+        XCTAssertEqual(vm.castCaption, String(localized: "\(2) votes will be cast", comment: "Voting"))
     }
 
     /// A complete list proves a node gone: its vote-mode tick is dropped.

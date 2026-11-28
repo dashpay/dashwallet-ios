@@ -39,22 +39,15 @@ final class RefundAddressViewModel: ObservableObject {
     @Published private(set) var isOnline: Bool
 
     var addressLabel: String {
-        NSLocalizedString("Refund address", comment: "Dash DEX / dex_refund_address_field_label")
+        String(localized: "Refund address", comment: "Dash DEX / dex_refund_address_field_label")
     }
 
     var subtitle: String {
-        return String(
-            format: NSLocalizedString(
-                "If the swap fails, your %@ will be returned to this address. Make sure it's a %@ address from a wallet you control.\n\nYour swap cannot be processed without a refund address.",
-                comment: "Dash DEX / dex_refund_address_description"
-            ),
-            coin.code,
-            coin.code
-        )
+        return String(localized: "If the swap fails, your \(coin.code) will be returned to this address. Make sure it's a \(coin.code) address from a wallet you control.\n\nYour swap cannot be processed without a refund address.", comment: "Dash DEX / dex_refund_address_description")
     }
 
     var placeholderText: String {
-        NSLocalizedString("Enter refund address", comment: "Dash DEX")
+        String(localized: "Enter refund address", comment: "Dash DEX")
     }
 
     var isContinueEnabled: Bool {
@@ -67,13 +60,7 @@ final class RefundAddressViewModel: ObservableObject {
 
     var addressValidationErrorMessage: String? {
         guard showAddressError else { return nil }
-        return String(
-            format: NSLocalizedString(
-                "That refund address isn't a valid %@ address.",
-                comment: "Dash DEX / dex_error_invalid_refund_address"
-            ),
-            coin.code
-        )
+        return String(localized: "That refund address isn't a valid \(coin.code) address.", comment: "Dash DEX / dex_error_invalid_refund_address")
     }
 
     init(
@@ -157,7 +144,7 @@ final class RefundAddressViewModel: ObservableObject {
         // stale post-migration.
         guard let destination = SwiftDashSDKReceiveAddressReader.receiveAddress(),
               !destination.isEmpty else {
-            orderError = NSLocalizedString("Unable to determine your Dash receive address.", comment: "Dash DEX")
+            orderError = String(localized: "Unable to determine your Dash receive address.", comment: "Dash DEX")
             return nil
         }
 
@@ -186,7 +173,7 @@ final class RefundAddressViewModel: ObservableObject {
         } catch {
             let raw = (error as NSError).localizedDescription.trimmingCharacters(in: .whitespacesAndNewlines)
             orderError = raw.isEmpty
-                ? NSLocalizedString("We couldn't save this swap order. Please try again.", comment: "Dash DEX")
+                ? String(localized: "We couldn't save this swap order. Please try again.", comment: "Dash DEX")
                 : raw
             return nil
         }

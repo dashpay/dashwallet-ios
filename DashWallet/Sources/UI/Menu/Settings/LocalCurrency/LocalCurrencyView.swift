@@ -137,10 +137,7 @@ private struct LocalCurrencyScrollContentView: View {
     }
 
     private var noResultsText: String {
-        String.localizedStringWithFormat(
-            NSLocalizedString("No matches for \"%@\"", comment: "Local Currency: no search matches"),
-            trimmedSearchQuery
-        )
+        String(localized: "No matches for \"\(trimmedSearchQuery)\"", comment: "Local Currency: no search matches")
     }
 
     @ViewBuilder private var noResultsView: some View {
@@ -265,7 +262,7 @@ private struct LocalCurrencyTopOverlayView: View {
     }
 
     private var title: some View {
-        Text(NSLocalizedString("Local Currency", comment: "Settings"))
+        Text(String(localized: "Local Currency", comment: "Settings"))
             .font(.system(.subheadline, weight: .medium))
             .foregroundColor(.dash.primaryText)
     }

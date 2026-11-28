@@ -36,10 +36,10 @@ enum ContestSort: String, CaseIterable, Identifiable {
 
     var title: String {
         switch self {
-        case .dateNewToOld: return NSLocalizedString("Date: New to old", comment: "Voting")
-        case .dateOldToNew: return NSLocalizedString("Date: Old to new", comment: "Voting")
-        case .votesHighToLow: return NSLocalizedString("Votes: High to low", comment: "Voting")
-        case .votesLowToHigh: return NSLocalizedString("Votes: Low to high", comment: "Voting")
+        case .dateNewToOld: return String(localized: "Date: New to old", comment: "Voting")
+        case .dateOldToNew: return String(localized: "Date: Old to new", comment: "Voting")
+        case .votesHighToLow: return String(localized: "Votes: High to low", comment: "Voting")
+        case .votesLowToHigh: return String(localized: "Votes: Low to high", comment: "Voting")
         }
     }
 }
@@ -60,10 +60,10 @@ enum VotingTypeFilter: String, CaseIterable, Identifiable {
 
     var title: String {
         switch self {
-        case .all: return NSLocalizedString("All", comment: "Voting")
-        case .approved: return NSLocalizedString("I have approved", comment: "Voting")
-        case .notVoted: return NSLocalizedString("I have not voted", comment: "Voting")
-        case .hasBlockedVotes: return NSLocalizedString("Has blocked votes", comment: "Voting")
+        case .all: return String(localized: "All", comment: "Voting")
+        case .approved: return String(localized: "I have approved", comment: "Voting")
+        case .notVoted: return String(localized: "I have not voted", comment: "Voting")
+        case .hasBlockedVotes: return String(localized: "Has blocked votes", comment: "Voting")
         }
     }
 
@@ -111,7 +111,7 @@ struct VotingFilter: Equatable {
     /// duplicates switch when it is on (the bottom bar names the order).
     var title: String {
         guard onlyDuplicates else { return type.title }
-        return String(format: NSLocalizedString("%@ · only duplicates", comment: "Voting: filter type, then the duplicates switch"), type.title)
+        return String(localized: "\(type.title) · only duplicates", comment: "Voting: filter type, then the duplicates switch")
     }
 
     /// Everything, oldest request first.

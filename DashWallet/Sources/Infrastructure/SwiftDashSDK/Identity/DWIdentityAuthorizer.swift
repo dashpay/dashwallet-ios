@@ -12,16 +12,12 @@
 //
 
 import Foundation
-import OSLog
-
 /// Async PIN/biometric gate for identity registration, profile updates, and
 /// shielded transfers. `await`-able so coordinators can gate work on user
 /// authorization before pre-deriving identity keys or moving funds.
 final class DWIdentityAuthorizer {
 
-    fileprivate static let logger = Logger(
-        subsystem: "org.dashfoundation.dash",
-        category: "swift-sdk-migration.identity-authorizer")
+    fileprivate static let logger = AppLogger(category: "swift-sdk-migration.identity-authorizer")
 
     enum AuthError: LocalizedError {
         case cancelled
@@ -30,9 +26,9 @@ final class DWIdentityAuthorizer {
         var errorDescription: String? {
             switch self {
             case .cancelled:
-                return NSLocalizedString("Authentication cancelled", comment: "DashPay identity registration")
+                return String(localized: "Authentication cancelled", comment: "DashPay identity registration")
             case .failed:
-                return NSLocalizedString("Authentication failed", comment: "DashPay identity registration")
+                return String(localized: "Authentication failed", comment: "DashPay identity registration")
             }
         }
     }

@@ -15,6 +15,23 @@ module SchemaRelease
   PLATFORM_REPO = "dashpay/platform"
   DATA_BRANCH = "schema-release-data"
   REGISTRY = "packages/swift-sdk/schema-releases.json"
+  # `master` holds only what the App Store has published: every publication
+  # observed here gets a tag on its wallet commit, and the newest one Apple
+  # lists fast-forwards the branch to it.
+  # `master` is meant to be written only by this script; the branch rule from
+  # ADR-0054 enforces that, not this code. Work lands on `develop`; a hotfix is built
+  # from its own branch, and once it is published and `master` has moved to
+  # it, it returns to `develop` by a pull request this script opens.
+  RELEASE_BRANCH = "master"
+  DEVELOPMENT_BRANCH = "develop"
+  # The release workflow and the step in it that hands the build to Apple. The
+  # observer reads that step's outcome when a publication has no build binding.
+  RELEASE_WORKFLOW = ".github/workflows/release-dashpay-testflight.yml"
+  UPLOAD_STEP = "Upload archive to TestFlight"
+  # Where `master` starts as a mirror: the release the App Store had at the
+  # cutover. Before the cutover `master` holds the abandoned 8.x line, which
+  # does not descend from this tag and is never offered to `develop`.
+  MIRROR_START_TAG = "v9.1.4"
   CAPTURE_FILES = %w[
     packages/swift-sdk/schema-models.json
     packages/swift-sdk/scripts/freeze_schema_models.py
@@ -94,7 +111,11 @@ module SchemaRelease
         unless status.between?(200, 299)
           raise HTTPError.new(status, "GitHub #{method.upcase} #{uri.path} returned HTTP #{status}")
         end
-        response.body.to_s.empty? ? {} : JSON.parse(response.body)
+        begin
+          response.body.to_s.empty? ? {} : JSON.parse(response.body)
+        rescue JSON::ParserError
+          raise Error, "GitHub #{method.upcase} #{uri.path} returned malformed JSON"
+        end
       rescue HTTPError => e
         transient = e.status == 429 || e.status >= 500
         if method == "get" && transient && attempts < 4
@@ -170,6 +191,88 @@ module SchemaRelease
       unless existing["ref"] == ref && existing.dig("object", "type") == "commit" && existing.dig("object", "sha") == commit
         raise Error, "Platform source retention tag #{ref} does not match #{commit}; investigate without moving or deleting the tag."
       end
+    end
+
+    # The commit a tag names, read through an annotated tag object if the tag
+    # is one. nil when the tag does not exist.
+    def tag_commit(repo, name)
+      ref = request("get", "repos/#{repo}/git/ref/tags/#{name}", optional: true)
+      return nil unless ref
+      raise Error, "Unexpected ref for tag #{name} in #{repo}" unless ref["ref"] == "refs/tags/#{name}"
+      object = ref.fetch("object")
+      # An annotated tag may name another one; four layers is already absurd.
+      4.times do
+        break unless object["type"] == "tag"
+        object = request("get", "repos/#{repo}/git/tags/#{SchemaRelease.sha(object.fetch('sha'))}").fetch("object")
+      end
+      raise Error, "Tag #{name} in #{repo} does not name a commit" unless object["type"] == "commit"
+      SchemaRelease.sha(object.fetch("sha"))
+    end
+
+    # Creates the tag and returns the commit it names afterwards. Someone else
+    # may create it first; the caller compares the result, it is never moved.
+    def create_tag(repo, name, commit)
+      request("post", "repos/#{repo}/git/refs", { ref: "refs/tags/#{name}", sha: SchemaRelease.sha(commit) })
+      commit
+    rescue HTTPError => error
+      raise unless error.status == 422
+      tag_commit(repo, name) || raise(error)
+    end
+
+    # Where `head` stands against `base`: ahead, behind, identical or diverged.
+    def compare(repo, base, head)
+      status = request("get", "repos/#{repo}/compare/#{base}...#{head}?per_page=1")["status"]
+      raise Error, "Unexpected comparison of #{base} and #{head} in #{repo}: #{status.inspect}" unless %w[ahead behind identical diverged].include?(status)
+      status
+    end
+
+    # A non-forced update: GitHub refuses anything that is not a fast-forward.
+    def fast_forward(repo, branch, commit)
+      request("patch", "repos/#{repo}/git/refs/heads/#{branch}", { sha: SchemaRelease.sha(commit), force: false })
+    end
+
+    # Whether `head` was already offered to `base`: "open" while a pull
+    # request is open, "closed" when one was closed, merged or not, and nil
+    # otherwise.
+    def offered_pull(repo, head:, base:)
+      owner = repo.split("/").first
+      pulls = request("get", "repos/#{repo}/pulls?state=all&base=#{base}&head=#{owner}:#{head}&per_page=100")
+      raise Error, "Unexpected pull request listing for #{head} into #{base} in #{repo}" unless pulls.is_a?(Array)
+      return "open" if pulls.any? { |pull| pull["state"] == "open" }
+      "closed" unless pulls.empty?
+    end
+
+    # When `step` ran, as [started, completed], if it concluded with success
+    # in that attempt of a run of `workflow`; nil for a run that cannot be
+    # read, belongs to another workflow, or has no such successful step.
+    def successful_step_window(repo, run_id, attempt, workflow:, step:)
+      run = request("get", "repos/#{repo}/actions/runs/#{run_id}/attempts/#{attempt}", optional: true)
+      return nil unless run.is_a?(Hash) && run["path"] == workflow
+      jobs = request("get", "repos/#{repo}/actions/runs/#{run_id}/attempts/#{attempt}/jobs?per_page=100", optional: true)
+      return nil unless jobs.is_a?(Hash) && jobs["jobs"].is_a?(Array)
+      jobs["jobs"].each do |job|
+        next unless job.is_a?(Hash) && job["steps"].is_a?(Array)
+        found = job["steps"].find { |item| item.is_a?(Hash) && item["name"] == step && item["conclusion"] == "success" }
+        return [Time.iso8601(found.fetch("started_at")), Time.iso8601(found.fetch("completed_at"))] if found
+      end
+      nil
+    rescue ArgumentError, KeyError, TypeError
+      nil
+    end
+
+    # Creates `name` at `commit`. One that already exists must be at that commit.
+    def create_branch(repo, name, commit)
+      request("post", "repos/#{repo}/git/refs", { ref: "refs/heads/#{name}", sha: SchemaRelease.sha(commit) })
+    rescue HTTPError => error
+      raise unless error.status == 422
+      raise Error, "Branch #{name} in #{repo} exists and is not at #{commit}" unless ref(repo, name) == commit
+    end
+
+    def create_pull(repo, head:, base:, title:, body:)
+      request("post", "repos/#{repo}/pulls", { title: title, head: head, base: base, body: body }).fetch("html_url")
+    rescue HTTPError => error
+      raise unless [403, 404].include?(error.status)
+      raise Error, "SCHEMA_RELEASE_TOKEN cannot open pull requests in #{repo} (HTTP #{error.status}). Open #{head} into #{base} by hand, or grant the token pull request write access."
     end
   end
 
@@ -296,6 +399,8 @@ module SchemaRelease
         unless build.is_a?(Hash) && build["attributes"].is_a?(Hash)
           raise Error, "Malformed build for App Store version #{version.fetch('id')}: expected a build attributes object."
         end
+        # When Apple received the build; read only to recover a missing binding.
+        (@build_uploads ||= {})[SchemaRelease.component(version.fetch("id"))] = build.fetch("attributes")["uploadedDate"]
         {
           "format_version" => 1, "release_id" => SchemaRelease.component(version.fetch("id")),
           "app_id" => app.fetch("id"), "bundle_id" => @bundle, "app_version" => number,
@@ -306,7 +411,7 @@ module SchemaRelease
         # Observation can reconcile other publications, but callers such as
         # the candidate gate remain strict when no failure collector is supplied.
         raise unless on_failure
-        on_failure.call(version["id"] || "unknown release", error)
+        on_failure.call(version["id"] || "unknown release", error, number)
         nil
       end
     end
@@ -323,14 +428,19 @@ module SchemaRelease
       SchemaRelease.sha(manifest.fetch("platform_sha"))
       SchemaRelease.validate_schema(manifest.fetch("schema"))
       binding = @store.document("apple-builds/#{SchemaRelease.component(record.fetch('build_id'))}.json", commit: commit, optional: true)
-      if binding && (binding.fetch("manifest_path") != path || binding.fetch("manifest_sha256") != Digest::SHA256.hexdigest(bytes))
-        raise Error, "Apple build is already bound to different release evidence"
+      unless binding.nil?
+        raise Error, "Apple build binding is not a JSON object" unless binding.is_a?(Hash)
+        if binding["manifest_path"] != path || binding["manifest_sha256"] != Digest::SHA256.hexdigest(bytes)
+          raise Error, "Apple build is already bound to different release evidence"
+        end
       end
       fixture_path = "stores/#{manifest.fetch('fixture_sha256')}.store"
       raise Error, "Invalid fixture path" unless fixture_path == manifest.fetch("fixture_path") && manifest.fetch("fixture_sha256").match?(/\A[0-9a-f]{64}\z/)
       store_bytes = @store.read(fixture_path, commit: commit)
       raise Error, "Fixture digest does not match" unless Digest::SHA256.hexdigest(store_bytes) == manifest.fetch("fixture_sha256")
-      [manifest, path, Digest::SHA256.hexdigest(bytes)]
+      # The last element says whether this snapshot binds the Apple build to
+      # the manifest; the release mirror requires that, the freeze does not.
+      [manifest, path, Digest::SHA256.hexdigest(bytes), !binding.nil?]
     end
 
     def registered?(registry, record, manifest, manifest_hash)
@@ -347,9 +457,32 @@ module SchemaRelease
     end
 
     def sync(release_id: nil, dry_run: false)
+      # Per-run state of the release mirror; a retry on the same instance must
+      # not inherit it.
+      @projected_release_tip = nil
+      @release_branch_unpublished = false
       failures = []
-      records = published_records do |id, error|
+      # The version of each listed publication that could not be read, nil
+      # when even that is unknown.
+      unread = []
+      records = published_records do |id, error, version|
+        unread << version
         report_release_failure(failures, id, error)
+      end
+      # The release mirror acts only on what Apple lists in this run, and only
+      # the newest of those may move the release branch. Both are settled here,
+      # ahead of the retained proofs and the manual-retry filter, so neither a
+      # retained record nor a retry of an older release can choose the tip.
+      listed = records.map { |record| record["release_id"] }
+      newest = records.max_by { |record| AppStoreConnectRelease::MarketingVersion.new(record.fetch("app_version")) }
+      # A publication that could not be read is missing from the list, and it
+      # may be the newest one. Unless every unread one is known to be older
+      # than the newest that was read, nothing moves the release branch.
+      newest_version = newest && AppStoreConnectRelease::MarketingVersion.new(newest.fetch("app_version"))
+      newest = newest&.fetch("release_id")
+      if unread.any? { |version| version.nil? || newest_version.nil? || AppStoreConnectRelease::MarketingVersion.new(version) >= newest_version }
+        newest = nil
+        @out.puts "#{RELEASE_BRANCH} is left where it is in this run: a listed publication that may be the newest could not be read."
       end
       # Retained publication proofs are obligations even after Apple stops
       # listing a version. Merge them before filtering a manual retry.
@@ -363,24 +496,34 @@ module SchemaRelease
       end
       registry = merged_registry
       records.each do |record|
-        manifest, path, hash = evidence(record)
+        manifest, path, hash, bound = evidence(record)
         id = record.fetch("release_id")
-        if registered?(registry, record, manifest, hash)
-          @out.puts "App Store #{record['app_version']} (#{record['build_number']}): freeze merged."
-          unless dry_run
-            @store.write({ "status/#{id}.json" => SchemaRelease.json({ release_id: id, state: "merged", platform_sha: manifest.fetch("platform_sha") }) },
-                         message: "Record merged freeze for #{id}", mutable: ["status/#{id}.json"])
-          end
-          next
-        end
+        # Both checks raise when this publication contradicts what was merged
+        # or observed before. They run ahead of the mirror, so a tag or branch
+        # is only ever written for evidence that still stands. A merged freeze
+        # is the stronger record, so the retained proof is compared only
+        # until there is one, as before.
+        frozen = registered?(registry, record, manifest, hash)
         proof_path = "releases/#{id}.json"
-        existing = @store.document(proof_path, optional: true)
+        existing = frozen ? nil : @store.document(proof_path, optional: true)
         proof = record.merge("manifest_path" => path, "manifest_sha256" => hash, "observed_at" => Time.now.utc.iso8601)
         if existing
           %w[release_id app_id bundle_id app_version build_number build_id manifest_path manifest_sha256].each do |key|
             raise Error, "Published release evidence changed: #{key}" unless existing.fetch(key) == proof.fetch(key)
           end
           proof = existing
+        end
+        # The mirror applies on every run, whatever state the schema freeze is in.
+        if listed.include?(id)
+          mirror_release(record, manifest, failures, bound: bound, evidence: [path, hash], newest: id == newest, dry_run: dry_run)
+        end
+        if frozen
+          @out.puts "App Store #{record['app_version']} (#{record['build_number']}): freeze merged."
+          unless dry_run
+            @store.write({ "status/#{id}.json" => SchemaRelease.json({ release_id: id, state: "merged", platform_sha: manifest.fetch("platform_sha") }) },
+                         message: "Record merged freeze for #{id}", mutable: ["status/#{id}.json"])
+          end
+          next
         end
         @out.puts "App Store #{record['app_version']} (#{record['build_number']}): freeze PR required for schema #{manifest['schema']['schema_version']}."
         next if dry_run
@@ -391,6 +534,10 @@ module SchemaRelease
       rescue Error, KeyError, JSON::ParserError => error
         report_release_failure(failures, record["release_id"], error)
       end
+      # A retry of one release skips the others, the newest among them, so it
+      # cannot tell whether the release branch is past the newest publication.
+      # Offering the branch to development is left to the runs that see all.
+      return_release_branch(failures, dry_run: dry_run) unless release_id
       raise Error, "Some App Store releases still need attention: #{failures.join('; ')}" unless failures.empty?
     end
 
@@ -435,6 +582,163 @@ module SchemaRelease
     end
 
     private
+
+    # Tags the published wallet commit and, for the newest publication, brings
+    # the release branch up to it. An older publication is only tagged: two
+    # versions cut from different lines must not each pull the branch their way.
+    # The two steps are independent: a tag someone placed elsewhere must not hold the
+    # branch back, and a branch that cannot move must not cost the tag. A
+    # failure here is reported and never stops the schema freeze.
+    def mirror_release(record, manifest, failures, bound:, evidence:, newest:, dry_run:)
+      version = record.fetch("app_version")
+      commit = SchemaRelease.sha(manifest.fetch("wallet_sha"))
+      label = "App Store #{version} (#{record['build_number']})"
+      # The manifest is found by version and build number, which an upload made
+      # outside the release workflow could share. Only the binding the workflow
+      # records after its own upload ties this Apple build to that manifest.
+      # `bound` comes from the snapshot `evidence` validated, so a binding that
+      # appears later is not accepted unchecked.
+      recover_binding(label, record, manifest, evidence, dry_run) unless bound
+      id = record["release_id"]
+      mirror_step(failures, id) { tag_release(label, "v#{SchemaRelease.component(version)}", commit, dry_run) }
+      mirror_step(failures, id) { advance_release_branch(label, commit, dry_run) } if newest
+    rescue Error, KeyError => error
+      report_release_failure(failures, record["release_id"], error)
+    end
+
+    # The release workflow records the binding only after Apple has processed
+    # the build, and gives up waiting after a while. A build Apple accepted
+    # and processed later is published all the same. When the run named in the
+    # manifest shows its upload step succeeded, and Apple received the
+    # published build while that step ran, the build is the one that run
+    # uploaded, and the observer records the binding itself. The time matters:
+    # Apple frees a build number whose processing failed, so a later upload
+    # from elsewhere can carry the same version and number.
+    UPLOAD_SLACK = 120
+    def recover_binding(label, record, manifest, evidence, dry_run)
+      run, attempt = manifest["workflow_run_id"].to_s, manifest["workflow_run_attempt"].to_s
+      window = run.match?(/\A[0-9]+\z/) && attempt.match?(/\A[0-9]+\z/) &&
+               @store.github.successful_step_window(IOS_REPO, run, attempt, workflow: RELEASE_WORKFLOW, step: UPLOAD_STEP)
+      received = begin
+        Time.iso8601((@build_uploads || {})[record["release_id"]].to_s)
+      rescue ArgumentError
+        nil
+      end
+      unless window && received && received.between?(window.first - UPLOAD_SLACK, window.last + UPLOAD_SLACK)
+        reason = if !window then "the release run in its manifest (#{run.empty? ? 'none' : run}) does not show a successful upload"
+                 elsif !received then "Apple does not say when it received the build"
+                 else "Apple received the build at #{received.utc.iso8601}, not while run #{run} was uploading (#{window.first.utc.iso8601} to #{window.last.utc.iso8601})"
+                 end
+        raise Error, "#{label} has no recorded binding between its Apple build and its build evidence, and #{reason}, " \
+                     "so the commit it was cut from is not established. " \
+                     "No tag or branch was written. See SCHEMA_RELEASES.md, \"When the mirror reports an error\"."
+      end
+      path, digest = evidence
+      id = SchemaRelease.component(record.fetch("build_id"))
+      @out.puts "#{label}: release run #{run} uploaded this build and stopped before binding it; #{dry_run ? 'would record' : 'recording'} the binding."
+      return if dry_run
+      @store.write({ "apple-builds/#{id}.json" => SchemaRelease.binding_document(id, path, digest) },
+                   message: "Bind Apple build #{id} to its schema evidence (recovered from run #{run})")
+    end
+
+    def mirror_step(failures, id)
+      yield
+    rescue Error, KeyError => error
+      report_release_failure(failures, id, error)
+    end
+
+    def tag_release(label, tag, commit, dry_run)
+      github = @store.github
+      tagged = github.tag_commit(IOS_REPO, tag)
+      unless tagged
+        @out.puts "#{label}: #{dry_run ? 'would tag' : 'tagging'} #{commit} as #{tag}."
+        return if dry_run
+        tagged = github.create_tag(IOS_REPO, tag, commit)
+      end
+      return if tagged == commit
+      raise Error, "Tag #{tag} names #{tagged}, but #{label} was built from #{commit}. The tag was left as it is; move it by hand only after confirming which commit shipped."
+    end
+
+    def advance_release_branch(label, commit, dry_run)
+      github = @store.github
+      case github.compare(IOS_REPO, RELEASE_BRANCH, commit)
+      when "identical"
+        @out.puts "#{label}: #{RELEASE_BRANCH} is at #{commit}."
+      when "behind"
+        # This observer moves the release branch only to a published commit,
+        # so a tip past the newest publication was not put there by it: either
+        # someone wrote to the branch by hand, or the newest version was cut
+        # from an older commit. The branch is never moved back, and what it holds past
+        # the publication is not offered to development.
+        @release_branch_unpublished = true
+        raise Error, "#{label} was built from #{commit}, but #{RELEASE_BRANCH} holds commits after it that the App Store has not published. " \
+                     "Nothing was moved. Find out how they got there; #{RELEASE_BRANCH} is meant to be written only by this observer (ADR-0054)."
+      when "ahead"
+        @out.puts "#{label}: #{dry_run ? 'would fast-forward' : 'fast-forwarding'} #{RELEASE_BRANCH} to #{commit}."
+        # A dry run moves nothing, so what follows judges the tip it would have.
+        dry_run ? @projected_release_tip = commit : github.fast_forward(IOS_REPO, RELEASE_BRANCH, commit)
+      else
+        raise Error, "#{label} was built from #{commit}, which does not descend from #{RELEASE_BRANCH}. Nothing was moved. " \
+                     "If #{RELEASE_BRANCH} still holds the history from before the mirror, do the cutover in ADR-0054. " \
+                     "Otherwise find out how the two parted before merging anything into #{RELEASE_BRANCH}."
+      end
+    end
+
+    # A published hotfix reaches the release branch from its own branch, so the
+    # release branch then holds commits development lacks. Development must
+    # take them back as a merge commit, or its next release no longer descends
+    # from the release branch and cannot be fast-forwarded to. This runs
+    # whether or not a publication could be mirrored in this run, except when
+    # the release branch was found past the newest publication.
+    def return_release_branch(failures, dry_run:)
+      return if @release_branch_unpublished
+      github = @store.github
+      tip = @projected_release_tip || RELEASE_BRANCH
+      # Before the cutover the release branch is the abandoned 8.x line.
+      return unless %w[ahead identical].include?(github.compare(IOS_REPO, MIRROR_START_TAG, tip))
+      return unless %w[ahead diverged].include?(github.compare(IOS_REPO, DEVELOPMENT_BRANCH, tip))
+      commit = SchemaRelease.sha(@projected_release_tip || github.ref(IOS_REPO, RELEASE_BRANCH))
+      # The pull request comes from a branch of its own at the release branch's
+      # commit. With the release branch as its head, "Update branch" and
+      # "Resolve conflicts" would merge development into the release branch.
+      head = "merge-back/#{commit[0, 12]}"
+      case github.offered_pull(IOS_REPO, head: head, base: DEVELOPMENT_BRANCH)
+      when "open"
+        # A rebase of the copy replaces the published commits with new ones;
+        # merging it would then leave development without the release branch.
+        return if %w[ahead identical].include?(github.compare(IOS_REPO, commit, head))
+        raise Error, "#{head} no longer contains #{commit}, the commit of #{RELEASE_BRANCH} it was created at; it was rewritten. " \
+                     "Reset #{head} to #{commit} and merge #{DEVELOPMENT_BRANCH} into it instead of rebasing."
+      when "closed"
+        # Not asked again, but not settled either: the next release cut from
+        # development will not descend from the release branch.
+        raise Error, "#{RELEASE_BRANCH} at #{commit} has commits #{DEVELOPMENT_BRANCH} lacks, and the pull request from #{head} was closed or squashed. " \
+                     "Not opening another. Check that #{head} still contains #{commit}, and recreate it from that commit if it does not; " \
+                     "then merge it into #{DEVELOPMENT_BRANCH} with a merge commit, or the next release cannot move #{RELEASE_BRANCH}."
+      end
+      if dry_run
+        @out.puts "#{RELEASE_BRANCH} has commits #{DEVELOPMENT_BRANCH} lacks: would open a pull request from #{head}."
+        return
+      end
+      github.create_branch(IOS_REPO, head, commit)
+      url = github.create_pull(
+        IOS_REPO, head: head, base: DEVELOPMENT_BRANCH,
+        title: "chore: merge #{RELEASE_BRANCH} back into #{DEVELOPMENT_BRANCH} (merge commit, do not squash)",
+        body: "`#{RELEASE_BRANCH}` holds commits that `#{DEVELOPMENT_BRANCH}` lacks, usually a published hotfix.\n\n" \
+              "Merge this with **a merge commit, not a squash**. A squash carries the changes over but not the history, " \
+              "so the next release from `#{DEVELOPMENT_BRANCH}` would not descend from `#{RELEASE_BRANCH}` and the " \
+              "release mirror could not fast-forward to it.\n\n`#{head}` is a copy of `#{RELEASE_BRANCH}` at `#{commit}`, " \
+              "so resolving conflicts here never writes to `#{RELEASE_BRANCH}`. Resolve them by merging `#{DEVELOPMENT_BRANCH}` " \
+              "into `#{head}`, never by rebasing it: a rebase rewrites the published commits, and the merge would then " \
+              "carry copies of them. Delete `#{head}` after the merge.\n\n" \
+              "Opened by the App Store release observer.")
+      @out.puts "#{RELEASE_BRANCH} has commits #{DEVELOPMENT_BRANCH} lacks: #{url}"
+    rescue Error, KeyError => error
+      report_release_failure(failures, "#{RELEASE_BRANCH} into #{DEVELOPMENT_BRANCH}", error)
+    ensure
+      @projected_release_tip = nil
+      @release_branch_unpublished = false
+    end
 
     def historical_schema(registry)
       history = registry["historical_schemas"]
@@ -541,8 +845,12 @@ module SchemaRelease
     path = manifest_path(env.fetch("BUNDLE_ID"), env.fetch("EFFECTIVE_VERSION"), env.fetch("BUILD_NUMBER"))
     bytes = store.read(path)
     id = component(env.fetch("ASC_BUILD_ID"))
-    store.write({ "apple-builds/#{id}.json" => json({ build_id: id, manifest_path: path, manifest_sha256: Digest::SHA256.hexdigest(bytes) }) },
+    store.write({ "apple-builds/#{id}.json" => binding_document(id, path, Digest::SHA256.hexdigest(bytes)) },
                 message: "Bind Apple build #{id} to its schema evidence")
+  end
+
+  def self.binding_document(id, path, digest)
+    json({ build_id: id, manifest_path: path, manifest_sha256: digest })
   end
 
   def self.next_build(store, env)

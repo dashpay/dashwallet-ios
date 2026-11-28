@@ -56,7 +56,7 @@ struct NotificationsScreen: View {
                         }
                     },
                     central: {
-                        Text(NSLocalizedString("Notifications", comment: "DashPay Notifications"))
+                        Text(String(localized: "Notifications", comment: "DashPay Notifications"))
                             .font(.subheadMedium)
                             .foregroundColor(.dash.primaryText)
                     }
@@ -69,12 +69,12 @@ struct NotificationsScreen: View {
             ContactProfileSheet(contact: contact)
         }
         .alert(
-            NSLocalizedString("Error", comment: ""),
+            String(localized: "Error", comment: ""),
             isPresented: Binding(
                 get: { viewModel.errorMessage != nil },
                 set: { if !$0 { viewModel.errorMessage = nil } })
         ) {
-            Button(NSLocalizedString("OK", comment: ""), role: .cancel) {}
+            Button(String(localized: "OK", comment: ""), role: .cancel) {}
         } message: {
             Text(viewModel.errorMessage ?? "")
         }
@@ -174,7 +174,7 @@ struct NotificationsScreen: View {
                 Image(systemName: "bell")
                     .font(.system(size: 44, weight: .light))
                     .foregroundColor(.dash.tertiaryText)
-                Text(NSLocalizedString("You have no notifications", comment: "DashPay Notifications"))
+                Text(String(localized: "You have no notifications", comment: "DashPay Notifications"))
                     .font(.system(size: 14))
                     .foregroundColor(.dash.secondaryText)
             }
@@ -185,17 +185,17 @@ struct NotificationsScreen: View {
                     // Android parity: the search field shows whenever there
                     // are notifications, filtering by the row's title.
                     ContactsSearchField(
-                        placeholder: NSLocalizedString("Search notifications", comment: "DashPay Notifications"),
+                        placeholder: String(localized: "Search notifications", comment: "DashPay Notifications"),
                         text: $searchText)
                         .padding(.horizontal, 15)
                         .padding(.top, 12)
 
                     if !newEvents.isEmpty {
-                        sectionHeader(NSLocalizedString("New", comment: "DashPay Notifications"))
+                        sectionHeader(String(localized: "New", comment: "DashPay Notifications"))
                         rowsCard(newEvents)
                     }
                     if !earlierEvents.isEmpty {
-                        sectionHeader(NSLocalizedString("Earlier", comment: "DashPay Notifications"))
+                        sectionHeader(String(localized: "Earlier", comment: "DashPay Notifications"))
                         rowsCard(earlierEvents)
                     }
                     if filteredEvents.isEmpty {
@@ -234,7 +234,7 @@ struct NotificationsScreen: View {
             Image(systemName: "magnifyingglass")
                 .scaledSystemFont(size: 34, weight: .light, relativeTo: .largeTitle)
                 .foregroundColor(.dash.tertiaryText)
-            Text(NSLocalizedString("No notifications match your search", comment: "DashPay Notifications"))
+            Text(String(localized: "No notifications match your search", comment: "DashPay Notifications"))
                 .font(.system(size: 14))
                 .foregroundColor(.dash.secondaryText)
         }
@@ -273,14 +273,12 @@ struct NotificationsScreen: View {
         case .incomingRequest:
             notificationRow(
                 event,
-                text: String(
-                    format: NSLocalizedString("%@ has sent you a contact request", comment: "DashPay Notifications"),
-                    event.item.displayTitle)
+                text: String(localized: "\(event.item.displayTitle) has sent you a contact request", comment: "DashPay Notifications")
             ) {
                 if viewModel.processingIds.contains(event.item.contactIdentityId) {
                     HStack(spacing: 4) {
                         Image(systemName: "hourglass").font(.system(size: 12))
-                        Text(NSLocalizedString("Accepting", comment: "DashPay Contacts"))
+                        Text(String(localized: "Accepting", comment: "DashPay Contacts"))
                             .font(.system(size: 11, weight: .medium))
                     }
                     .foregroundColor(.dashGolden)
@@ -293,13 +291,11 @@ struct NotificationsScreen: View {
         case .sentRequest:
             notificationRow(
                 event,
-                text: String(
-                    format: NSLocalizedString("You sent a contact request to %@", comment: "DashPay Notifications"),
-                    event.item.displayTitle)
+                text: String(localized: "You sent a contact request to \(event.item.displayTitle)", comment: "DashPay Notifications")
             ) {
                 HStack(spacing: 4) {
                     Image(systemName: "hourglass").font(.system(size: 12))
-                    Text(NSLocalizedString("Pending", comment: "DashPay Contacts"))
+                    Text(String(localized: "Pending", comment: "DashPay Contacts"))
                         .font(.system(size: 11, weight: .medium))
                 }
                 .foregroundColor(.dashGolden)
@@ -308,9 +304,7 @@ struct NotificationsScreen: View {
         case .theyAccepted:
             notificationRow(
                 event,
-                text: String(
-                    format: NSLocalizedString("%@ accepted your contact request", comment: "DashPay Notifications"),
-                    event.item.displayTitle)
+                text: String(localized: "\(event.item.displayTitle) accepted your contact request", comment: "DashPay Notifications")
             ) {
                 Image(systemName: "checkmark.circle.fill")
                     .font(.system(size: 20))
@@ -319,9 +313,7 @@ struct NotificationsScreen: View {
         case .weAccepted:
             notificationRow(
                 event,
-                text: String(
-                    format: NSLocalizedString("You added %@ as a contact", comment: "DashPay Notifications"),
-                    event.item.displayTitle)
+                text: String(localized: "You added \(event.item.displayTitle) as a contact", comment: "DashPay Notifications")
             ) {
                 Image(systemName: "checkmark.circle.fill")
                     .font(.system(size: 20))
@@ -332,9 +324,7 @@ struct NotificationsScreen: View {
             // which side reciprocated, so it only states the outcome.
             notificationRow(
                 event,
-                text: String(
-                    format: NSLocalizedString("%@ is now your contact", comment: "DashPay Notifications: established contact, accepting side unknown"),
-                    event.item.displayTitle)
+                text: String(localized: "\(event.item.displayTitle) is now your contact", comment: "DashPay Notifications: established contact, accepting side unknown")
             ) {
                 Image(systemName: "checkmark.circle.fill")
                     .scaledSystemFont(size: 20, relativeTo: .title3)

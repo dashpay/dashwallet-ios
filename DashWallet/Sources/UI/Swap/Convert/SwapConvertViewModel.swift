@@ -92,11 +92,11 @@ final class SwapConvertViewModel: ObservableObject {
             return NumberFormatter.fiatDisplayFormatter(currencyCode: currentFiatCurrency)
                 .string(from: amount as NSNumber) ?? "\(amount)"
         } catch CurrencyExchanger.Error.ratesAreFetching {
-            return NSLocalizedString("Fetching rates…", comment: "Balance")
+            return String(localized: "Fetching rates…", comment: "Balance")
         } catch CurrencyExchanger.Error.ratesNotAvailable {
-            return NSLocalizedString("Fetching rates…", comment: "Balance")
+            return String(localized: "Fetching rates…", comment: "Balance")
         } catch {
-            return NSLocalizedString("Invalid amount", comment: "Balance")
+            return String(localized: "Invalid amount", comment: "Balance")
         }
     }
 
@@ -306,28 +306,20 @@ final class SwapConvertViewModel: ObservableObject {
         latestQuote = nil
         receiveAmount = nil
         if apiError.contains("not enough asset to pay for fees") {
-            errorMessage = NSLocalizedString(
-                "This amount can't be swapped right now. Routes can be briefly unavailable — try again shortly, or try a different amount.",
+            errorMessage = String(
+                localized: "This amount can't be swapped right now. Routes can be briefly unavailable — try again shortly, or try a different amount.",
                 comment: "Dash DEX / dex_error_no_route"
             )
         } else if apiError.localizedCaseInsensitiveContains("noRoutesFound") {
-            errorMessage = NSLocalizedString(
-                "This amount can't be swapped right now. Routes can be briefly unavailable — try again shortly, or try a different amount.",
+            errorMessage = String(
+                localized: "This amount can't be swapped right now. Routes can be briefly unavailable — try again shortly, or try a different amount.",
                 comment: "Dash DEX / dex_error_no_route"
             )
         } else if apiError.localizedCaseInsensitiveContains("invalidDestinationAddress") {
             // Keeps the chain-specific wording this screen already had: the address was entered a
             // step earlier, so the user needs to be told which chain it has to belong to.
             let chainLabel = SwapCryptoCurrency.chainDisplayName(coin.chain)
-            errorMessage = String(
-                format: NSLocalizedString(
-                    "The destination address isn’t valid for %@ (%@). Go back and enter a %@ address.",
-                    comment: "Swap"
-                ),
-                coin.name,
-                chainLabel,
-                chainLabel
-            )
+            errorMessage = String(localized: "The destination address isn’t valid for \(coin.name) (\(chainLabel)). Go back and enter a \(chainLabel) address.", comment: "Swap")
         } else {
             errorMessage = SwapKitErrorCopy.message(for: apiError, coin: coin)
         }
@@ -389,7 +381,7 @@ final class SwapConvertViewModel: ObservableObject {
         case .exchangeRateUnavailable:
             isLoading = false
             clearQuoteState()
-            errorMessage = NSLocalizedString("Exchange rate not available", comment: "Dash DEX")
+            errorMessage = String(localized: "Exchange rate not available", comment: "Dash DEX")
         case .insufficientBalance:
             isLoading = false
             clearQuoteState(keepingEffectiveSell: effectiveSellSatoshis != nil)
@@ -435,7 +427,7 @@ final class SwapConvertViewModel: ObservableObject {
             receiveAmount = snapshot.selectedCurrency.isReceiveTargetMode && !snapshot.isMaxFromBalance
                 ? fixedTargetReceiveAmount
                 : nil
-            errorMessage = NSLocalizedString("Amount too small to cover fees", comment: "Swap")
+            errorMessage = String(localized: "Amount too small to cover fees", comment: "Swap")
         }
     }
 
@@ -699,12 +691,6 @@ private extension SwapConvertViewModel {
         // Short form per the redesign, e.g. "Max $205.32" — mirrors Android's
         // `maya_max_amount_error` (Figma 24034:44864), which replaced the long
         // "The maximum transaction amount is …" sentence on this screen.
-        return String(
-            format: NSLocalizedString(
-                "Max %@",
-                comment: "Dash DEX / maya_max_amount_error"
-            ),
-            amountText
-        )
+        return String(localized: "Max \(amountText)", comment: "Dash DEX / maya_max_amount_error")
     }
 }

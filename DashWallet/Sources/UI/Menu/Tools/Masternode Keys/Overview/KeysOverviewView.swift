@@ -37,7 +37,7 @@ struct KeysOverviewContentView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
                 // Title
-                Text(NSLocalizedString("Masternode keys", comment: ""))
+                Text(String(localized: "Masternode keys", comment: ""))
                     .font(.system(size: 28, weight: .bold))
                     .foregroundColor(Color(uiColor: .dw_label()))
                     .padding(.horizontal, 20)
@@ -90,14 +90,14 @@ struct KeyItemButton: View {
                         .font(.subheadline)
                         .foregroundColor(Color(uiColor: .dw_label()))
 
-                    Text(String.localizedStringWithFormat(NSLocalizedString("%d key(s)", comment: "#bc-ignore!"), item.keyCount))
+                    Text(String(localized: "\(item.keyCount) key(s)", comment: "Masternode keys: number of keys"))
                         .font(.caption)
                         .foregroundColor(Color(uiColor: .dw_secondaryText()))
                 }
 
                 Spacer()
 
-                Text(String.localizedStringWithFormat(NSLocalizedString("%ld used", comment: "#bc-ignore!"), item.usedCount))
+                Text(String.localizedStringWithFormat(String(localized: "%ld used", comment: "Masternode keys: number of keys in use"), item.usedCount))
                     .font(.footnote)
                     .foregroundColor(Color(uiColor: .dw_secondaryText()))
                     .padding(.trailing, 8)

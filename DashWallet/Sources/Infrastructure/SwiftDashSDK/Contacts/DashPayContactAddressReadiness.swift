@@ -11,7 +11,6 @@
 #if DASHPAY
 
 import Foundation
-import OSLog
 import SwiftDashSDK
 
 /// Hold Core SPV until the wallet's DashPay contact addresses exist.
@@ -38,9 +37,7 @@ import SwiftDashSDK
 /// mechanism.
 @MainActor
 enum DashPayContactAddressReadiness {
-    private static let logger = Logger(
-        subsystem: "org.dashfoundation.dash",
-        category: "swift-sdk-migration.dashpay-readiness")
+    private static let logger = AppLogger(category: "swift-sdk-migration.dashpay-readiness")
 
     /// Run the pre-SPV sequence. Never throws: Core sync is the wallet's
     /// primary function and a Platform outage must not be able to leave the
@@ -123,7 +120,7 @@ enum DashPayContactAddressReadiness {
                         }
                     } catch {
                         logger.warning(
-                            "👥 DP-READY :: default-budget re-run failed; keeping the probe verdict: \(String(describing: error), privacy: .public)")
+                            "👥 DP-READY :: default-budget re-run failed; keeping the probe verdict: \(error)")
                     }
                 }
             }
@@ -141,7 +138,7 @@ enum DashPayContactAddressReadiness {
                 network: network)
         } catch {
             logger.warning(
-                "👥 DP-READY :: bring-up failed; starting SPV anyway: \(String(describing: error), privacy: .public)")
+                "👥 DP-READY :: bring-up failed; starting SPV anyway: \(error)")
         }
     }
 

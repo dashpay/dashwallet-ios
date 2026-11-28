@@ -89,7 +89,7 @@ struct InternalTransferConfirmSheet: View {
         // grow greedily — no `Spacer`, no `maxHeight: .infinity` — or the
         // measurement expands to whatever the sheet was offered.
         DashUIKit.BottomSheet.selfSizing(
-            title: NSLocalizedString("Confirm", comment: "Payments"),
+            title: String(localized: "Confirm", comment: "Payments"),
             showBackButton: .constant(false)
         ) {
             VStack(spacing: 0) {
@@ -119,7 +119,7 @@ struct InternalTransferConfirmSheet: View {
 
                 HStack(spacing: 20) {
                     DashUIKit.DashButton(
-                        text: NSLocalizedString("Cancel", comment: "Payments"),
+                        text: String(localized: "Cancel", comment: "Payments"),
                         isEnabled: !isSubmitting,
                         fillsWidth: true,
                         size: .large,
@@ -128,7 +128,7 @@ struct InternalTransferConfirmSheet: View {
                     )
 
                     DashUIKit.DashButton(
-                        text: NSLocalizedString("Confirm", comment: "Payments"),
+                        text: String(localized: "Confirm", comment: "Payments"),
                         isLoading: isSubmitting,
                         fillsWidth: true,
                         size: .large,

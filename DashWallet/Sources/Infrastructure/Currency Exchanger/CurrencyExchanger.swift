@@ -281,11 +281,11 @@ extension CurrencyExchanger {
             let amount = try convertDash(amount: dashAmount, to: currency)
             return amount.formattedFiatAmount
         } catch CurrencyExchanger.Error.ratesAreFetching {
-            return NSLocalizedString("Fetching rates…", comment: "Balance")
+            return String(localized: "Fetching rates…", comment: "Balance")
         } catch CurrencyExchanger.Error.ratesNotAvailable {
-            return NSLocalizedString("Fetching rates…", comment: "Balance")
+            return String(localized: "Fetching rates…", comment: "Balance")
         } catch {
-            return NSLocalizedString("Invalid amount", comment: "Balance")
+            return String(localized: "Invalid amount", comment: "Balance")
         }
     }
 
