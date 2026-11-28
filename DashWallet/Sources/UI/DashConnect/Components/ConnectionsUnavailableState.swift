@@ -37,13 +37,13 @@ struct ConnectionsUnavailableState: View {
                 .frame(width: 80, height: 80)
 
                 VStack(spacing: 4) {
-                    Text(NSLocalizedString("Available on test networks only", comment: "DashConnect"))
+                    Text(String(localized: "Available on test networks only", comment: "DashConnect"))
                         .dashFont(.title3Medium)
                         .foregroundColor(Color.dash.primaryText)
 
                     Text(
-                        NSLocalizedString(
-                            "DashConnect login is not yet available on mainnet",
+                        String(
+                            localized: "DashConnect login is not yet available on mainnet",
                             comment: "DashConnect"
                         )
                     )

@@ -148,12 +148,12 @@ final class IdentitiesViewModel: ObservableObject {
     /// contacts snapshots.
     func setMainIdentity(_ row: IdentityRowModel) {
         guard let activeWalletId = SwiftDashSDKHost.shared.wallet?.walletId else {
-            errorMessage = NSLocalizedString("Wallet is not ready", comment: "Identities")
+            errorMessage = String(localized: "Wallet is not ready", comment: "Identities")
             return
         }
         guard row.walletId == activeWalletId else {
-            errorMessage = NSLocalizedString(
-                "The main identity can only be chosen from the active wallet",
+            errorMessage = String(
+                localized: "The main identity can only be chosen from the active wallet",
                 comment: "Identities")
             return
         }
@@ -171,7 +171,7 @@ final class IdentitiesViewModel: ObservableObject {
     /// the new pick immediately.
     func setMainName(_ name: String, for row: IdentityRowModel) {
         guard let container = SwiftDashSDKHost.shared.modelContainer else {
-            errorMessage = NSLocalizedString("Wallet is not ready", comment: "Identities")
+            errorMessage = String(localized: "Wallet is not ready", comment: "Identities")
             return
         }
         // Only an owned (non-pending) label can be displayed.
@@ -181,7 +181,7 @@ final class IdentitiesViewModel: ObservableObject {
         let context = container.mainContext
         guard let identity = PersistentIdentity.fetch(in: context, identityId: row.identityId) else {
             DWLogger.log("IdentitiesViewModel: main name not set — identity \(row.idBase58) is not in the store")
-            errorMessage = NSLocalizedString("Something went wrong", comment: "")
+            errorMessage = String(localized: "Something went wrong", comment: "")
             reload()
             return
         }
@@ -191,7 +191,7 @@ final class IdentitiesViewModel: ObservableObject {
             // Core Data errors carry paths and stored values: codes only.
             let codes = WalletPreparationFailure(error: error).codes.joined(separator: ",")
             DWLogger.log("IdentitiesViewModel: main name save failed for identity \(row.idBase58): \(codes)")
-            errorMessage = NSLocalizedString("Something went wrong", comment: "")
+            errorMessage = String(localized: "Something went wrong", comment: "")
             reload()
             return
         }
@@ -291,9 +291,7 @@ final class IdentitiesViewModel: ObservableObject {
         try? container.mainContext.save()
 
         if failures > 0 {
-            errorMessage = String.localizedStringWithFormat(
-                NSLocalizedString("Could not refresh %d identities", comment: "Identities"),
-                failures)
+            errorMessage = String(localized: "Could not refresh \(failures) identities", comment: "Identities")
         }
     }
 
@@ -311,7 +309,7 @@ final class IdentitiesViewModel: ObservableObject {
     func discoverIdentities() async {
         guard !isDiscovering else { return }
         guard let wallet = SwiftDashSDKHost.shared.wallet else {
-            errorMessage = NSLocalizedString("Wallet is not ready", comment: "Identities")
+            errorMessage = String(localized: "Wallet is not ready", comment: "Identities")
             return
         }
         isDiscovering = true
@@ -322,15 +320,13 @@ final class IdentitiesViewModel: ObservableObject {
         do {
             let found = try await wallet.discoverIdentities(startIndex: 0)
             if found.isEmpty {
-                infoMessage = NSLocalizedString(
-                    "No new identities were found for this wallet",
+                infoMessage = String(
+                    localized: "No new identities were found for this wallet",
                     comment: "Identities")
             } else {
                 infoMessage = found.count == 1
-                    ? NSLocalizedString("Found 1 new identity", comment: "Identities")
-                    : String.localizedStringWithFormat(
-                        NSLocalizedString("Found %d new identities", comment: "Identities"),
-                        found.count)
+                    ? String(localized: "Found 1 new identity", comment: "Identities")
+                    : String(localized: "Found \(found.count) new identities", comment: "Identities")
             }
             // Backfill balances / usernames, THEN adopt. Run this even when
             // the scan found no new row: an earlier discovery may already be

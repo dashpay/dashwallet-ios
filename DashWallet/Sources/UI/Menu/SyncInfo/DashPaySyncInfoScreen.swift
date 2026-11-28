@@ -16,7 +16,6 @@
 #if DASHPAY
 
 import Combine
-import OSLog
 import SwiftDashSDK
 import SwiftUI
 import DashUIKit
@@ -27,9 +26,7 @@ import UIKit
 @MainActor
 final class DashPaySyncInfoViewModel: ObservableObject {
 
-    private static let logger = Logger(
-        subsystem: "org.dashfoundation.dash",
-        category: "swift-sdk-migration.dashpay-sync-info")
+    private static let logger = AppLogger(category: "swift-sdk-migration.dashpay-sync-info")
 
     /// Whether a DashPay sync pass is currently in flight (mirror of
     /// `PlatformWalletManager.dashPaySyncIsSyncing`).
@@ -67,7 +64,7 @@ final class DashPaySyncInfoViewModel: ObservableObject {
 
     func syncNow() async {
         guard let manager = PlatformAddressSyncCoordinator.shared.platformWalletManager else {
-            lastError = NSLocalizedString("Platform sync is not running", comment: "Sync diagnostics")
+            lastError = String(localized: "Platform sync is not running", comment: "Sync diagnostics")
             return
         }
         lastError = nil
@@ -80,7 +77,7 @@ final class DashPaySyncInfoViewModel: ObservableObject {
             }
         } catch {
             lastError = error.localizedDescription
-            Self.logger.error("👥 DASHPAY-SYNC-INFO :: dashPaySyncNow threw: \(String(describing: error), privacy: .public)")
+            Self.logger.error("👥 DASHPAY-SYNC-INFO :: dashPaySyncNow threw: \(error)")
         }
         refreshLoopState()
         refreshLastSync()
@@ -147,7 +144,7 @@ struct DashPaySyncInfoScreen: View {
 
             // Header
             HStack {
-                Text(NSLocalizedString("DashPay Sync Info", comment: "Sync diagnostics"))
+                Text(String(localized: "DashPay Sync Info", comment: "Sync diagnostics"))
                     .font(.title)
                     .fontWeight(.bold)
                     .foregroundColor(.dash.primaryText)
@@ -186,12 +183,12 @@ struct DashPaySyncInfoScreen: View {
             if !viewModel.isManagerAvailable {
                 Image(systemName: "exclamationmark.circle")
                     .foregroundColor(.orange)
-                Text(NSLocalizedString("Platform sync is not running", comment: "Sync diagnostics"))
+                Text(String(localized: "Platform sync is not running", comment: "Sync diagnostics"))
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundColor(Color.dash.secondaryText)
             } else if viewModel.isSyncing {
                 SwiftUI.ProgressView().scaleEffect(0.7)
-                Text(NSLocalizedString("Syncing…", comment: "Sync diagnostics"))
+                Text(String(localized: "Syncing…", comment: "Sync diagnostics"))
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundColor(.dash.primaryText)
             } else if let lastSync = viewModel.lastSync {
@@ -201,15 +198,15 @@ struct DashPaySyncInfoScreen: View {
             } else {
                 Image(systemName: "circle.dashed")
                     .foregroundColor(Color.dash.secondaryText)
-                Text(NSLocalizedString("Not synced yet", comment: "Sync diagnostics"))
+                Text(String(localized: "Not synced yet", comment: "Sync diagnostics"))
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundColor(Color.dash.secondaryText)
             }
             Spacer()
             if let running = viewModel.isLoopRunning {
                 Text(running
-                     ? NSLocalizedString("Recurring", comment: "Sync diagnostics")
-                     : NSLocalizedString("Stopped", comment: "Sync diagnostics"))
+                     ? String(localized: "Recurring", comment: "Sync diagnostics")
+                     : String(localized: "Stopped", comment: "Sync diagnostics"))
                     .font(.system(size: 12, weight: .medium))
                     .foregroundColor(running ? .secondary : .orange)
             }
@@ -222,14 +219,14 @@ struct DashPaySyncInfoScreen: View {
     private func summaryCard(_ summary: DashPaySyncSummary) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
-                Text(NSLocalizedString("Last Manual Pass", comment: "Sync diagnostics"))
+                Text(String(localized: "Last Manual Pass", comment: "Sync diagnostics"))
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundColor(.dash.primaryText)
                 Spacer()
             }
-            row(title: NSLocalizedString("Wallets Synced", comment: "Sync diagnostics"),
+            row(title: String(localized: "Wallets Synced", comment: "Sync diagnostics"),
                 value: "\(summary.success)")
-            row(title: NSLocalizedString("Wallets Failed", comment: "Sync diagnostics"),
+            row(title: String(localized: "Wallets Failed", comment: "Sync diagnostics"),
                 value: "\(summary.errors)")
         }
         .padding(16)
@@ -239,7 +236,7 @@ struct DashPaySyncInfoScreen: View {
 
     private func errorCard(message: String) -> some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text(NSLocalizedString("Last Error", comment: "Sync diagnostics"))
+            Text(String(localized: "Last Error", comment: "Sync diagnostics"))
                 .font(.system(size: 14, weight: .semibold))
                 .foregroundColor(.red)
             Text(message)
@@ -259,7 +256,7 @@ struct DashPaySyncInfoScreen: View {
         }) {
             HStack(spacing: 4) {
                 Image(systemName: "arrow.clockwise")
-                Text(NSLocalizedString("Sync Now", comment: "Sync diagnostics"))
+                Text(String(localized: "Sync Now", comment: "Sync diagnostics"))
             }
             .font(.system(size: 14, weight: .semibold))
             .frame(maxWidth: .infinity)

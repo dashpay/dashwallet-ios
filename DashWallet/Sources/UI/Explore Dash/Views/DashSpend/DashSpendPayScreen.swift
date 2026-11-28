@@ -26,14 +26,14 @@ struct DashSpendPayScreen: View {
     let provider: GiftCardProvider
     @State var justAuthenticated: Bool
     @State var showConfirmToast: Bool
-    @State private var showConfirmationDialog = false
     @State private var showErrorDialog = false
     @State private var showCustomErrorDialog = false
+    /// A recorded purchase whose payment outcome is unknown, shown with a notice before
+    /// its gift card details.
+    @State private var pendingPurchase: PendingPurchase?
     @State private var errorMessage = ""
     @State private var errorTitle = ""
     @State private var quantities: [Decimal: Int] = [:]
-    @State private var confirmationQuantities: [Decimal: Int] = [:]
-    @State private var confirmationOriginalPrice: Decimal = 0
     let onPurchaseSuccess: ((Data) -> Void)?
 
     init(
@@ -100,6 +100,8 @@ struct DashSpendPayScreen: View {
                     )
                 }
             }
+            // The notice covers the form on screen; VoiceOver must not reach Pay behind it.
+            .accessibilityHidden(pendingPurchase != nil)
             overlays
         }
         .background(Color.dash.primaryBackground)
@@ -120,29 +122,26 @@ struct DashSpendPayScreen: View {
                 presentationMode.wrappedValue.dismiss()
             }
         }
-        .sheet(isPresented: $showConfirmationDialog) {
-            DashSpendPayConfirmationSheet(
-                merchantName: viewModel.merchantTitle,
-                merchantIconUrl: viewModel.merchantIconUrl,
-                originalPrice: confirmationOriginalPrice,
-                discount: viewModel.displaySavingsFraction,
-                quantities: confirmationQuantities.isEmpty ? nil : confirmationQuantities,
-                onConfirm: {
-                    showConfirmationDialog = false
-                    purchaseGiftCard()
-                },
-                onCancel: {
-                    showConfirmationDialog = false
-                }
-            )
+        .sheet(isPresented: isPurchaseSheetPresented, onDismiss: { viewModel.purchaseSheetDidDismiss() }) {
+            DashSpendPurchaseSheet(viewModel: viewModel, onConfirm: purchaseGiftCard)
         }
+    }
+
+    /// The sheet follows the view model's state. A swipe down reaches the view model as a
+    /// dismissal: it closes the Confirm sheet and declines a price change.
+    private var isPurchaseSheetPresented: Binding<Bool> {
+        Binding(
+            get: { viewModel.purchaseSheet != nil },
+            set: { isPresented in
+                if !isPresented { viewModel.dismissPurchaseSheet() }
+            })
     }
 
     @ViewBuilder
     private var overlays: some View {
         if justAuthenticated {
             ToastView(
-                text: NSLocalizedString("Logged in to DashSpend account", comment: "DashSpend"),
+                text: String(localized: "Logged in to DashSpend account", comment: "DashSpend"),
                 icon: .system("checkmark.circle")
             )
             .frame(height: 20)
@@ -150,7 +149,7 @@ struct DashSpendPayScreen: View {
         }
 
         if showConfirmToast {
-            ToastView(text: NSLocalizedString("Gift card purchase successful", comment: "DashSpend"))
+            ToastView(text: String(localized: "Gift card purchase successful", comment: "DashSpend"))
                 .frame(height: 20)
                 .padding(.bottom, 30)
         }
@@ -161,8 +160,26 @@ struct DashSpendPayScreen: View {
                 icon: .system("exclamationmark.triangle.fill"),
                 heading: errorTitle,
                 textBlock1: errorMessage,
-                positiveButtonText: NSLocalizedString("OK", comment: ""),
+                positiveButtonText: String(localized: "OK", comment: ""),
                 positiveButtonAction: { showErrorDialog = false }
+            )
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(Color.dash.backgroundOverlay)
+            .edgesIgnoringSafeArea(.all)
+        }
+
+        if let pendingPurchase {
+            LegacyModalDialog(
+                style: .warning,
+                icon: .system("exclamationmark.triangle.fill"),
+                heading: String(localized: "Confirmation pending", comment: "Gift card payment result unknown"),
+                textBlock1: pendingPurchase.notice,
+                positiveButtonText: String(localized: "OK", comment: ""),
+                positiveButtonAction: {
+                    self.pendingPurchase = nil
+                    presentationMode.wrappedValue.dismiss()
+                    onPurchaseSuccess?(pendingPurchase.txId)
+                }
             )
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(Color.dash.backgroundOverlay)
@@ -175,7 +192,7 @@ struct DashSpendPayScreen: View {
                 icon: .system("exclamationmark.triangle.fill"),
                 heading: errorTitle,
                 textBlock1: errorMessage,
-                positiveButtonText: NSLocalizedString("Close", comment: ""),
+                positiveButtonText: String(localized: "Close", comment: ""),
                 positiveButtonAction: { showCustomErrorDialog = false },
                 negativeButtonText: viewModel.contactSupportButtonText,
                 negativeButtonAction: {
@@ -190,6 +207,9 @@ struct DashSpendPayScreen: View {
     }
 
     private func handlePayAction() {
+        // A purchase whose payment outcome is unknown is waiting for its notice to be read:
+        // no second order from this screen.
+        guard pendingPurchase == nil else { return }
         if !viewModel.isUserSignedIn { showSignInError(); return }
         let snapshotQuantities = quantities.filter { $0.value > 0 }
         let snapshotTotal = snapshotQuantities.reduce(Decimal(0)) { $0 + $1.key * Decimal($1.value) }
@@ -199,9 +219,6 @@ struct DashSpendPayScreen: View {
         // the view model already feeds `amount` from so both agree.
         let snapshotSingleAmount = PastedAmountParser.parse(viewModel.input, locale: .current)?.decimalValue ?? viewModel.amount
 
-        confirmationQuantities = snapshotQuantities
-        confirmationOriginalPrice = snapshotQuantities.isEmpty ? snapshotSingleAmount : snapshotTotal
-
         // Keep viewModel amount in sync before presenting the dialog to avoid delayed UI updates.
         if snapshotQuantities.isEmpty {
             viewModel.updateTotalAmount(snapshotSingleAmount)
@@ -209,82 +226,171 @@ struct DashSpendPayScreen: View {
             viewModel.updateTotalAmount(snapshotTotal, quantities: snapshotQuantities)
         }
 
-        DispatchQueue.main.async {
-            showConfirmationDialog = true
+        // The price, discount and Dash amount are captured here, so the sheet shows the same
+        // values that Confirm passes on, whatever the view model changes to meanwhile.
+        do {
+            try viewModel.beginPurchase(
+                price: snapshotQuantities.isEmpty ? snapshotSingleAmount : snapshotTotal,
+                quantities: snapshotQuantities)
+        } catch {
+            showPurchaseError(error)
         }
     }
 
-    private func purchaseGiftCard() {
+    private func purchaseGiftCard(_ snapshot: GiftCardPurchaseSnapshot) {
         Task {
             do {
-                let txId = try await viewModel.purchaseGiftCardAndPay(selectedQuantities: confirmationQuantities)
-                showConfirmationDialog = false
+                let txId = try await viewModel.purchaseGiftCardAndPay(snapshot)
                 presentationMode.wrappedValue.dismiss()
                 onPurchaseSuccess?(txId)
+            } catch DashSpendError.purchaseCancelled {
+                // A higher price was declined or could not be shown, or this was a second
+                // tap on Confirm. Nothing was sent and there is nothing to report; the view
+                // model logged which.
             } catch DashSpendError.paymentStatusUnknown(let txId, let reason) {
                 // Paid, order placed, acceptance verdict missing. The purchase is already
                 // recorded, so route to the card details exactly like a confirmed purchase —
                 // its poller is what turns the pending order into a card. Reporting "Purchase
                 // Failed" here is what previously left customers paying for an invisible card.
                 DWLogger.log("Gift card purchase pending network confirmation: \(reason)")
-                showConfirmationDialog = false
-                presentationMode.wrappedValue.dismiss()
-                onPurchaseSuccess?(txId)
-            } catch let error as DashSpendError {
-                showConfirmationDialog = false
-                errorTitle = NSLocalizedString("Purchase Failed", comment: "DashSpend")
-                errorMessage = error.errorDescription ?? NSLocalizedString("Error", comment: "")
-
-                if case .customError = error {
-                    showCustomErrorDialog = true
+                if let notice = viewModel.unknownOutcomeNotice {
+                    // The buyer reads the notice first; its OK goes on to the card details.
+                    pendingPurchase = PendingPurchase(txId: txId, notice: notice)
                 } else {
-                    showErrorDialog = true
+                    presentationMode.wrappedValue.dismiss()
+                    onPurchaseSuccess?(txId)
                 }
-
             } catch {
-                showConfirmationDialog = false
-                errorTitle = !error.localizedDescription.isEmpty ? error.localizedDescription : NSLocalizedString("Error", comment: "")
-                errorMessage = error.localizedDescription
-                showErrorDialog = true
-
-                DWLogger.log("Gift card purchase failed with error: \(error)")
+                showPurchaseError(error)
             }
         }
     }
 
+    private func showPurchaseError(_ error: Error) {
+        if let error = error as? DashSpendError {
+            errorTitle = String(localized: "Purchase Failed", comment: "DashSpend")
+            errorMessage = error.errorDescription ?? String(localized: "Error", comment: "")
+
+            if case .customError = error {
+                showCustomErrorDialog = true
+            } else {
+                showErrorDialog = true
+            }
+        } else {
+            errorTitle = !error.localizedDescription.isEmpty ? error.localizedDescription : String(localized: "Error", comment: "")
+            errorMessage = error.localizedDescription
+            showErrorDialog = true
+
+            DWLogger.log("Gift card purchase failed with error: \(AppLogMessage.errorSummary(error))")
+        }
+    }
+
     private func showSignInError() {
-        errorTitle = NSLocalizedString("Sign in required", comment: "Alert title")
-        errorMessage = NSLocalizedString("You need to sign in to DashSpend to purchase gift cards.", comment: "DashSpend")
+        errorTitle = String(localized: "Sign in required", comment: "Alert title")
+        errorMessage = String(localized: "You need to sign in to DashSpend to purchase gift cards.", comment: "DashSpend")
         showErrorDialog = true
     }
 }
 
-private struct DashSpendPayConfirmationSheet: View {
-    let merchantName: String
-    let merchantIconUrl: String
-    let originalPrice: Decimal
-    let discount: Decimal
-    let quantities: [Decimal: Int]?
-    let onConfirm: () -> Void
-    let onCancel: () -> Void
-    
-    @ViewBuilder
+/// A purchase recorded against `txId` whose payment outcome is unknown, with what the buyer
+/// is told about it.
+private struct PendingPurchase {
+    let txId: Data
+    let notice: String
+}
+
+/// The purchase sheet: the Confirm sheet, which stays up with a spinner while the provider
+/// answers, and the "Price updated" sheet that replaces it in place when the provider asks
+/// for more than the buyer confirmed.
+private struct DashSpendPurchaseSheet: View {
+    @ObservedObject var viewModel: DashSpendPayViewModel
+    let onConfirm: (GiftCardPurchaseSnapshot) -> Void
+    /// The last content the view model asked for. Kept so the sheet does not go blank while
+    /// it animates away after the view model cleared its state.
+    @State private var sheet: GiftCardPurchaseSheet?
+
+    init(viewModel: DashSpendPayViewModel, onConfirm: @escaping (GiftCardPurchaseSnapshot) -> Void) {
+        self.viewModel = viewModel
+        self.onConfirm = onConfirm
+        _sheet = State(initialValue: viewModel.purchaseSheet)
+    }
+
+    private var title: String {
+        switch sheet {
+        case .confirm, .waitingForProvider:
+            return String(localized: "Confirm", comment: "DashSpend")
+        case .priceUpdated:
+            return String(localized: "Price updated", comment: "DashSpend")
+        case nil:
+            return ""
+        }
+    }
+
+    private var isWaiting: Bool {
+        if case .waitingForProvider = sheet { return true }
+        return false
+    }
+
+    /// The share of the screen height the sheet may take. Given to the sheet and used for
+    /// `contentHeightLimit`, so the two cannot differ.
+    private static let maxHeightFraction: CGFloat = 0.95
+
+    /// `DashUIKit.BottomSheet`'s chrome above the content: an 18pt grabber and a 74pt header.
+    private static let chromeHeight: CGFloat = 92
+
+    /// The height left for the content once the sheet is at its tallest. Content that is
+    /// taller than the sheet is cut off at the bottom, so both dialogs are held to this and
+    /// scroll inside it.
+    private var contentHeightLimit: CGFloat {
+        (UIDevice.screenHeight * Self.maxHeightFraction - Self.chromeHeight).rounded(.down)
+    }
+
     var body: some View {
         DashUIKit.BottomSheet.selfSizing(
-            title: NSLocalizedString("Confirm", comment: "DashSpend"),
+            title: title,
             showBackButton: .constant(false),
+            isDismissalEnabled: .constant(!isWaiting),
+            isCloseButtonEnabled: !isWaiting,
+            onClose: { viewModel.dismissPurchaseSheet() },
             fallback: DashSpendConfirmationDialog.sheetFallbackHeight,
-            cornerRadius: 32
+            maxHeightFraction: Self.maxHeightFraction,
+            cornerRadius: 32,
+            animatesHeightChanges: true
         ) {
+            // The content stays drawn while the sheet animates away; it takes no taps then.
+            content
+                .allowsHitTesting(viewModel.purchaseSheet != nil)
+        }
+        .onChange(of: viewModel.purchaseSheet) { newSheet in
+            if let newSheet { sheet = newSheet }
+        }
+    }
+
+    @ViewBuilder
+    private var content: some View {
+        switch sheet {
+        case .confirm(let snapshot), .waitingForProvider(let snapshot):
             DashSpendConfirmationDialog(
-                merchantName: merchantName,
-                merchantIconUrl: merchantIconUrl,
-                originalPrice: originalPrice,
-                discount: discount,
-                quantities: quantities,
-                onConfirm: onConfirm,
-                onCancel: onCancel
+                merchantName: viewModel.merchantTitle,
+                merchantIconUrl: viewModel.merchantIconUrl,
+                originalPrice: snapshot.price,
+                discount: snapshot.discount,
+                dashAmount: snapshot.approval.amount,
+                quantities: snapshot.quantities.isEmpty ? nil : snapshot.quantities,
+                isWaiting: isWaiting,
+                maxHeight: contentHeightLimit,
+                onConfirm: { onConfirm(snapshot) },
+                onCancel: { viewModel.dismissPurchaseSheet() }
             )
+        case .priceUpdated(let change):
+            DashSpendPriceUpdatedDialog(
+                change: change,
+                maxHeight: contentHeightLimit,
+                onPay: { viewModel.resolvePriceChange(pay: true) },
+                onCancel: { viewModel.resolvePriceChange(pay: false) }
+            )
+        case nil:
+            EmptyView()
         }
     }
 }

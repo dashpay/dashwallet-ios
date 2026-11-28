@@ -239,7 +239,11 @@ module AppStoreConnectRelease
         # Observation may continue with independent records, but a candidate
         # gate supplies no collector and must fail on incomplete history.
         raise unless on_failure
-        on_failure.call(AppStoreConnectRelease.publication_id(version), error)
+        # The version is passed along when the row has a valid one, so a
+        # collector can tell an old unreadable row from one that may be newest.
+        number = attributes.is_a?(Hash) ? attributes["versionString"] : nil
+        number = nil unless number && (MarketingVersion.new(number) rescue nil)
+        on_failure.call(AppStoreConnectRelease.publication_id(version), error, number)
         nil
       end
     end

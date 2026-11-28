@@ -73,7 +73,7 @@ final class MayaAPIService: HTTPClient<MayaEndpoint> {
                 return body.error
             }
             DWLogger.log("Maya: Address validation request failed: \(error)")
-            return NSLocalizedString("Address validation unavailable — please check your connection", comment: "Maya")
+            return String(localized: "Address validation unavailable — please check your connection", comment: "Maya")
         }
     }
 }

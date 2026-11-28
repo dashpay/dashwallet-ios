@@ -105,8 +105,8 @@ final class AdvancedSecurityViewModel: ObservableObject {
 
     var lockTimerTitle: String {
         store.lockTimerInterval == 0
-            ? NSLocalizedString("Logout", comment: "a verb, Logout Immediately")
-            : NSLocalizedString("Logout after", comment: "Logout after 5 min")
+            ? String(localized: "Logout", comment: "a verb, Logout Immediately")
+            : String(localized: "Logout after", comment: "Logout after 5 min")
     }
 
     /// The stored lock timer, spelled out, including a value that is not a
@@ -115,11 +115,11 @@ final class AdvancedSecurityViewModel: ObservableObject {
 
     static func lockTimerText(_ seconds: Int) -> String {
         switch seconds {
-        case 0: return NSLocalizedString("Immediately", comment: "")
-        case 60: return NSLocalizedString("1 min", comment: "Shorten version of minute")
-        case 60 * 5: return NSLocalizedString("5 min", comment: "Shorten version of minutes")
-        case 60 * 60: return NSLocalizedString("1 hour", comment: "")
-        case 60 * 60 * 24: return NSLocalizedString("24 hours", comment: "")
+        case 0: return String(localized: "Immediately", comment: "")
+        case 60: return String(localized: "1 min", comment: "Shorten version of minute")
+        case 60 * 5: return String(localized: "5 min", comment: "Shorten version of minutes")
+        case 60 * 60: return String(localized: "1 hour", comment: "")
+        case 60 * 60 * 24: return String(localized: "24 hours", comment: "")
         default:
             // Not a slider stop: only a value stored by an older build.
             let formatter = DateComponentsFormatter()
@@ -130,8 +130,8 @@ final class AdvancedSecurityViewModel: ObservableObject {
 
     var spendingLimitTitle: String {
         switch store.biometry {
-        case .touchID: return NSLocalizedString("Touch ID limit", comment: "")
-        case .faceID: return NSLocalizedString("Face ID limit", comment: "")
+        case .touchID: return String(localized: "Touch ID limit", comment: "")
+        case .faceID: return String(localized: "Face ID limit", comment: "")
         case .none: return ""
         }
     }
@@ -142,23 +142,23 @@ final class AdvancedSecurityViewModel: ObservableObject {
         // No stored limit says nothing about the biometric allowance the
         // authentication layer applies, so the sentence promises nothing.
         guard let storedLimit else {
-            return NSLocalizedString("No biometric spending limit is set", comment: "Advanced Security: no biometric spending limit stored")
+            return String(localized: "No biometric spending limit is set", comment: "Advanced Security: no biometric spending limit stored")
         }
         // A zero limit leaves no allowance: every payment asks for the PIN.
         if storedLimit == 0 {
-            return NSLocalizedString("PIN is always required to make a payment", comment: "")
+            return String(localized: "PIN is always required to make a payment", comment: "")
         }
         switch store.biometry {
-        case .touchID: return NSLocalizedString("You can authenticate with Touch ID for payments below", comment: "")
-        case .faceID: return NSLocalizedString("You can authenticate with Face ID for payments below", comment: "")
-        case .none: return NSLocalizedString("You can authenticate with biometrics for payments below", comment: "")
+        case .touchID: return String(localized: "You can authenticate with Touch ID for payments below", comment: "")
+        case .faceID: return String(localized: "You can authenticate with Face ID for payments below", comment: "")
+        case .none: return String(localized: "You can authenticate with biometrics for payments below", comment: "")
         }
     }
 
     /// The stored limit, spelled out, including a value that is not a slider
     /// stop; "None" when no limit is stored.
     var spendingLimitValueText: String {
-        guard let storedLimit else { return NSLocalizedString("None", comment: "") }
+        guard let storedLimit else { return String(localized: "None", comment: "") }
         return Int64(clamping: storedLimit).formattedDashAmount
     }
 

@@ -47,8 +47,8 @@ class TxReclassifyTransactionsWhereToChangeViewController: BasePageSheetViewCont
     }
 
     private func configureHierarchy() {
-        titleLabel.text = NSLocalizedString("Where can I change the tax category?", comment: "Reclassify transactions: where to change the tax category screen")
-        subtitleLabel.text = NSLocalizedString("These classifications will be reflected on the CSV export that can be used for import into tax reporting services.",
+        titleLabel.text = String(localized: "Where can I change the tax category?", comment: "Reclassify transactions: where to change the tax category screen")
+        subtitleLabel.text = String(localized: "These classifications will be reflected on the CSV export that can be used for import into tax reporting services.",
                                                comment: "Reclassify transactions: where to change the tax category screen")
         titleLabel.font = UIFont.dw_font(forTextStyle: .title2).withWeight(UIFont.Weight.bold.rawValue)
         subtitleLabel.font = UIFont.dw_font(forTextStyle: .subheadline)

@@ -35,14 +35,20 @@ enum PlatformPaymentIdentityFundingPolicy {
 
 @MainActor final class ManagedPlatformWallet {
     struct IdentityAddressInput { let addressType: UInt8; let hash: Data; let credits: UInt64 }
-    let walletId = Data([1])
+    var walletId = Data([1])
+    /// Identities this wallet manages; `managedIdentity` throws for any other.
+    var managedIdentityIds: Set<Data> = [Data([2])]
     var topUpCalls = 0
     var failure: Error?
     var afterTopUp: () -> Void = {}
+    func managedIdentity(identityId: Data) throws -> Data {
+        guard managedIdentityIds.contains(identityId) else { throw TestBoundaryError.unusedRoute }
+        return identityId
+    }
     func topUpIdentityWithFunding(identityId: Data, amountDuffs: UInt64, accountIndex: Int) async throws -> UInt64 {
         throw TestBoundaryError.unusedRoute
     }
-    func topUpFromAddresses(
+    func topUpIdentityFromAddresses(
         identityId: Data, inputs: [IdentityAddressInput], addressSigner: KeychainSigner
     ) async throws -> UInt64 {
         topUpCalls += 1

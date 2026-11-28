@@ -92,7 +92,7 @@ final class VotingViewModel: ObservableObject {
     /// list and what VoiceOver says as the run starts. `nil` when none runs.
     var quickVotingStatus: String? {
         store.quickVotingProgress.map {
-            String(format: NSLocalizedString("Quick voting… %1$d of %2$d done", comment: "Voting"), $0.done, $0.total)
+            String(format: String(localized: "Quick voting… %1$d of %2$d done", comment: "Voting"), $0.done, $0.total)
         }
     }
     var votableNodes: [VoterNode] { store.votableNodes }
@@ -122,10 +122,10 @@ final class VotingViewModel: ObservableObject {
         let ticked = store.isVotingSetUp ? store.tickedNodeIDs ?? [] : []
         let chosen = votableNodes.filter { ticked.contains($0.proTxHash) }
         guard !chosen.isEmpty else {
-            return NSLocalizedString("Select nodes", comment: "Voting")
+            return String(localized: "Select nodes", comment: "Voting")
         }
         if chosen.count == votableNodes.count {
-            return String.localizedStringWithFormat(NSLocalizedString("All %d nodes", comment: "Voting"), chosen.count)
+            return String(localized: "All \(chosen.count) nodes", comment: "Voting")
         }
         return chosen.map(\.displayName).joined(separator: ", ")
     }
@@ -148,8 +148,8 @@ final class VotingViewModel: ObservableObject {
         // `false` is a real keychain failure: the key may still be stored,
         // and the node must stay exactly as it was.
         guard vault.removeKey(for: node.proTxHash, role: .voting) else {
-            return NSLocalizedString(
-                "Could not remove the voting key. Try again.",
+            return String(
+                localized: "Could not remove the voting key. Try again.",
                 comment: "Voting")
         }
         // Untrack only once every other key of the node is confirmed gone. A
@@ -303,7 +303,7 @@ extension VotingViewModel: VoteAttemptHosting {
     }
 
     func reportHistoryUnavailable() {
-        list.showToast(.failed(NSLocalizedString("Couldn't read your vote history.", comment: "Voting")))
+        list.showToast(.failed(String(localized: "Couldn't read your vote history.", comment: "Voting")))
     }
 }
 
@@ -315,7 +315,7 @@ extension VotingViewModel: QuickVotingHosting {
     var nodeListMayMissNodes: Bool { store.nodeListMayMissNodes }
 
     func reportNodeListMayMissNodes() {
-        list.showToast(.failed(NSLocalizedString("Some of your masternodes may be missing from this list.", comment: "Voting")))
+        list.showToast(.failed(String(localized: "Some of your masternodes may be missing from this list.", comment: "Voting")))
     }
 
     func reloadVoteHistory() async -> Bool {

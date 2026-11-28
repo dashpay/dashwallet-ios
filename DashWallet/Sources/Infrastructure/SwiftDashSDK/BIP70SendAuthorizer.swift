@@ -12,11 +12,13 @@
 import Foundation
 
 final class BIP70SendAuthorizer: SendAuthorizing {
-    func authorize() async throws {
+    func authorize(spendAmount: UInt64) async throws {
         // Routes through the shared timeout-guarded gate (in WalletSendService.swift) so a
         // silently-non-presenting PIN prompt can never hang the headless flow forever.
+        // The amount engages the biometric spending limit, as for any other send.
         let outcome = await AuthenticationGate.authenticate(
-            biometric: DWGlobalOptions.sharedInstance().biometricAuthEnabled)
+            biometric: DWGlobalOptions.sharedInstance().biometricAuthEnabled,
+            spendAmount: spendAmount)
 
         switch outcome {
         case .ok:
@@ -26,7 +28,7 @@ final class BIP70SendAuthorizer: SendAuthorizing {
         case .failed, .timedOut:
             throw NSError(domain: "org.dashfoundation.dash.bip70",
                           code: 2,
-                          userInfo: [NSLocalizedDescriptionKey: NSLocalizedString("Authentication failed", comment: "BIP70 payment error")])
+                          userInfo: [NSLocalizedDescriptionKey: String(localized: "Authentication failed", comment: "BIP70 payment error")])
         }
     }
 }

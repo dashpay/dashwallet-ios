@@ -21,7 +21,7 @@ import DashUIKit
 struct GiftCardDetailsHowToUseSection: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 30) {
-            Text(NSLocalizedString("How to use your gift card", comment: "DashSpend"))
+            Text(String(localized: "How to use your gift card", comment: "DashSpend"))
                 .font(.subhead)
                 .fontWeight(.medium)
                 .foregroundColor(.dash.tertiaryText)
@@ -29,20 +29,20 @@ struct GiftCardDetailsHowToUseSection: View {
 
             FeatureSingleItem(
                 iconName: .custom("dp_user_generic"),
-                title: NSLocalizedString("Self-checkout", comment: "DashSpend"),
-                description: NSLocalizedString("Request assistance and show the barcode on your screen for scanning.", comment: "DashSpend")
+                title: String(localized: "Self-checkout", comment: "DashSpend"),
+                description: String(localized: "Request assistance and show the barcode on your screen for scanning.", comment: "DashSpend")
             )
 
             FeatureSingleItem(
                 iconName: .custom("image.dashspend.shop"),
-                title: NSLocalizedString("In store", comment: "DashSpend"),
-                description: NSLocalizedString("Tell the cashier that you'd like to pay with a gift card and share the card number and pin.", comment: "DashSpend")
+                title: String(localized: "In store", comment: "DashSpend"),
+                description: String(localized: "Tell the cashier that you'd like to pay with a gift card and share the card number and pin.", comment: "DashSpend")
             )
 
             FeatureSingleItem(
                 iconName: .custom("image.dashspend.online"),
-                title: NSLocalizedString("Online", comment: "DashSpend"),
-                description: NSLocalizedString("In the payment section of your checkout, select \"gift card\" and enter your card number and pin.", comment: "DashSpend")
+                title: String(localized: "Online", comment: "DashSpend"),
+                description: String(localized: "In the payment section of your checkout, select \"gift card\" and enter your card number and pin.", comment: "DashSpend")
             )
         }
         .padding(20)

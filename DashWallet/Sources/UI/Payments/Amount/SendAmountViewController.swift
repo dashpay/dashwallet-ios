@@ -24,10 +24,7 @@ protocol SendAmountFlowSupporting: ErrorPresentable where Self: UIViewController
 extension SendAmountFlowSupporting {
     func validateInputAmount() -> Bool {
         if sendAmountSupportModel.isEnteredAmountLessThenMinimumOutputAmount {
-            let message = String.localizedStringWithFormat(
-                NSLocalizedString("Dash payments can't be less than %@", comment: "Send Dash"),
-                sendAmountSupportModel.minimumOutputAmountFormattedString
-            )
+            let message = String(localized: "Dash payments can't be less than \(sendAmountSupportModel.minimumOutputAmountFormattedString)", comment: "Send Dash")
             present(message: message, level: .error)
             return false
         }
@@ -41,7 +38,7 @@ extension SendAmountFlowSupporting {
 class SendAmountViewController: BaseAmountViewController, SendAmountFlowSupporting {
     override var isMaxButtonHidden: Bool { false }
 
-    override var actionButtonTitle: String? { NSLocalizedString("Send", comment: "Send Dash") }
+    override var actionButtonTitle: String? { String(localized: "Send", comment: "Send Dash") }
 
     internal var sendAmountModel: SendAmountModel {
         model as! SendAmountModel

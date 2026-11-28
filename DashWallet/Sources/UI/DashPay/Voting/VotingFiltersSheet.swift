@@ -41,10 +41,10 @@ struct VotingFiltersSheet: View {
                 navigationBar
                 ScrollView {
                     VStack(spacing: 20) {
-                        block(title: NSLocalizedString("Sort by", comment: "Voting")) {
+                        block(title: String(localized: "Sort by", comment: "Voting")) {
                             ForEach(ContestSort.allCases) { sortRow($0) }
                         }
-                        block(title: NSLocalizedString("Type", comment: "Voting")) {
+                        block(title: String(localized: "Type", comment: "Voting")) {
                             ForEach(VotingTypeFilter.allCases) { type in
                                 DashUIKit.RadioButtonRow(
                                     title: type.title,
@@ -55,18 +55,18 @@ struct VotingFiltersSheet: View {
                         }
                         card {
                             DashUIKit.RadioButtonRow(
-                                title: NSLocalizedString("Only duplicates", comment: "Voting"),
+                                title: String(localized: "Only duplicates", comment: "Voting"),
                                 isSelected: draft.onlyDuplicates,
                                 style: .checkbox) { draft.onlyDuplicates.toggle() }
                         }
                         card {
                             DashUIKit.RadioButtonRow(
-                                title: NSLocalizedString("Only requests with links", comment: "Voting"),
+                                title: String(localized: "Only requests with links", comment: "Voting"),
                                 isSelected: draft.onlyWithLinks,
                                 style: .checkbox) { draft.onlyWithLinks.toggle() }
                         }
                         DashUIKit.DashButton(
-                            text: NSLocalizedString("Reset filters", comment: "Voting"),
+                            text: String(localized: "Reset filters", comment: "Voting"),
                             isEnabled: draft != .default,
                             fillsWidth: true,
                             size: .large,
@@ -83,19 +83,19 @@ struct VotingFiltersSheet: View {
         DashUIKit.NavigationBar(
             leading: {
                 DashUIKit.DashButton(
-                    text: NSLocalizedString("Cancel", comment: ""),
+                    text: String(localized: "Cancel", comment: ""),
                     size: .small,
                     style: .plainBlack) { dismiss() }
             },
             central: {
-                Text(NSLocalizedString("Filters", comment: "Voting"))
+                Text(String(localized: "Filters", comment: "Voting"))
                     .dashFont(.subheadMedium)
                     .foregroundStyle(Color.dash.primaryText)
                     .accessibilityAddTraits(.isHeader)
             },
             trailing: {
                 DashUIKit.DashButton(
-                    text: NSLocalizedString("Apply", comment: ""),
+                    text: String(localized: "Apply", comment: ""),
                     size: .small,
                     style: .tintedBlue) {
                     onApply(draft)

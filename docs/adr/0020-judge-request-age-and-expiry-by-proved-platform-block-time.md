@@ -1,6 +1,6 @@
 # 0020 — Judge request age and expiry by proved Platform block time
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-09
 - **Deciders:** romchornyi (ADR author)
 
@@ -21,8 +21,9 @@ commit (`1721ca7a8b`) contains it.
 
 ## Considered options
 
-1. **Proved Platform block time only.** The block time proved with the identity read judges both;
-   when it cannot be read, the wallet says it could not check and offers to try again.
+1. **Proved Platform block time only.** The block time proved with the identity read judges both.
+   When it cannot be read, a request check says it could not check and offers to try again; a
+   Connections read counts a key with an expiry as live, so it is never shown Expired on a guess.
 2. **Platform block time, with the Core chain tip as a fallback.**
 3. **A lower bound from the Core chain tip only** (the tip's time less the header margin), as an
    earlier version of the Expired tab did.
@@ -35,9 +36,10 @@ commit (`1721ca7a8b`) contains it.
 
 **Positive**
 - Expiry and request freshness follow what Platform enforces; the phone clock plays no part.
-- Nothing is shown Active or Expired on a guess.
+- Nothing is shown Expired on a guess.
 
 **Negative**
+- Without a Platform time a key past its expiry still shows Active until a read brings one.
 - Every request check and every Connections read waits for a proved read.
 - On a quiet network the latest block can be minutes old, so the 2-minute "future" bound may
   refuse a request scanned at once; it is to be measured on a protocol-14 testnet and widened if

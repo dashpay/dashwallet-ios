@@ -95,8 +95,8 @@ struct PointOfUseRow: View {
                                              : "image.explore.dash.wts.payment.dash")
                 .frame(width: 24, height: 24)
                 .accessibilityLabel(paymentMethod == .giftCard
-                    ? NSLocalizedString("Gift card", comment: "Explore Dash")
-                    : NSLocalizedString("Pay with Dash", comment: "Explore Dash"))
+                    ? String(localized: "Gift card", comment: "Explore Dash")
+                    : String(localized: "Pay with Dash", comment: "Explore Dash"))
         case .atm(let buy, let sell):
             HStack(spacing: 5) {
                 if buy { AtmOperationTag(operation: .buy) }
@@ -121,8 +121,8 @@ private struct AtmOperationTag: View {
     @ScaledMetric(relativeTo: .caption2) private var fontSize: CGFloat = 10
 
     var body: some View {
-        Text(operation == .buy ? NSLocalizedString("Buy", comment: "Buy")
-                               : NSLocalizedString("Sell", comment: "Sell"))
+        Text(operation == .buy ? String(localized: "Buy", comment: "Buy")
+                               : String(localized: "Sell", comment: "Sell"))
             .font(.system(size: fontSize, weight: .medium))
             .foregroundColor(.white)
             .padding(.horizontal, 6)

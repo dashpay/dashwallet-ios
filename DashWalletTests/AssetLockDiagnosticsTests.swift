@@ -159,10 +159,9 @@ final class AssetLockDiagnosticsTests: XCTestCase {
 
     func testRestoredLockPrintsExplorerTxidStatusNameInputsSizeAndLastFailure() {
         let transaction = assetLockTransaction(inputCount: 121)
-        let failure = AssetLockFailureRecord(
-            errorCase: "assetLockTooManyInputs",
-            detail: "too many inputs: 121 (max 100)",
-            recordedAt: Date(timeIntervalSince1970: 1_761_782_400)) // 2025-10-30T00:00:00Z
+        let error = PlatformWalletError.assetLockTooManyInputs("too many inputs: 121 (max 100)")
+        let failure = AssetLockFailureRecord.describe(
+            error, at: Date(timeIntervalSince1970: 1_761_782_400)) // 2025-10-30T00:00:00Z
         let text = DiagnosticLogExporter
             .assetLockSection([record(transactionBytes: transaction, lastFailure: failure)])
             .joined(separator: "\n")
@@ -173,12 +172,50 @@ final class AssetLockDiagnosticsTests: XCTestCase {
         XCTAssertTrue(text.contains("type=5 (assetLockShieldedAddressTopUp)"))
         // RecoveredFromChain (a restore) is in the section, by number and name.
         XCTAssertTrue(text.contains("status=5 (recoveredFromChain)"))
-        XCTAssertTrue(text.contains("amount=250000000 duffs"))
+        // The archive holds no Financial amount, the manifest included.
+        XCTAssertTrue(text.contains("amount=<private>"))
+        XCTAssertFalse(text.contains("250000000"))
         XCTAssertTrue(text.contains("created=2025-08-22T00:00:00Z"))
         XCTAssertTrue(text.contains("updated=2025-08-23T00:00:00Z"))
         XCTAssertTrue(text.contains("inputs=121 outputs=1 size=\(transaction.count) bytes"))
         XCTAssertTrue(text.contains(
-            "last failure (2025-10-30T00:00:00Z): case=assetLockTooManyInputs detail=too many inputs: 121 (max 100)"))
+            "last failure (2025-10-30T00:00:00Z): case=assetLockTooManyInputs "
+                + "error=\(AppLogMessage.errorSummary(error)) detail=too many inputs: <n> (max <n>)"), text)
+    }
+
+    /// A shielded build's fee shortfall names the lock value in the SDK's
+    /// text; neither the retry line nor `summary.txt` writes it.
+    func testWalletDetailWritesNoAmount() {
+        let error = PlatformWalletError.walletOperation(
+            "Shielded build error: fee 30000000 exceeds asset lock value 25000000.")
+        let failure = AssetLockFailureRecord.describe(error)
+        let line = failure.logDescription
+        let text = DiagnosticLogExporter
+            .assetLockSection([record(lastFailure: failure)])
+            .joined(separator: "\n")
+        for output in [line, text] {
+            XCTAssertFalse(output.contains("25000000"), output)
+            XCTAssertFalse(output.contains("30000000"), output)
+            XCTAssertTrue(output.contains(
+                "detail=Shielded build error: fee <n> exceeds asset lock value <n>."), output)
+        }
+    }
+
+    /// The retry writes its line before the UI shows the failure, so a long
+    /// SDK text is cut to the limit and a digit after a non-ASCII letter is
+    /// still masked.
+    func testWrittenDetailIsBoundedAndMasksEveryDigit() {
+        let long = AssetLockFailureRecord.maskingNumbers(in: String(repeating: "a", count: 1_000_000))
+        XCTAssertEqual(long.count, AssetLockFailureRecord.writtenDetailLimit + 1)
+        XCTAssertTrue(long.hasSuffix("…"))
+        XCTAssertEqual(AssetLockFailureRecord.maskingNumbers(in: "naïve42 and 7"), "naï<n> and <n>")
+    }
+
+    func testFailureStoredBeforeTheSummaryExistedIsWrittenByItsCaseAlone() throws {
+        let stored = Data(
+            #"{"errorCase":"assetLockTooManyInputs","detail":"too many inputs: 121 (max 100)","recordedAt":0}"#.utf8)
+        let record = try JSONDecoder().decode(AssetLockFailureRecord.self, from: stored)
+        XCTAssertEqual(record.logDescription, "case=assetLockTooManyInputs")
     }
 
     func testMissingTransactionBytesAreReportedAsUnknownNotZero() {
@@ -298,6 +335,9 @@ final class AssetLockDiagnosticsTests: XCTestCase {
         // "10534" is what support greps for.
         XCTAssertTrue(record.detail.contains("code=10534"), record.detail)
         XCTAssertTrue(record.detail.contains("asset lock transaction has too many inputs"))
+        // What is written: the consensus code and kind, not Platform's text.
+        XCTAssertTrue(record.logDescription.contains("consensus code=10534 kind="), record.logDescription)
+        XCTAssertFalse(record.logDescription.contains("asset lock transaction"), record.logDescription)
     }
 
     func testCoordinatorEnvelopeIsUnwrappedToThePlatformError() {
@@ -316,6 +356,33 @@ final class AssetLockDiagnosticsTests: XCTestCase {
         let record = AssetLockFailureRecord.describe(error)
         XCTAssertEqual(record.errorCase, "assetLockTooManyInputs")
         XCTAssertEqual(record.detail, "too many inputs: 121 (max 100)")
+    }
+
+    /// The SDK's catch-all wallet error has one summary for every cause; its
+    /// detail tells two stuck locks apart.
+    func testWalletOperationFailuresAreToldApartByTheirDetail() {
+        let first = AssetLockFailureRecord.describe(PlatformWalletError.walletOperation("first cause"))
+        let second = AssetLockFailureRecord.describe(PlatformWalletError.walletOperation("second cause"))
+        XCTAssertEqual(first.summary, second.summary)
+        XCTAssertTrue(first.logDescription.hasSuffix(" detail=first cause"), first.logDescription)
+        XCTAssertTrue(second.logDescription.hasSuffix(" detail=second cause"), second.logDescription)
+    }
+
+    /// Only a wallet error's curated detail is written: a recipient mismatch
+    /// writes its fixed sentence, an app error and Platform's consensus text
+    /// write none.
+    func testOnlyTheCuratedWalletDetailIsWritten() {
+        let mismatch = AssetLockFailureRecord.describe(
+            PlatformWalletError.assetLockRecipientMismatch("addr-A addr-B"))
+        XCTAssertTrue(mismatch.logDescription.hasSuffix(
+            " detail=\(AssetLockFailureRecord.recipientMismatchDetail)"), mismatch.logDescription)
+        XCTAssertFalse(mismatch.logDescription.contains("addr-A"), mismatch.logDescription)
+        let appError = AssetLockFailureRecord.describe(
+            AssetLockRecoveryService.RecoveryError.failed("Network unreachable"))
+        XCTAssertFalse(appError.logDescription.contains("detail="), appError.logDescription)
+        let consensus = AssetLockFailureRecord.describe(PlatformWalletError.consensusRejection(
+            PlatformConsensusError(code: 10534, kind: .basic), "asset lock transaction has too many inputs"))
+        XCTAssertFalse(consensus.logDescription.contains("detail="), consensus.logDescription)
     }
 
     func testAppErrorIsNamedByTypeAndCase() {
@@ -503,12 +570,48 @@ final class AssetLockDiagnosticsTests: XCTestCase {
             vout: 0,
             fundingTypeRaw: 5,
             statusBeforeRaw: 5,
-            result: "FAILED case=assetLockTooManyInputs detail=too many inputs: 121 (max 100)")
+            result: "FAILED case=assetLockTooManyInputs")
         XCTAssertEqual(
             line,
             "🔁 LOCK-RETRY :: single txid=\(txidDisplay):0 "
                 + "type=5 (assetLockShieldedAddressTopUp) statusBefore=5 (recoveredFromChain) "
-                + "FAILED case=assetLockTooManyInputs detail=too many inputs: 121 (max 100)")
+                + "FAILED case=assetLockTooManyInputs")
+    }
+
+    /// A failed retry reaches the exported file as the typed case, the Error
+    /// summary and the wallet error's detail; a refusal with no wallet error
+    /// underneath writes no text.
+    func testFailedRetryLinesKeepTheWalletDetailAndRefusalsNoText() throws {
+        // The simulator keeps log files between runs: a txid of this run
+        // only matches the lines this run wrote.
+        let runTxidWire = Data((0..<32).map { _ in UInt8.random(in: .min ... .max) })
+        let runTxid = runTxidWire.reversed().map { String(format: "%02x", $0) }.joined()
+        // Letters only: the written detail masks every word holding a digit.
+        let marker = String((0..<16).map { _ in "abcdefghijklmnopqrstuvwxyz".randomElement()! })
+        let error = PlatformWalletError.assetLockTooManyInputs("too many inputs \(marker) value 25000000")
+        let refusal = AssetLockRecoveryService.RecoveryError.failed("refused \(marker)")
+        let store = AssetLockFailureStore(defaults: defaults)
+        AssetLockRetryLog.logFailure(
+            error, event: "single", txidWire: runTxidWire, vout: 0, fundingTypeRaw: 5, statusBeforeRaw: 5)
+        AssetLockRetryLog.recordFailure(
+            error, event: "single", txidWire: runTxidWire, vout: 1, fundingTypeRaw: 5, statusBeforeRaw: 5,
+            store: store)
+        AssetLockRetryLog.logRefusal(
+            refusal, event: "single", txidWire: runTxidWire, vout: 2, fundingTypeRaw: 5, statusBeforeRaw: 5)
+
+        let files = DWLogger.sharedInstance().logFiles()
+        let lines = try files.map { try String(contentsOf: $0, encoding: .utf8) }
+            .joined(separator: "\n").split(separator: "\n")
+        let failed = "FAILED case=assetLockTooManyInputs error=\(AppLogMessage.errorSummary(error)) "
+            + "detail=too many inputs \(marker) value <n>"
+        XCTAssertFalse(lines.contains { $0.contains(marker) && $0.contains("25000000") })
+        let refused = "outcome=refused case=RecoveryError.failed error=\(AppLogMessage.errorSummary(refusal))"
+        XCTAssertEqual(lines.filter { $0.contains(marker) }.count, 2, "\(lines.filter { $0.contains(marker) })")
+        for (vout, result) in [(0, failed), (1, failed), (2, refused)] {
+            XCTAssertEqual(
+                lines.filter { $0.contains("txid=\(runTxid):\(vout) ") && $0.hasSuffix(result) }.count, 1,
+                "\(vout) \(result)")
+        }
     }
 
     func testBulkPassLineCarriesTheCountAndOutcome() {

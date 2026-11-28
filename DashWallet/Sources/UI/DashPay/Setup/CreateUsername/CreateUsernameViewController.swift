@@ -324,8 +324,8 @@ struct CreateUsernameView: View {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 0) {
                         DashUIKit.TopIntroView(
-                            title: NSLocalizedString("Create username", comment: "Usernames"),
-                            mainDescription: NSLocalizedString("Please note that you will not be able to change it in the future", comment: "Usernames"))
+                            title: String(localized: "Create username", comment: "Usernames"),
+                            mainDescription: String(localized: "Please note that you will not be able to change it in the future", comment: "Usernames"))
                             .padding(.top, 12)
 
                         usernameCard
@@ -341,7 +341,7 @@ struct CreateUsernameView: View {
                         }
 
                         if viewModel.isIdentityLoading {
-                            SwiftUI.ProgressView(NSLocalizedString("Loading identity…", comment: "DashPay registration recovery"))
+                            SwiftUI.ProgressView(String(localized: "Loading identity…", comment: "DashPay registration recovery"))
                                 .padding(.top, 20)
                         } else if viewModel.hasPendingRegistrationRecovery {
                             registrationRecoveryBanner
@@ -441,15 +441,15 @@ struct CreateUsernameView: View {
             }
             identityLoadTimedOut = viewModel.isIdentityLoading
         }
-        .alert(NSLocalizedString("Identity is still loading", comment: "Identity recovery"), isPresented: $identityLoadTimedOut) {
-            Button(NSLocalizedString("Retry", comment: "Usernames")) {
+        .alert(String(localized: "Identity is still loading", comment: "Identity recovery"), isPresented: $identityLoadTimedOut) {
+            Button(String(localized: "Retry", comment: "Usernames")) {
                 DWCurrentUserIdentityInfo.shared.retryNameRefresh()
                 viewModel.refreshRegistrationRecoveryState()
                 identityLoadAttempt += 1
             }
-            Button(NSLocalizedString("Cancel", comment: "Usernames"), role: .cancel) { }
+            Button(String(localized: "Cancel", comment: "Usernames"), role: .cancel) { }
         } message: {
-            Text(NSLocalizedString("Wait for the wallet and network to finish loading, then retry. No registration has been sent.", comment: "Identity recovery"))
+            Text(String(localized: "Wait for the wallet and network to finish loading, then retry. No registration has been sent.", comment: "Identity recovery"))
         }
         .onChange(of: viewModel.hasMinimumRequiredCoreBalance) { _ in
             syncFundingSourceToViableSource()
@@ -475,7 +475,7 @@ struct CreateUsernameView: View {
             ) {
                 VotingInfoScreen(
                     action: { showVotingInfo = false },
-                    buttonLabel: NSLocalizedString("Close", comment: ""))
+                    buttonLabel: String(localized: "Close", comment: ""))
             }
         }
         .sheet(isPresented: $showVerifyOffer, onDismiss: runSheetFollowUp) {
@@ -560,58 +560,45 @@ struct CreateUsernameView: View {
             }
         }
         .alert(
-            NSLocalizedString("Buy username", comment: "Usernames"),
+            String(localized: "Buy username", comment: "Usernames"),
             isPresented: $showPurchaseConfirmation
         ) {
-            Button(NSLocalizedString("Buy", comment: "")) {
+            Button(String(localized: "Buy", comment: "")) {
                 // The purchase asks for the PIN; see `afterAlertDismissal`.
                 afterAlertDismissal { performPurchase() }
             }
-            Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) { }
+            Button(String(localized: "Cancel", comment: ""), role: .cancel) { }
         } message: {
-            Text(String.localizedStringWithFormat(
-                NSLocalizedString(
-                    "“%1$@” will be purchased for %2$@ Dash. The price is paid from your wallet balance.",
-                    comment: "Usernames"),
-                viewModel.username,
-                ((viewModel.takenNameSalePriceCredits ?? 0) / 1_000).dashAmount.formattedDashAmountWithoutCurrencySymbol))
+            Text(String(localized: "“\(viewModel.username)” will be purchased for \(((viewModel.takenNameSalePriceCredits ?? 0) / 1_000).dashAmount.formattedDashAmountWithoutCurrencySymbol) Dash. The price is paid from your wallet balance.", comment: "Usernames"))
         }
         .alert(
-            NSLocalizedString("Username request completed", comment: "Usernames"),
+            String(localized: "Username request completed", comment: "Usernames"),
             isPresented: $showPurchaseSuccess
         ) {
-            Button(NSLocalizedString("OK", comment: "")) { finish() }
+            Button(String(localized: "OK", comment: "")) { finish() }
         } message: {
-            Text(purchaseCompletionMessage ?? String.localizedStringWithFormat(
-                NSLocalizedString("“%@” is now your username.", comment: "Usernames"),
-                purchasedUsername))
+            Text(purchaseCompletionMessage ?? String(localized: "“\(purchasedUsername)” is now your username.", comment: "Usernames"))
         }
         .alert(
-            NSLocalizedString("Username registered", comment: "Usernames"),
+            String(localized: "Username registered", comment: "Usernames"),
             isPresented: $showSuccess
         ) {
             if let inviter = viewModel.invitationInviterUsername {
                 // Invitation claim with a known inviter: offer the
                 // contact-bootstrap (mirrors Android, where the request
                 // is sent after registration; here the user opts in).
-                Button(String.localizedStringWithFormat(
-                    NSLocalizedString("Add %@ as a contact", comment: "DashPay Invitations"),
-                    inviter)) {
+                Button(String(localized: "Add \(inviter) as a contact", comment: "DashPay Invitations")) {
                     sendInviterContactRequest(inviter)
                 }
-                Button(NSLocalizedString("Not now", comment: ""), role: .cancel) { finish() }
+                Button(String(localized: "Not now", comment: ""), role: .cancel) { finish() }
             } else {
-                Button(NSLocalizedString("OK", comment: "")) { finish() }
+                Button(String(localized: "OK", comment: "")) { finish() }
             }
         } message: {
             if viewModel.invitationInviterUsername != nil {
-                Text(String.localizedStringWithFormat(
-                    NSLocalizedString("“%@” has been registered. Send a contact request to the person who invited you?", comment: "DashPay Invitations"),
-                    viewModel.username))
+                Text(String(localized: "“\(viewModel.username)” has been registered. Send a contact request to the person who invited you?", comment: "DashPay Invitations"))
             } else {
-                Text(String.localizedStringWithFormat(
-                    NSLocalizedString("“%@” has been registered.", comment: "Usernames"),
-                    viewModel.username))
+                Text(String(localized: "“\(viewModel.username)” has been registered.", comment: "Usernames"))
             }
         }
         .alert(
@@ -619,10 +606,10 @@ struct CreateUsernameView: View {
             isPresented: $showSourceQuestion,
             presenting: sourceQuestion
         ) { question in
-            Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) {
+            Button(String(localized: "Cancel", comment: ""), role: .cancel) {
                 abandonSubmission()
             }
-            Button(NSLocalizedString("Continue", comment: "")) {
+            Button(String(localized: "Continue", comment: "")) {
                 afterAlertDismissal {
                     // The source the alert named, not the auto-pick, which may
                     // have moved while it was up; performSubmit checks it can pay.
@@ -630,22 +617,22 @@ struct CreateUsernameView: View {
                 }
             }
         } message: { _ in
-            Text(NSLocalizedString(
-                "Any Dash this request needs comes from this balance.",
+            Text(String(
+                localized: "Any Dash this request needs comes from this balance.",
                 comment: "Usernames: confirm the funding source"))
         }
         // `presenting:` hands the amount to the buttons and the message as a
         // value, so dismissal clearing the state cannot lose what was shown.
         .alert(
-            NSLocalizedString("Top up your identity", comment: "Usernames: plain name on an existing identity"),
+            String(localized: "Top up your identity", comment: "Usernames: plain name on an existing identity"),
             isPresented: $showPlainTopUp,
             presenting: pendingPlainTopUp
         ) { topUp in
-            Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) {
+            Button(String(localized: "Cancel", comment: ""), role: .cancel) {
                 pendingPlainTopUp = nil
                 abandonSubmission()
             }
-            Button(NSLocalizedString("Confirm", comment: "")) {
+            Button(String(localized: "Confirm", comment: "")) {
                 viewModel.captureConfirmedTopUp(shownDuffs: topUp.duffs, isCompanionPass: false)
                 pendingPlainTopUp = nil
                 // The alert named the source; agreeing to it is the answer to
@@ -653,23 +640,17 @@ struct CreateUsernameView: View {
                 afterAlertDismissal { performSubmit(agreedSource: topUp.source) }
             }
         } message: { topUp in
-            Text(String.localizedStringWithFormat(
-                NSLocalizedString(
-                    "Registering “%1$@” first moves %2$@ DASH from your %3$@ to your identity’s credits.",
-                    comment: "Usernames: plain name on an existing identity"),
-                viewModel.username.trimmingCharacters(in: .whitespacesAndNewlines),
-                topUp.duffs.dashAmount.formattedDashAmountWithoutCurrencySymbol,
-                Self.sourceName(topUp.source)))
+            Text(String(localized: "Registering “\(viewModel.username.trimmingCharacters(in: .whitespacesAndNewlines))” first moves \(topUp.duffs.dashAmount.formattedDashAmountWithoutCurrencySymbol) DASH from your \(Self.sourceName(topUp.source)) to your identity’s credits.", comment: "Usernames: plain name on an existing identity"))
         }
         .alert(
-            NSLocalizedString("A top-up hasn't finished", comment: "Usernames: unfinished identity top-up"),
+            String(localized: "A top-up hasn't finished", comment: "Usernames: unfinished identity top-up"),
             isPresented: $showUnfinishedTopUp,
             presenting: unfinishedTopUpContinuation
         ) { continuation in
-            Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) {
+            Button(String(localized: "Cancel", comment: ""), role: .cancel) {
                 abandonSubmission()
             }
-            Button(NSLocalizedString("Continue anyway", comment: "Usernames: unfinished identity top-up")) {
+            Button(String(localized: "Continue anyway", comment: "Usernames: unfinished identity top-up")) {
                 acknowledgedUnfinishedTopUp = true
                 afterAlertDismissal {
                     switch continuation {
@@ -682,26 +663,26 @@ struct CreateUsernameView: View {
                 }
             }
         } message: { _ in
-            Text(NSLocalizedString(
-                "An earlier top-up of your identity was paid but hasn't reached Platform yet. Topping up again may pay twice. You can finish that transfer from your transaction history first.",
+            Text(String(
+                localized: "An earlier top-up of your identity was paid but hasn't reached Platform yet. Topping up again may pay twice. You can finish that transfer from your transaction history first.",
                 comment: "Usernames: unfinished identity top-up"))
         }
         .alert(
-            NSLocalizedString("Username submitted", comment: "Usernames"),
+            String(localized: "Username submitted", comment: "Usernames"),
             isPresented: $showVotingSubmitted
         ) {
-            Button(NSLocalizedString("OK", comment: "")) { finish() }
+            Button(String(localized: "OK", comment: "")) { finish() }
         } message: {
             Text(votingSubmittedMessage)
         }
         .alert(
-            NSLocalizedString("Contact request failed", comment: "DashPay Invitations"),
+            String(localized: "Contact request failed", comment: "DashPay Invitations"),
             isPresented: Binding(
                 get: { inviterContactErrorMessage != nil },
                 set: { if !$0 { inviterContactErrorMessage = nil; finish() } }
             )
         ) {
-            Button(NSLocalizedString("OK", comment: "")) {
+            Button(String(localized: "OK", comment: "")) {
                 inviterContactErrorMessage = nil
                 finish()
             }
@@ -709,7 +690,7 @@ struct CreateUsernameView: View {
             Text(inviterContactErrorMessage ?? "")
         }
         .alert(
-            registrationRefusalTitle ?? NSLocalizedString("Registration failed", comment: "Usernames"),
+            registrationRefusalTitle ?? String(localized: "Registration failed", comment: "Usernames"),
             isPresented: Binding(
                 get: { registrationErrorMessage != nil },
                 set: { newValue in
@@ -721,7 +702,7 @@ struct CreateUsernameView: View {
                 }
             )
         ) {
-            Button(NSLocalizedString("OK", comment: "")) {
+            Button(String(localized: "OK", comment: "")) {
                 registrationErrorMessage = nil
                 registrationRefusalTitle = nil
                 screenLockedAfterAuth = viewModel.purchaseSubmissionUnconfirmed
@@ -744,8 +725,8 @@ struct CreateUsernameView: View {
         VStack(alignment: .leading, spacing: 0) {
             DashUIKit.AddressFieldView(
                 text: $viewModel.username,
-                label: NSLocalizedString("Username", comment: "Usernames"),
-                placeholder: NSLocalizedString("Enter a username", comment: "Usernames"),
+                label: String(localized: "Username", comment: "Usernames"),
+                placeholder: String(localized: "Enter a username", comment: "Usernames"),
                 hasError: hasUsernameError,
                 isDisabled: screenLockedAfterAuth,
                 // No `onScanQR`: a username has no QR form, and the field draws
@@ -843,12 +824,12 @@ struct CreateUsernameView: View {
 
         add(
             id: "length",
-            text: NSLocalizedString("Between 3 and 23 characters", comment: "Usernames"),
+            text: String(localized: "Between 3 and 23 characters", comment: "Usernames"),
             rule: viewModel.uiState.lengthRule)
 
         add(
             id: "characters",
-            text: NSLocalizedString("Letter, numbers and hyphens only", comment: "Usernames"),
+            text: String(localized: "Letter, numbers and hyphens only", comment: "Usernames"),
             rule: viewModel.uiState.allowedCharactersRule)
 
         // A non-contested-only invitation: either rule makes a name
@@ -856,11 +837,11 @@ struct CreateUsernameView: View {
         // both drop out once it is met.
         add(
             id: "noncontested-length",
-            text: NSLocalizedString("Between 20 and 23 characters", comment: "DashPay Invitations"),
+            text: String(localized: "Between 20 and 23 characters", comment: "DashPay Invitations"),
             rule: viewModel.nonContestedRule)
         add(
             id: "noncontested-digits",
-            text: NSLocalizedString("Numbers 2-9", comment: "DashPay Invitations"),
+            text: String(localized: "Numbers 2-9", comment: "DashPay Invitations"),
             rule: viewModel.nonContestedRule)
 
         if viewModel.uiState.costRule == .invalid, let blocker = viewModel.shieldedCostBlocker {
@@ -914,14 +895,14 @@ struct CreateUsernameView: View {
                 .foregroundColor(.dash.blue)
                 .font(.system(size: 20))
             VStack(alignment: .leading, spacing: 4) {
-                Text(NSLocalizedString(
-                    "Finish your registration",
+                Text(String(
+                    localized: "Finish your registration",
                     comment: "DashPay registration recovery"))
                     .font(.subheadline.bold())
                     .foregroundColor(.dash.primaryText)
                 Text(viewModel.isResumingUsername
-                    ? NSLocalizedString("Your identity is ready. Finish registering a username using its existing credits.", comment: "DashPay registration recovery")
-                    : NSLocalizedString("Your previous payment was found. Continue to finish creating the identity and username without paying again.", comment: "DashPay registration recovery"))
+                    ? String(localized: "Your identity is ready. Finish registering a username using its existing credits.", comment: "DashPay registration recovery")
+                    : String(localized: "Your previous payment was found. Continue to finish creating the identity and username without paying again.", comment: "DashPay registration recovery"))
                     .font(.caption)
                     .foregroundColor(.dash.secondaryText)
                     .fixedSize(horizontal: false, vertical: true)
@@ -937,15 +918,13 @@ struct CreateUsernameView: View {
     /// purchase (priced) > plain Continue.
     private var primaryButtonText: String {
         if viewModel.hasPendingRegistrationRecovery {
-            return NSLocalizedString("Finish registration", comment: "DashPay registration recovery")
+            return String(localized: "Finish registration", comment: "DashPay registration recovery")
         }
         if viewModel.canPurchaseListedNameDirectly,
            let credits = viewModel.takenNameSalePriceCredits {
-            return String.localizedStringWithFormat(
-                NSLocalizedString("Buy for %@ Dash", comment: "Usernames"),
-                (credits / 1_000).dashAmount.formattedDashAmountWithoutCurrencySymbol)
+            return String(localized: "Buy for \((credits / 1_000).dashAmount.formattedDashAmountWithoutCurrencySymbol) Dash", comment: "Usernames")
         }
-        return NSLocalizedString("Continue", comment: "")
+        return String(localized: "Continue", comment: "")
     }
 
     /// Deadline as "Today 20:33"-style text (DWDateFormatter's relative
@@ -1030,50 +1009,40 @@ struct CreateUsernameView: View {
         var isWarning = false
 
         if voteInProgress, viewModel.activeContestHasEnded {
-            title = NSLocalizedString("Vote ended", comment: "Usernames")
-            body = NSLocalizedString(
-                "The masternode vote for this name has ended and the result is being finalized. Check back soon.",
+            title = String(localized: "Vote ended", comment: "Usernames")
+            body = String(
+                localized: "The masternode vote for this name has ended and the result is being finalized. Check back soon.",
                 comment: "Usernames")
             isWarning = true
         } else if voteInProgress, let endsAt = viewModel.activeContestEndsAt, viewModel.activeContestJoinClosed {
-            title = NSLocalizedString("Vote in progress", comment: "Usernames")
-            body = String.localizedStringWithFormat(
-                NSLocalizedString(
-                    "A masternode vote for this name is in progress — voting ends around %@. New contenders can no longer join this vote.",
-                    comment: "Usernames"),
-                Self.contestDeadlineText(endsAt))
+            title = String(localized: "Vote in progress", comment: "Usernames")
+            body = String(localized: "A masternode vote for this name is in progress — voting ends around \(Self.contestDeadlineText(endsAt)). New contenders can no longer join this vote.", comment: "Usernames")
             isWarning = true
         } else if voteInProgress, let endsAt = viewModel.activeContestEndsAt {
-            title = NSLocalizedString("Vote in progress", comment: "Usernames")
-            body = String.localizedStringWithFormat(
-                NSLocalizedString(
-                    "A masternode vote for this name is already in progress — voting ends around %@. Submitting a request joins the vote as a contender.",
-                    comment: "Usernames"),
-                Self.contestDeadlineText(endsAt))
+            title = String(localized: "Vote in progress", comment: "Usernames")
+            body = String(localized: "A masternode vote for this name is already in progress — voting ends around \(Self.contestDeadlineText(endsAt)). Submitting a request joins the vote as a contender.", comment: "Usernames")
         } else if voteInProgress {
-            title = NSLocalizedString("Vote in progress", comment: "Usernames")
-            body = NSLocalizedString(
-                "A masternode vote for this name is already in progress. Submitting a request joins the vote as a contender.",
+            title = String(localized: "Vote in progress", comment: "Usernames")
+            body = String(
+                localized: "A masternode vote for this name is already in progress. Submitting a request joins the vote as a contender.",
                 comment: "Usernames")
         } else if viewModel.isLockedContestedName {
             // The vote already happened and went to nobody. Everything below
             // projects a deadline for a vote that has yet to run, which for a
             // locked name promised a future result the network can never
             // deliver — and an invented date to go with it.
-            title = NSLocalizedString("This name is locked", comment: "Usernames")
-            body = NSLocalizedString(
-                "A masternode vote ended with this username locked, so nobody can register it. Choose a different one.",
+            title = String(localized: "This name is locked", comment: "Usernames")
+            body = String(
+                localized: "A masternode vote ended with this username locked, so nobody can register it. Choose a different one.",
                 comment: "Usernames")
             isWarning = true
         } else if let resultsBy = Self.projectedVotingDeadlineText() {
             // One sentence in the title slot, as designed — there is no
             // heading over it, the statement IS the message.
-            title = String.localizedStringWithFormat(
-                NSLocalizedString("The Dash network will vote on this username. Results by %@.", comment: "Usernames"),
-                resultsBy)
+            title = String(localized: "The Dash network will vote on this username. Results by \(resultsBy).", comment: "Usernames")
             body = nil
         } else {
-            title = NSLocalizedString("The Dash network will vote on this username.", comment: "Usernames")
+            title = String(localized: "The Dash network will vote on this username.", comment: "Usernames")
             body = nil
         }
 
@@ -1084,7 +1053,7 @@ struct CreateUsernameView: View {
                 ? DashIcon.SystemMessage.warningTriangle.source
                 : DashIcon.SystemMessage.infoRectSmall.source,
             backgroundColor: isWarning ? Color.dash.orangeAlpha10 : Color.dash.blueAlpha5,
-            buttonName: NSLocalizedString("See details", comment: "Usernames"),
+            buttonName: String(localized: "See details", comment: "Usernames"),
             onAction: { showVotingInfo = true },
             // A link, not a call to action: the message is not asking to be
             // acted on, it points at an explanation.
@@ -1121,31 +1090,18 @@ struct CreateUsernameView: View {
         let priceText = (priceCredits / 1_000).dashAmount.formattedDashAmountWithoutCurrencySymbol
         let body: String
         if viewModel.canPurchaseListedNameDirectly {
-            body = String.localizedStringWithFormat(
-                NSLocalizedString(
-                    "The owner of this username has listed it for %@ Dash. You can buy it right now — the price is paid from your wallet balance.",
-                    comment: "Usernames"),
-                priceText)
+            body = String(localized: "The owner of this username has listed it for \(priceText) Dash. You can buy it right now — the price is paid from your wallet balance.", comment: "Usernames")
         } else if viewModel.listedNameExceedsDirectPurchaseLimit {
-            body = String.localizedStringWithFormat(
-                NSLocalizedString(
-                    "The owner of this username has listed it for %1$@ Dash. Purchases over %2$@ Dash must be made from the Username Marketplace — choose another username for now; you can decide on buying this one later.",
-                    comment: "Usernames"),
-                priceText,
-                CreateUsernameViewModel.directPurchaseMaxDuffs.dashAmount.formattedDashAmountWithoutCurrencySymbol)
+            body = String(localized: "The owner of this username has listed it for \(priceText) Dash. Purchases over \(CreateUsernameViewModel.directPurchaseMaxDuffs.dashAmount.formattedDashAmountWithoutCurrencySymbol) Dash must be made from the Username Marketplace — choose another username for now; you can decide on buying this one later.", comment: "Usernames")
         } else {
-            body = String.localizedStringWithFormat(
-                NSLocalizedString(
-                    "The owner of this username has listed it in the Username Marketplace for %@ Dash. You can buy it there instead.",
-                    comment: "Usernames"),
-                priceText)
+            body = String(localized: "The owner of this username has listed it in the Username Marketplace for \(priceText) Dash. You can buy it there instead.", comment: "Usernames")
         }
         return HStack(alignment: .top, spacing: 12) {
             Image(systemName: "tag.fill")
                 .foregroundColor(.dash.blue)
                 .font(.system(size: 20))
             VStack(alignment: .leading, spacing: 4) {
-                Text(NSLocalizedString("For sale", comment: "Usernames"))
+                Text(String(localized: "For sale", comment: "Usernames"))
                     .font(.subheadline.bold())
                     .foregroundColor(.dash.blue)
                 Text(body)
@@ -1164,7 +1120,7 @@ struct CreateUsernameView: View {
     /// control (Android: `invite_only_noncontested` + `UsernameTypesDialog`).
     private var nonContestedInvitationNote: some View {
         HStack(alignment: .top, spacing: 8) {
-            Text(NSLocalizedString("You can only create a non-contested username using this invitation", comment: "DashPay Invitations"))
+            Text(String(localized: "You can only create a non-contested username using this invitation", comment: "DashPay Invitations"))
                 .dashFont(.footnote)
                 .foregroundColor(.dash.secondaryText)
                 .fixedSize(horizontal: false, vertical: true)
@@ -1177,7 +1133,7 @@ struct CreateUsernameView: View {
                     .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
-            .accessibilityLabel(NSLocalizedString("What are contested and non-contested usernames?", comment: "DashPay Invitations"))
+            .accessibilityLabel(String(localized: "What are contested and non-contested usernames?", comment: "DashPay Invitations"))
         }
         .sheet(isPresented: $showUsernameTypesInfo) {
             DashUIKit.BottomSheet.selfSizing(
@@ -1195,7 +1151,7 @@ struct CreateUsernameView: View {
             Image(systemName: "envelope.open")
                 .foregroundColor(.dash.blue)
                 .font(.system(size: 20))
-            Text(NSLocalizedString("Your invitation pays the registration fee for this username.", comment: "DashPay Invitations"))
+            Text(String(localized: "Your invitation pays the registration fee for this username.", comment: "DashPay Invitations"))
                 .font(.caption)
                 .foregroundColor(.dash.secondaryText)
                 .fixedSize(horizontal: false, vertical: true)
@@ -1245,7 +1201,7 @@ struct CreateUsernameView: View {
                 break
             case .submittedUnconfirmed(let message):
                 screenLockedAfterAuth = true
-                registrationRefusalTitle = NSLocalizedString("Confirmation pending", comment: "Username purchase result unknown")
+                registrationRefusalTitle = String(localized: "Confirmation pending", comment: "Username purchase result unknown")
                 registrationErrorMessage = message
             case .failure(let message):
                 viewModel.refreshRegistrationRecoveryState()
@@ -1405,11 +1361,11 @@ struct CreateUsernameView: View {
     /// A source as the privacy page names it.
     private static func sourceName(_ source: DWIdentityFundingSource) -> String {
         switch source {
-        case .core: return NSLocalizedString("Dash balance", comment: "Usernames")
-        case .platformPayment: return NSLocalizedString("Platform balance", comment: "Usernames")
-        case .shielded: return NSLocalizedString("Shielded balance", comment: "Usernames")
-        case .invitation: return NSLocalizedString("Dash balance", comment: "Usernames")
-        @unknown default: return NSLocalizedString("Dash balance", comment: "Usernames")
+        case .core: return String(localized: "Dash balance", comment: "Usernames")
+        case .platformPayment: return String(localized: "Platform balance", comment: "Usernames")
+        case .shielded: return String(localized: "Shielded balance", comment: "Usernames")
+        case .invitation: return String(localized: "Dash balance", comment: "Usernames")
+        @unknown default: return String(localized: "Dash balance", comment: "Usernames")
         }
     }
 
@@ -1448,15 +1404,15 @@ struct CreateUsernameView: View {
     }
 
     private static var noPayableSourceMessage: String {
-        NSLocalizedString(
-            "None of your balances can pay for this request right now.",
+        String(
+            localized: "None of your balances can pay for this request right now.",
             comment: "Usernames: confirm the funding source")
     }
 
     /// Stops a submission before anything is sent and says why.
     private func refuseSubmission(_ message: String) {
         abandonSubmission()
-        registrationRefusalTitle = NSLocalizedString("Nothing was sent", comment: "Usernames: confirm the funding source")
+        registrationRefusalTitle = String(localized: "Nothing was sent", comment: "Usernames: confirm the funding source")
         registrationErrorMessage = message
     }
 
@@ -1490,9 +1446,9 @@ struct CreateUsernameView: View {
 
     private static func sourceQuestionTitle(_ source: DWIdentityFundingSource) -> String {
         switch source {
-        case .platformPayment: return NSLocalizedString("Pay from your Platform balance?", comment: "Usernames: confirm the funding source")
-        case .shielded: return NSLocalizedString("Pay from your Shielded balance?", comment: "Usernames: confirm the funding source")
-        default: return NSLocalizedString("Pay from your Dash balance?", comment: "Usernames: confirm the funding source")
+        case .platformPayment: return String(localized: "Pay from your Platform balance?", comment: "Usernames: confirm the funding source")
+        case .shielded: return String(localized: "Pay from your Shielded balance?", comment: "Usernames: confirm the funding source")
+        default: return String(localized: "Pay from your Dash balance?", comment: "Usernames: confirm the funding source")
         }
     }
 
@@ -1543,8 +1499,8 @@ struct CreateUsernameView: View {
                 refuseSubmission(DWIdentityRegistrationCoordinator.CoordinatorError
                     .shieldedTopUpUnavailable(neededDuffs: neededDuffs).localizedDescription)
             } else {
-                refuseSubmission(NSLocalizedString(
-                    "The chosen balance can't pay for this request. Check your balances and try again.",
+                refuseSubmission(String(
+                    localized: "The chosen balance can't pay for this request. Check your balances and try again.",
                     comment: "Usernames: confirm the funding source"))
             }
             return
@@ -1636,7 +1592,7 @@ struct CreateUsernameView: View {
                 break // user backed out of the PIN — stay on screen, allow retry
             case .submittedUnconfirmed(let message):
                 screenLockedAfterAuth = true
-                registrationRefusalTitle = NSLocalizedString("Confirmation pending", comment: "Username purchase result unknown")
+                registrationRefusalTitle = String(localized: "Confirmation pending", comment: "Username purchase result unknown")
                 registrationErrorMessage = message
             case .failure(let message):
                 viewModel.refreshRegistrationRecoveryState()
@@ -1657,36 +1613,18 @@ struct CreateUsernameView: View {
     private var votingSubmittedMessage: String {
         var message: String
         if let endTime = DWContestedNameStatusService.shared.pendingVotingEndTime {
-            message = String.localizedStringWithFormat(
-                NSLocalizedString(
-                    "“%1$@” has been submitted for voting. It is not registered to you yet. Voting ends around %2$@ — we will notify you with the result.",
-                    comment: "Usernames"),
-                viewModel.username,
-                DWDateFormatter.sharedInstance.dateAndTime(from: endTime))
+            message = String(localized: "“\(viewModel.username)” has been submitted for voting. It is not registered to you yet. Voting ends around \(DWDateFormatter.sharedInstance.dateAndTime(from: endTime)) — we will notify you with the result.", comment: "Usernames")
         } else {
-            message = String.localizedStringWithFormat(
-                NSLocalizedString(
-                    "“%@” has been submitted for voting. It is not registered to you yet. We will notify you when voting ends.",
-                    comment: "Usernames"),
-                viewModel.username)
+            message = String(localized: "“\(viewModel.username)” has been submitted for voting. It is not registered to you yet. We will notify you when voting ends.", comment: "Usernames")
         }
         // Companion-name outcome from the same flow: registered (the
         // user is reachable right away, and keeps the name past the
         // vote) or requested-but-failed (partial outcome — the contested
         // submission itself succeeded).
         if let temporary = registeredTemporaryUsername {
-            message += " " + String.localizedStringWithFormat(
-                NSLocalizedString(
-                    "In the meantime you are reachable at “%1$@”, which is yours to keep. If the vote awards you “%2$@”, you will be reachable at both usernames.",
-                    comment: "Usernames"),
-                temporary,
-                viewModel.username)
+            message += " " + String(localized: "In the meantime you are reachable at “\(temporary)”, which is yours to keep. If the vote awards you “\(viewModel.username)”, you will be reachable at both usernames.", comment: "Usernames")
         } else if let failed = failedTemporaryUsername {
-            message += " " + String.localizedStringWithFormat(
-                NSLocalizedString(
-                    "Your temporary username “%@” could not be registered. You can register another username later.",
-                    comment: "Usernames"),
-                failed)
+            message += " " + String(localized: "Your temporary username “\(failed)” could not be registered. You can register another username later.", comment: "Usernames")
         }
         return message
     }
@@ -1747,33 +1685,33 @@ struct CreateUsernameView: View {
         // so translations stay unified.
         switch viewModel.uiState.usernameBlockedRule {
         case .loading:
-            return NSLocalizedString("Validating username…", comment: "Usernames")
+            return String(localized: "Validating username…", comment: "Usernames")
         case .valid:
-            return NSLocalizedString("Username available", comment: "Usernames")
+            return String(localized: "Username available", comment: "Usernames")
         case .invalidCritical:
             // A locked contest is not "taken" — nobody owns the name, and
             // nobody can. Saying "taken" would send the user off to wait for
             // it to free up, which never happens.
             if viewModel.isLockedContestedName {
-                return NSLocalizedString(
-                    "Username locked by masternode vote — it cannot be registered",
+                return String(
+                    localized: "Username locked by masternode vote — it cannot be registered",
                     comment: "Usernames")
             }
             // Mid-vote with the join window closed — also not "taken":
             // the vote decides the owner, and no request can be made
             // until it resolves. The orange callout carries the detail.
             if viewModel.activeContestContenders != nil {
-                return NSLocalizedString(
-                    "Username is in a network vote — new contenders can no longer join",
+                return String(
+                    localized: "Username is in a network vote — new contenders can no longer join",
                     comment: "Usernames")
             }
-            return NSLocalizedString("Username taken", comment: "Usernames")
+            return String(localized: "Username taken", comment: "Usernames")
         case .error:
-            return NSLocalizedString("Validating username failed", comment: "Usernames")
+            return String(localized: "Validating username failed", comment: "Usernames")
         case .warning:
             // The user's own contested submission — taken on-chain while
             // masternode voting decides the owner.
-            return NSLocalizedString("Username is in voting. You will be notified when voting ends.", comment: "Usernames")
+            return String(localized: "Username is in voting. You will be notified when voting ends.", comment: "Usernames")
         case .empty, .invalid, .hidden:
             return "" // rule row is hidden for these states
         }
@@ -1798,8 +1736,8 @@ struct TemporaryUsernameField: View {
         VStack(alignment: .leading, spacing: 0) {
             DashUIKit.AddressFieldView(
                 text: $model.text,
-                label: NSLocalizedString("Temporary username", comment: "Usernames"),
-                placeholder: NSLocalizedString("Enter a username", comment: "Usernames"),
+                label: String(localized: "Temporary username", comment: "Usernames"),
+                placeholder: String(localized: "Enter a username", comment: "Usernames"),
                 hasError: ruleResult == .invalid || ruleResult == .invalidCritical || ruleResult == .error)
 
             if ruleResult != .hidden {
@@ -1849,21 +1787,21 @@ struct TemporaryUsernameField: View {
         case .empty:
             return ""
         case .invalidLength:
-            return NSLocalizedString("Between 3 and 23 characters", comment: "Usernames")
+            return String(localized: "Between 3 and 23 characters", comment: "Usernames")
         case .invalidCharacters:
-            return NSLocalizedString("Letter, numbers and hyphens only", comment: "Usernames")
+            return String(localized: "Letter, numbers and hyphens only", comment: "Usernames")
         case .stillContested:
-            return NSLocalizedString(
-                "This username would also require voting — try adding a digit between 2 and 9",
+            return String(
+                localized: "This username would also require voting — try adding a digit between 2 and 9",
                 comment: "Usernames")
         case .checking:
-            return NSLocalizedString("Validating username…", comment: "Usernames")
+            return String(localized: "Validating username…", comment: "Usernames")
         case .available:
-            return NSLocalizedString("Username available", comment: "Usernames")
+            return String(localized: "Username available", comment: "Usernames")
         case .taken:
-            return NSLocalizedString("Username taken", comment: "Usernames")
+            return String(localized: "Username taken", comment: "Usernames")
         case .error:
-            return NSLocalizedString("Validating username failed", comment: "Usernames")
+            return String(localized: "Validating username failed", comment: "Usernames")
         }
     }
 }
@@ -1883,19 +1821,15 @@ private struct InstantUsernameForm: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 0) {
                 DashUIKit.TopIntroView(
-                    title: NSLocalizedString("Create an instant username", comment: "Usernames"),
-                    mainDescription: String.localizedStringWithFormat(
-                        NSLocalizedString(
-                            "While “%@” is out for a vote it does not belong to you yet and other users cannot find you by it. This username works right away and stays yours whatever the vote decides.",
-                            comment: "Usernames"),
-                        requestedUsername))
+                    title: String(localized: "Create an instant username", comment: "Usernames"),
+                    mainDescription: String(localized: "While “\(requestedUsername)” is out for a vote it does not belong to you yet and other users cannot find you by it. This username works right away and stays yours whatever the vote decides.", comment: "Usernames"))
                     .padding(.top, 12)
 
                 TemporaryUsernameField(model: temporaryField)
                     .padding(.top, 20)
 
                 DashButton(
-                    text: NSLocalizedString("Continue", comment: ""),
+                    text: String(localized: "Continue", comment: ""),
                     isEnabled: temporaryField.check == .available,
                     action: onContinue
                 )
@@ -1925,14 +1859,14 @@ extension CreateUsernameViewModel.ShieldedCostBlocker {
         case .resting(let readyAt):
             let time = DWDateFormatter.sharedInstance.timeOnly(from: readyAt)
             let format = calendar.isDate(readyAt, inSameDayAs: now) || readyAt < now
-                ? NSLocalizedString("Your recently shielded Dash can be used for this username at %@", comment: "Usernames")
-                : NSLocalizedString("Your recently shielded Dash can be used for this username tomorrow at %@", comment: "Usernames")
+                ? String(localized: "Your recently shielded Dash can be used for this username at %@", comment: "Usernames")
+                : String(localized: "Your recently shielded Dash can be used for this username tomorrow at %@", comment: "Usernames")
             return (String.localizedStringWithFormat(format, time), .pending)
 
         case .short(let shortfallDuffs):
             let amount = shortfallDuffs.dashAmount.formattedDashAmountWithoutCurrencySymbol
-            let format = NSLocalizedString(
-                "Add %@ Dash to your Shielded balance to create this username", comment: "Usernames")
+            let format = String(
+                localized: "Add %@ Dash to your Shielded balance to create this username", comment: "Usernames")
             return (String.localizedStringWithFormat(format, amount), .failed)
 
         case .poolTooSmall(let current):
