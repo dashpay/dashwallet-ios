@@ -287,18 +287,18 @@ final class GiftCardPaymentGuardTests: XCTestCase {
         }
     }
 
-    /// The buyer is shown the price rounded up to the currency's decimals, and that is the
-    /// price approved: 24.0625 is 24.07 dollars, 96.25 is 97 yen.
-    func testApprovalHoldsThePriceRoundedUpToTheCurrencysDecimals() throws {
+    /// The buyer is shown the price CTX charges, and that is the price approved: 3.75% off
+    /// 25 dollars is 0.94 off, 24.06 dollars; off 100 yen it is 4 yen off, 96 yen.
+    func testApprovalHoldsThePriceCTXCharges() throws {
         let dollars = try approve(price: "25", discount: "0.0375", rate: rate("40"))
-        XCTAssertEqual(dollars.fiatAmount, dash("24.07"))
-        XCTAssertEqual(dollars.amount, 60_175_000)
+        XCTAssertEqual(dollars.fiatAmount, dash("24.06"))
+        XCTAssertEqual(dollars.amount, 60_150_000)
 
         let yen = try GiftCardPaymentGuard.approve(price: 100, discount: dash("0.0375"), currency: "JPY",
                                                    rate: rate("5000"), now: approvalTime)
-        XCTAssertEqual(yen.fiatAmount, 97)
-        XCTAssertEqual(yen.amount, 1_940_000)
-        guard case .asConfirmed = try yen.assess(requested: 1_940_000) else {
+        XCTAssertEqual(yen.fiatAmount, 96)
+        XCTAssertEqual(yen.amount, 1_920_000)
+        guard case .asConfirmed = try yen.assess(requested: 1_920_000) else {
             return XCTFail("the price shown was asked about again")
         }
     }

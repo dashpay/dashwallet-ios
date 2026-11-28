@@ -662,33 +662,34 @@ final class DashSpendPurchaseTests: XCTestCase {
 
     // MARK: CTX, the price confirmed and the funds for it
 
-    /// $25 at 3.75% off is $24.0625. The buyer is shown $24.07, and that is the price the
+    /// $25 at 3.75% off is $0.94 off as CTX rounds it. The buyer is shown $24.06, the price CTX
+    /// charges, and that is the price the
     /// approval holds, the Dash is computed from and a higher quote is compared with.
     func testThePriceShownIsThePriceApprovedAndPaid() async throws {
         let viewModel = await ctxViewModel(loading: StubCTXRepository.merchantJSON(currency: "USD", savings: 375))
         let snapshot = try confirmation(of: 25, on: viewModel)
 
-        XCTAssertEqual(snapshot.approval.fiatAmount, decimal("24.07"))
-        XCTAssertEqual(snapshot.approval.amount, 60_175_000)
+        XCTAssertEqual(snapshot.approval.fiatAmount, decimal("24.06"))
+        XCTAssertEqual(snapshot.approval.amount, 60_150_000)
 
-        payments.requestedByURL = 60_175_000
+        payments.requestedByURL = 60_150_000
         _ = try await finish(startPurchase(snapshot, on: viewModel), on: viewModel)
-        XCTAssertEqual(payments.urlPayments.map(\.amount), [60_175_000])
+        XCTAssertEqual(payments.urlPayments.map(\.amount), [60_150_000])
     }
 
-    /// 100 yen at 3.75% off is 96.25, shown as 97. A quote for 97 yen of Dash is the price
+    /// 100 yen at 3.75% off is 4 yen off, shown as 96. A quote for 96 yen of Dash is the price
     /// shown, so the buyer is not asked about it again.
     func testAQuoteForThePriceShownInYenIsNotAskedAboutAgain() async throws {
         let viewModel = await ctxViewModel(loading: StubCTXRepository.merchantJSON(
             currency: "JPY", denominations: ["100", "5000"], savings: 375))
         let snapshot = try confirmation(of: 100, on: viewModel)
-        XCTAssertEqual(snapshot.approval.fiatAmount, 97)
-        XCTAssertEqual(snapshot.approval.amount, 1_940_000)
+        XCTAssertEqual(snapshot.approval.fiatAmount, 96)
+        XCTAssertEqual(snapshot.approval.amount, 1_920_000)
 
         ctx.answeredCurrencies = (payment: "JPY", card: "JPY")
-        payments.requestedByURL = 1_940_000
+        payments.requestedByURL = 1_920_000
         _ = try await finish(startPurchase(snapshot, on: viewModel), on: viewModel)
-        XCTAssertEqual(payments.urlPayments.map(\.amount), [1_940_000])
+        XCTAssertEqual(payments.urlPayments.map(\.amount), [1_920_000])
     }
 
     /// A 100 pound card at 10% off costs 90 pounds: 1.8 Dash at 50 pounds per Dash, not the
@@ -766,7 +767,7 @@ final class DashSpendPurchaseTests: XCTestCase {
 
     // MARK: PiggyCards, as before
 
-    /// A PiggyCards cart keeps the figures it had before CTX prices were rounded up: 2.7% off
+    /// A PiggyCards cart keeps the figures it had before card currencies: 2.7% off
     /// $25 is $24.325, shown as the formatter rounds it, approved unrounded, and the funds
     /// check is for the $25 face value. The expected values are worked out here, not taken
     /// from the code under test.

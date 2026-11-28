@@ -946,7 +946,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
     }
 
     /// What the buyer pays for the amount on screen: the price a confirmation would hold.
-    /// Only a CTX price is rounded up to the currency's decimals.
+    /// A CTX price is the one CTX charges, after its rounding of the discount.
     private var payableAmount: Decimal {
         guard provider == .ctx, let cardCurrency else { return amount * (1 - displaySavingsFraction) }
         return GiftCardCurrency.discounted(amount, by: displaySavingsFraction, currency: cardCurrency)

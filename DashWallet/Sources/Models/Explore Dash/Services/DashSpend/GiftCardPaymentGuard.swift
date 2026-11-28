@@ -55,7 +55,7 @@ enum GiftCardPaymentGuard {
         /// The confirmed price in duffs at `rate`.
         let amount: UInt64
         /// The confirmed price in fiat: the card value less the discount. For CTX it is
-        /// rounded up to the card currency's decimals, and is the figure the buyer is shown.
+        /// what CTX charges for the card, and is the figure the buyer is shown.
         let fiatAmount: Decimal
         /// Fiat price of one Dash that `amount` was computed with.
         let rate: Decimal
@@ -128,9 +128,9 @@ enum GiftCardPaymentGuard {
     /// fresh, and when the converted amount is not a positive duff count: a quote cannot be
     /// compared against such a rate. The amount is rounded down to a whole duff.
     ///
-    /// - Parameter currency: the card currency whose decimals the discounted price is rounded
-    ///   up to; `nil` holds the price less the discount as it is, which is what a PiggyCards
-    ///   purchase is approved at.
+    /// - Parameter currency: the card currency CTX charges in, for the price it charges after
+    ///   its rounding of the discount; `nil` holds the price less the discount as it is,
+    ///   which is what a PiggyCards purchase is approved at.
     static func approve(price: Decimal, discount: Decimal, currency: String?, rate: ExchangeRate,
                         now: Date = Date()) throws -> Approval {
         let fiatAmount = currency.map { GiftCardCurrency.discounted(price, by: discount, currency: $0) }

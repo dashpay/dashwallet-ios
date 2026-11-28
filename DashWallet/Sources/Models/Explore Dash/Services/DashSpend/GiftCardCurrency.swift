@@ -186,12 +186,44 @@ enum GiftCardCurrency {
         return amount == value
     }
 
-    /// What the buyer pays for `amount` after `discount` (a fraction of it), rounded up once
-    /// to the currency's decimals.
+    /// What CTX charges for a card of `amount` at `discount` (a fraction of it): it rounds the
+    /// discount half up to the currency's smallest unit and takes that off the card value.
+    /// The fraction is used as the binary double of its basis points over 10000, as CTX
+    /// does, which is what decides an exact half.
     static func discounted(_ amount: Decimal, by discount: Decimal, currency: String) -> Decimal {
-        var exact = amount * (1 - discount)
-        var rounded = Decimal()
-        NSDecimalRound(&rounded, &exact, fractionDigits(currency), .up)
-        return rounded
+        let digits = fractionDigits(currency)
+        var source = amount
+        var scaled = Decimal()
+        var units = Decimal()
+        NSDecimalMultiplyByPowerOf10(&scaled, &source, Int16(digits), .plain)
+        NSDecimalRound(&units, &scaled, 0, .plain)
+
+        let basisPoints = min(max(NSDecimalNumber(decimal: discount * 10000).doubleValue, 0), 10000)
+        let fraction = basisPoints / 10000
+        // Up to 2^53 smallest units the product with the fraction's 53 bits fits 128 bits.
+        guard units > 0, units < Decimal(UInt64(1) << 53), fraction > 0,
+              let card = UInt64(NSDecimalNumber(decimal: units).stringValue) else {
+            return Decimal(sign: units < 0 ? .minus : .plus, exponent: -digits, significand: abs(units))
+        }
+
+        // fraction = significand / 2^shift, so the discount is card * significand / 2^shift,
+        // rounded half up: add half of 2^shift, then drop the low `shift` bits.
+        let significand = fraction.significandBitPattern | (UInt64(1) << 52)
+        let shift = 52 - Int(fraction.exponent)
+        var (high, low) = card.multipliedFullWidth(by: significand)
+        if shift - 1 < 64 {
+            let (sum, carried) = low.addingReportingOverflow(UInt64(1) << UInt64(shift - 1))
+            low = sum
+            if carried { high += 1 }
+        } else if shift - 1 < 128 {
+            high += UInt64(1) << UInt64(shift - 65)
+        }
+        let discountUnits: UInt64
+        switch shift {
+        case ..<64: discountUnits = (high << UInt64(64 - shift)) | (low >> UInt64(shift))
+        case 64..<128: discountUnits = high >> UInt64(shift - 64)
+        default: discountUnits = 0
+        }
+        return Decimal(sign: .plus, exponent: -digits, significand: Decimal(card - min(discountUnits, card)))
     }
 }

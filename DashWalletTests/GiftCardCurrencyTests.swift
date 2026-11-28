@@ -505,12 +505,58 @@ final class GiftCardCurrencyTests: XCTestCase {
         XCTAssertEqual(GiftCardCurrency.discounted(25, by: 0, currency: "USD"), 25)
     }
 
-    func testTheDiscountedPriceIsRoundedUpOnceAtTheCurrencysDecimals() {
-        // 24.0625, 974.025 and 1.108875
-        XCTAssertEqual(GiftCardCurrency.discounted(25, by: decimal("0.0375"), currency: "USD"), decimal("24.07"))
-        XCTAssertEqual(GiftCardCurrency.discounted(999, by: decimal("0.025"), currency: "JPY"), 975)
+    /// What CTX charged for these cards: the discount is rounded half up to the smallest
+    /// unit, where rounding the total up gave 5.47 pounds and 7.66 euros.
+    func testTheDiscountedPriceIsWhatCTXCharges() {
+        XCTAssertEqual(GiftCardCurrency.discounted(decimal("5.55"), by: decimal("0.016"), currency: "GBP"), decimal("5.46"))
+        XCTAssertEqual(GiftCardCurrency.discounted(decimal("7.89"), by: decimal("0.03"), currency: "EUR"), decimal("7.65"))
+        // discounts of 0.9375, 24.975 and 0.0160875
+        XCTAssertEqual(GiftCardCurrency.discounted(25, by: decimal("0.0375"), currency: "USD"), decimal("24.06"))
+        XCTAssertEqual(GiftCardCurrency.discounted(999, by: decimal("0.025"), currency: "JPY"), 974)
         XCTAssertEqual(GiftCardCurrency.discounted(decimal("1.125"), by: decimal("0.0143"), currency: "KWD"),
                        decimal("1.109"))
+        XCTAssertEqual(GiftCardCurrency.discounted(1000, by: decimal("0.035"), currency: "JPY"), 965)
+        XCTAssertEqual(GiftCardCurrency.discounted(25, by: 1, currency: "USD"), 0)
+        XCTAssertEqual(GiftCardCurrency.discounted(25, by: 2, currency: "USD"), 0)
+        XCTAssertEqual(GiftCardCurrency.discounted(25, by: -1, currency: "USD"), 25)
+    }
+
+    /// spend-api's `Money.Split` and `MultiplyBig`: the card value in major units times the
+    /// binary double of the basis points over 10000, back in minor units, plus a half, cut
+    /// off. Worked in decimal here, with the double taken apart exactly.
+    private func chargedByCTX(minorUnits: UInt64, digits: Int, basisPoints: Int) -> Decimal {
+        let fraction = Double(basisPoints) / 10000
+        guard fraction > 0 else { return Decimal(minorUnits) }
+        let significand = Decimal(fraction.significandBitPattern | (UInt64(1) << 52))
+        let share = Decimal(minorUnits) * significand / pow(Decimal(2), 52 - Int(fraction.exponent))
+        var withHalf = share + decimal("0.5")
+        var discount = Decimal()
+        NSDecimalRound(&discount, &withHalf, 0, .down)
+        return Decimal(minorUnits) - discount
+    }
+
+    func testTheDiscountedPriceFollowsTheServerRuleAtEveryCurrencyPrecision() {
+        var generator = SystemRandomNumberGenerator()
+        for (currency, digits) in [("JPY", 0), ("GBP", 2), ("KWD", 3)] {
+            for _ in 0..<20_000 {
+                let minorUnits = UInt64.random(in: 1..<2_000_000, using: &generator)
+                let basisPoints = Int.random(in: 0...5000, using: &generator)
+                let value = Decimal(sign: .plus, exponent: -digits, significand: Decimal(minorUnits))
+                let charged = GiftCardCurrency.discounted(value, by: Decimal(basisPoints) / 10000, currency: currency)
+                XCTAssertEqual(charged, Decimal(sign: .plus, exponent: -digits, significand: chargedByCTX(
+                    minorUnits: minorUnits, digits: digits, basisPoints: basisPoints)),
+                    "\(value) \(currency) at \(basisPoints)")
+            }
+        }
+        // Exact halves: 0.50 at 1%, 3%, 5% and 25%, whose doubles lie on either side of the
+        // decimal or on it.
+        for basisPoints in [100, 300, 500, 2500] {
+            XCTAssertEqual(
+                GiftCardCurrency.discounted(decimal("0.5"), by: Decimal(basisPoints) / 10000, currency: "GBP"),
+                chargedByCTX(minorUnits: 50, digits: 2, basisPoints: basisPoints) / 100, "at \(basisPoints)")
+        }
+        XCTAssertEqual(GiftCardCurrency.discounted(decimal("0.5"), by: decimal("0.01"), currency: "GBP"), decimal("0.49"))
+        XCTAssertEqual(GiftCardCurrency.discounted(decimal("0.5"), by: decimal("0.25"), currency: "GBP"), decimal("0.37"))
     }
 
     // MARK: - A confirmation and the selection behind it
