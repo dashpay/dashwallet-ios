@@ -58,6 +58,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
     private let provider: GiftCardProvider
     private let dependencies: Dependencies
     private let exchangeRate: (String) -> GiftCardPaymentGuard.ExchangeRate
+    private let ratesAreFetching: () -> Bool
     private let now: () -> Date
 
     /// What a purchase goes through: the provider repositories, the send service and the
@@ -267,7 +268,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
         return String(localized: "You are buying a \(originalPrice) gift card for \(formattedDiscountedPrice) (\(discountText)% discount)", comment: "DashSpend")
     }
     var showCost: Bool {
-        if error != nil { return false }
+        if error != nil || cardCurrency == nil { return false }
 
         // For fixed denominations, show cost when a valid denomination is selected
         if isFixedDenomination {
@@ -307,6 +308,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
     /// - Parameters:
     ///   - confirmedTerms: what CTX has already confirmed this merchant sells; `nil` when
     ///     its details are still to be loaded.
+    ///   - ratesAreFetching: whether the wallet has no rates at all yet.
     ///   - exchangeRate: reads the wallet's rate for a currency and when it was retrieved. It
     ///     is read for the card currency when the Confirm sheet opens; the purchase uses
     ///     that value.
@@ -315,11 +317,13 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
     init(merchant: ExplorePointOfUse, provider: GiftCardProvider = .ctx,
          confirmedTerms: CTXMerchantTerms? = nil,
          exchangeRate: @escaping (String) -> GiftCardPaymentGuard.ExchangeRate = DashSpendPayViewModel.walletExchangeRate,
+         ratesAreFetching: @escaping () -> Bool = DashSpendPayViewModel.walletRatesAreFetching,
          now: @escaping () -> Date = { Date() },
          dependencies: Dependencies? = nil) {
         self.provider = provider
         self.dependencies = dependencies ?? .live()
         self.exchangeRate = exchangeRate
+        self.ratesAreFetching = ratesAreFetching
         self.now = now
         ctxTerms = confirmedTerms
         currencyLoads = CardCurrencyLoads(confirmed: confirmedTerms?.currency)
@@ -486,7 +490,8 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
                 _ = try ctxOrder(price: price, quantities: quantities, currency: currency)
             }
             approval = try GiftCardPaymentGuard.approve(
-                price: price, discount: discount, currency: currency, rate: exchangeRate(currency), now: now())
+                price: price, discount: discount, currency: provider == .ctx ? currency : nil,
+                rate: exchangeRate(currency), now: now())
         } catch {
             DWLogger.log("Gift card purchase not opened: \(error)")
             throw error
@@ -784,6 +789,11 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
             retrievedAt: BaseRatesProvider.shared.lastUpdated)
     }
 
+    /// Whether the wallet has no rates yet, as just after launch.
+    nonisolated static func walletRatesAreFetching() -> Bool {
+        CurrencyExchanger.shared.currencies.isEmpty
+    }
+
     /// Persist everything that ties a paid order to its transaction: the tax/service metadata,
     /// the merchant icon, and the `gift_cards` row whose `note` carries the order id the
     /// details poller needs. Shared by the confirmed and the unconfirmed-broadcast paths.
@@ -921,20 +931,24 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
     /// the screen is loading then, and nothing can be bought before it ends.
     private var purchaseBlock: GiftCardPurchaseBlock? {
         if provider == .ctx, currencyLoads.state == .loading { return nil }
-        return GiftCardPurchaseBlock.check(currency: cardCurrency, rate: { exchangeRate($0).price })
+        return GiftCardPurchaseBlock.check(currency: cardCurrency, rate: { exchangeRate($0).price },
+                                           ratesAreFetching: ratesAreFetching())
     }
 
     /// What the buyer pays for the amount on screen: the price a confirmation would hold.
+    /// Only a CTX price is rounded up to the currency's decimals.
     private var payableAmount: Decimal {
-        guard let cardCurrency else { return amount }
+        guard provider == .ctx, let cardCurrency else { return amount * (1 - displaySavingsFraction) }
         return GiftCardCurrency.discounted(amount, by: displaySavingsFraction, currency: cardCurrency)
     }
 
-    /// Whether a wallet or sync event may re-check the error on screen: the
+    /// Whether a wallet or sync event may re-check the error on screen: a purchase block,
+    /// which a rate change during a resync leaves up, the
     /// syncing notice when `fundsVerdictOnly` is false — re-checked like an
     /// edit would — or a funds verdict, unless an amount was entered that does
     /// not convert to DASH: it reads as 0, which would clear the verdict.
     private func canRecheck(fundsVerdictOnly: Bool) -> Bool {
+        if error is GiftCardPurchaseBlock { return true }
         guard let shown = error as? SendAmountError else { return false }
         if shown == .syncingChain { return !fundsVerdictOnly }
         return shown.isFundsVerdict && (amount == 0 || requestedDashDuffs > 0)
@@ -948,7 +962,8 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
 
     private var requestedDashDuffs: UInt64 {
         guard let currency = cardCurrency, let rate = exchangeRate(currency).price, rate > 0 else { return 0 }
-        return (payableAmount / rate).plainDashAmount
+        // PiggyCards keeps its check on the card's face value.
+        return ((provider == .ctx ? payableAmount : amount) / rate).plainDashAmount
     }
     
     // MARK: - CTX Integration
@@ -1230,6 +1245,9 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
     private func handleNetworkStatusChange(_ status: NetworkStatus) {
         // Re-check errors when network status changes
         checkAmountForErrors()
+        if status == .online, canRetryMerchantLoad {
+            Task { await updateMerchantInfo() }
+        }
     }
 
     private func buildPiggyOrderLineItems(selectedQuantities: [Decimal: Int],
@@ -1346,6 +1364,8 @@ extension GiftCardPurchaseBlock: LocalizedError {
             return String(
                 localized: "The currency of this merchant's gift cards could not be confirmed, so nothing can be bought right now. Please try again.",
                 comment: "DashSpend")
+        case .ratesFetching:
+            return String(localized: "Fetching rates…", comment: "Balance")
         case .rateMissing:
             return String(
                 localized: "There is no exchange rate for this gift card's currency right now, so it cannot be bought. Please try again later.",

@@ -303,6 +303,15 @@ final class GiftCardPaymentGuardTests: XCTestCase {
         }
     }
 
+    /// Without a currency to round in, the price less the discount is held as it is: a
+    /// PiggyCards purchase is approved at $24.325, not at $24.33.
+    func testApprovalWithoutACurrencyHoldsThePriceUnrounded() throws {
+        let approval = try GiftCardPaymentGuard.approve(price: 25, discount: dash("0.027"), currency: nil,
+                                                        rate: rate("40"), now: approvalTime)
+        XCTAssertEqual(approval.fiatAmount, dash("24.325"))
+        XCTAssertEqual(approval.amount, 60_812_500)
+    }
+
     /// $50 card at 5% off is $47.50; at $40 per Dash that is 1.1875 Dash.
     func testApprovedAmountIsTheDiscountedPriceAtTheRate() throws {
         XCTAssertEqual(try approve(price: "50", discount: "0.05", rate: rate("40")).amount, 118_750_000)

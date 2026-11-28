@@ -384,6 +384,14 @@ final class GiftCardCurrencyTests: XCTestCase {
         XCTAssertEqual(GiftCardPurchaseBlock.check(currency: "USD", rate: { _ in -1 }), .rateMissing)
     }
 
+    func testAMissingRateWhileRatesAreFetchedIsNotAMissingRate() {
+        XCTAssertEqual(GiftCardPurchaseBlock.check(currency: "USD", rate: { _ in nil }, ratesAreFetching: true),
+                       .ratesFetching)
+        XCTAssertNil(GiftCardPurchaseBlock.check(currency: "USD", rate: { _ in 40 }, ratesAreFetching: true))
+        XCTAssertEqual(GiftCardPurchaseBlock.check(currency: nil, rate: { _ in nil }, ratesAreFetching: true),
+                       .currencyUnconfirmed)
+    }
+
     func testTheRateIsAskedForTheCardCurrency() {
         var asked: [String] = []
         _ = GiftCardPurchaseBlock.check(currency: "GBP", rate: { asked.append($0); return 30 })

@@ -144,13 +144,19 @@ enum GiftCardPurchaseBlock: Equatable {
     /// The wallet has no exchange rate for the card currency, so it cannot estimate the Dash
     /// to pay or check the balance.
     case rateMissing
+    /// The wallet has no rates yet: they are still being fetched.
+    case ratesFetching
 
     /// - Parameters:
     ///   - currency: the confirmed card currency; nil when there is none.
     ///   - rate: the wallet's price of one Dash in a currency; nil when it has none.
-    static func check(currency: String?, rate: (String) -> Decimal?) -> GiftCardPurchaseBlock? {
+    ///   - ratesAreFetching: whether the wallet has no rates at all yet.
+    static func check(currency: String?, rate: (String) -> Decimal?,
+                      ratesAreFetching: Bool = false) -> GiftCardPurchaseBlock? {
         guard let currency else { return .currencyUnconfirmed }
-        guard let price = rate(currency), price.isFinite, price > 0 else { return .rateMissing }
+        guard let price = rate(currency), price.isFinite, price > 0 else {
+            return ratesAreFetching ? .ratesFetching : .rateMissing
+        }
         return nil
     }
 }

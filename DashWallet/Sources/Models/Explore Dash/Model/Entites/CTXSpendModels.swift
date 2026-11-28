@@ -232,7 +232,7 @@ struct MerchantResponse: Decodable {
 
     var denominationType: DenominationType {
         switch denominationsType {
-        case "min-max", "min-max-major":
+        case "min-max":
             return .Range
         default:
             return .Fixed

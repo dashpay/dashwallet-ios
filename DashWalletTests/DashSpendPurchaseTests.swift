@@ -164,6 +164,7 @@ private final class OnlineDashSpendPayViewModel: DashSpendPayViewModel {
 /// The wallet's rates, which a test changes while a view model reads them.
 private final class Rates {
     var prices: [String: Decimal]
+    var areFetching = false
     init(_ prices: [String: Decimal]) { self.prices = prices }
 }
 
@@ -232,15 +233,23 @@ final class DashSpendPurchaseTests: XCTestCase {
         piggyCards = StubPiggyCardsRepository()
     }
 
-    private var merchant: ExplorePointOfUse {
+    private var merchant: ExplorePointOfUse { merchant(piggyCardsSavings: 0) }
+
+    /// - Parameter withLocalLimits: whether the merchant comes with limits of 5 to 500, as
+    ///   one from the explore database does before CTX has answered.
+    private func merchant(piggyCardsSavings: Int, withLocalLimits: Bool = false) -> ExplorePointOfUse {
         ExplorePointOfUse(
             id: 0, name: "Test Merchant",
             category: .merchant(ExplorePointOfUse.Merchant(
                 merchantId: "merchant-1", paymentMethod: .giftCard, type: .online, deeplink: nil,
-                savingsBasisPoints: 0, denominationsType: "range", denominations: [], redeemType: "online",
+                savingsBasisPoints: 0,
+                denominationsType: withLocalLimits ? DenominationType.Range.rawValue : "range",
+                denominations: withLocalLimits ? [5, 500] : [],
+                redeemType: "online",
                 giftCardProviders: [
                     .init(providerId: "ctx", savingsPercentage: 0, denominationsType: "range", sourceId: nil),
-                    .init(providerId: "piggycards", savingsPercentage: 0, denominationsType: "range", sourceId: "1"),
+                    .init(providerId: "piggycards", savingsPercentage: piggyCardsSavings,
+                          denominationsType: "range", sourceId: "1"),
                 ])),
             active: true, city: nil, territory: nil,
             address1: nil, address2: nil, address3: nil, address4: nil, latitude: nil, longitude: nil,
@@ -279,17 +288,18 @@ final class DashSpendPurchaseTests: XCTestCase {
         ctxViewModel(live: Rates(rates), onRate: onRate)
     }
 
-    private func ctxViewModel(live rates: Rates,
+    private func ctxViewModel(live rates: Rates, withLocalLimits: Bool = false,
                               onRate: @escaping (String) -> Void = { _ in }) -> OnlineDashSpendPayViewModel {
         let retrievedAt = Int(Date().timeIntervalSince1970)
         let dependencies = DashSpendPayViewModel.Dependencies(
             ctx: ctx, piggyCards: piggyCards, payments: payments, purchases: recorder)
         let viewModel = OnlineDashSpendPayViewModel(
-            merchant: merchant, provider: .ctx,
+            merchant: merchant(piggyCardsSavings: 0, withLocalLimits: withLocalLimits), provider: .ctx,
             exchangeRate: { currency in
                 onRate(currency)
                 return GiftCardPaymentGuard.ExchangeRate(price: rates.prices[currency], retrievedAt: retrievedAt)
             },
+            ratesAreFetching: { rates.areFetching },
             dependencies: dependencies)
         viewModel.sheetDismissalWait = 0.01
         return viewModel
@@ -661,6 +671,89 @@ final class DashSpendPurchaseTests: XCTestCase {
         viewModel.sendableDuffs = 180_000_000
         viewModel.input = "100"
         XCTAssertNil(viewModel.error)
+    }
+
+    /// While the first load runs there is no currency, so the price line, which would read
+    /// "a 25 gift card for 25", stays hidden.
+    func testThePriceLineIsHiddenUntilTheCurrencyIsConfirmed() async {
+        let viewModel = ctxViewModel(live: Rates(Self.rates), withLocalLimits: true)
+        XCTAssertEqual(viewModel.minimumAmount, 5)
+        XCTAssertEqual(viewModel.maximumAmount, 500)
+        viewModel.input = "25"
+        XCTAssertNil(viewModel.error)
+        XCTAssertFalse(viewModel.showCost)
+
+        ctx.merchantAnswer = .success(StubCTXRepository.merchantJSON(currency: "USD"))
+        await viewModel.updateMerchantInfo()
+        viewModel.input = "25"
+        XCTAssertTrue(viewModel.showCost)
+    }
+
+    /// A merchant that could not be loaded is loaded again when the network is back.
+    func testAMerchantThatCouldNotBeLoadedIsLoadedAgainWhenTheNetworkIsBack() async {
+        let viewModel = ctxViewModel()
+        await viewModel.updateMerchantInfo()
+        XCTAssertTrue(viewModel.canRetryMerchantLoad)
+
+        ctx.merchantAnswer = .success(StubCTXRepository.merchantJSON(currency: "USD"))
+        viewModel.networkStatusDidChange?(.offline)
+        for _ in 0..<50 { await Task.yield() }
+        XCTAssertNil(viewModel.cardCurrency)
+
+        viewModel.networkStatusDidChange?(.online)
+        for _ in 0..<1000 where viewModel.cardCurrency == nil { await Task.yield() }
+        XCTAssertEqual(viewModel.cardCurrency, "USD")
+        XCTAssertFalse(viewModel.canRetryMerchantLoad)
+    }
+
+    /// Just after launch the wallet has no rates yet: that is said as such, and goes when
+    /// they arrive.
+    func testRatesStillBeingFetchedAreNotCalledAMissingRate() async {
+        let rates = Rates([:])
+        rates.areFetching = true
+        let viewModel = ctxViewModel(live: rates)
+        ctx.merchantAnswer = .success(StubCTXRepository.merchantJSON(currency: "USD"))
+        await viewModel.updateMerchantInfo()
+
+        viewModel.input = "25"
+        XCTAssertEqual(viewModel.error as? GiftCardPurchaseBlock, .ratesFetching)
+        XCTAssertEqual(viewModel.error?.localizedDescription, String(localized: "Fetching rates…", comment: "Balance"))
+
+        rates.prices = Self.rates
+        rates.areFetching = false
+        viewModel.exchangeRatesDidChange()
+        XCTAssertNil(viewModel.error)
+    }
+
+    // MARK: PiggyCards, as before
+
+    /// A PiggyCards cart keeps the figures it had before CTX prices were rounded up: 2.7% off
+    /// $25 is $24.325, shown as the formatter rounds it, approved unrounded, and the funds
+    /// check is for the $25 face value. The expected values are worked out here, not taken
+    /// from the code under test.
+    func testAPiggyCardsCartKeepsItsFiguresFromBeforeCardCurrencies() throws {
+        let rate = GiftCardPaymentGuard.ExchangeRate(price: 40, retrievedAt: Int(Date().timeIntervalSince1970))
+        let viewModel = OnlineDashSpendPayViewModel(
+            merchant: merchant(piggyCardsSavings: 270), provider: .piggyCards,
+            exchangeRate: { _ in rate },
+            dependencies: .init(ctx: ctx, piggyCards: piggyCards, payments: payments, purchases: recorder))
+        let unrounded = decimal("24.325")
+        let shown = try XCTUnwrap(NumberFormatter.fiatFormatter(currencyCode: "USD").string(for: unrounded))
+
+        viewModel.sendableDuffs = 62_500_000
+        viewModel.input = "25"
+        XCTAssertNil(viewModel.error)
+        XCTAssertTrue(viewModel.costMessage.contains(shown), viewModel.costMessage)
+
+        viewModel.sendableDuffs = 62_499_999
+        viewModel.input = "25"
+        XCTAssertEqual(viewModel.error as? SendAmountError, .insufficientFunds)
+
+        viewModel.sendableDuffs = 62_500_000
+        try viewModel.beginPurchase(price: 25)
+        guard case .confirm(let snapshot)? = viewModel.purchaseSheet else { return XCTFail("the Confirm sheet did not open") }
+        XCTAssertEqual(snapshot.approval.fiatAmount, unrounded)
+        XCTAssertEqual(snapshot.approval.amount, 60_812_500)
     }
 
     // MARK: CTX, a change of the rate
