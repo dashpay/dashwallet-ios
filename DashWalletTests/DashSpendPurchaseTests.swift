@@ -840,6 +840,25 @@ final class DashSpendPurchaseTests: XCTestCase {
         XCTAssertEqual(ctx.heldMerchantCalls.count, 2)
     }
 
+    /// Opening the screen online reports the network before the first load starts. That
+    /// load is the only request: no retry is armed for a load that has not begun.
+    func testOpeningTheScreenOnlineLoadsTheMerchantOnce() async {
+        let viewModel = ctxViewModel()
+        ctx.holdsMerchantCalls = true
+
+        viewModel.networkStatusDidChange?(.online)
+        let first = Task { await viewModel.updateMerchantInfo() }
+        await waitForHeldMerchantCalls(1)
+        for _ in 0..<400 { await Task.yield() }
+        XCTAssertEqual(ctx.heldMerchantCalls.count, 1)
+
+        ctx.answerMerchantCall(0, with: StubCTXRepository.merchantJSON(currency: "USD"))
+        await first.value
+        for _ in 0..<400 { await Task.yield() }
+        XCTAssertEqual(viewModel.cardCurrency, "USD")
+        XCTAssertEqual(ctx.heldMerchantCalls.count, 1)
+    }
+
     /// A running load that confirms the currency is not followed by another.
     func testTheNetworkComingBackDuringALoadThatConfirmsTheCurrencyLoadsNothingMore() async {
         let viewModel = ctxViewModel()

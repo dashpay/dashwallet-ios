@@ -1261,7 +1261,10 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
     private func handleNetworkStatusChange(_ status: NetworkStatus) {
         // Re-check errors when network status changes
         checkAmountForErrors()
-        if status == .online, provider == .ctx, cardCurrency == nil {
+        // Not before the first load has begun: opening the screen online reports the network
+        // first, and that load is about to start by itself.
+        let hasLoadToFollow = isLoading || currencyLoads.state == .unknown
+        if status == .online, provider == .ctx, cardCurrency == nil, hasLoadToFollow {
             isReconnectRetryPending = true
             if reconnectRetries == nil {
                 reconnectRetries = Task { [weak self] in
