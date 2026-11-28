@@ -274,7 +274,8 @@ final class GiftCardPaymentGuardTests: XCTestCase {
 
     private func approve(price: String, discount: String,
                          rate: GiftCardPaymentGuard.ExchangeRate) throws -> GiftCardPaymentGuard.Approval {
-        try GiftCardPaymentGuard.approve(price: dash(price), discount: dash(discount), rate: rate, now: approvalTime)
+        try GiftCardPaymentGuard.approve(price: dash(price), discount: dash(discount), currency: "USD", rate: rate,
+                                         now: approvalTime)
     }
 
     private func assertRateUnavailable(_ rate: GiftCardPaymentGuard.ExchangeRate,
@@ -284,6 +285,31 @@ final class GiftCardPaymentGuardTests: XCTestCase {
                            GiftCardPaymentGuard.rateUnavailableError.errorDescription,
                            "unexpected error: \(error)", file: file, line: line)
         }
+    }
+
+    /// The buyer is shown the price CTX charges, and that is the price approved: 3.75% off
+    /// 25 dollars is 0.94 off, 24.06 dollars; off 100 yen it is 4 yen off, 96 yen.
+    func testApprovalHoldsThePriceCTXCharges() throws {
+        let dollars = try approve(price: "25", discount: "0.0375", rate: rate("40"))
+        XCTAssertEqual(dollars.fiatAmount, dash("24.06"))
+        XCTAssertEqual(dollars.amount, 60_150_000)
+
+        let yen = try GiftCardPaymentGuard.approve(price: 100, discount: dash("0.0375"), currency: "JPY",
+                                                   rate: rate("5000"), now: approvalTime)
+        XCTAssertEqual(yen.fiatAmount, 96)
+        XCTAssertEqual(yen.amount, 1_920_000)
+        guard case .asConfirmed = try yen.assess(requested: 1_920_000) else {
+            return XCTFail("the price shown was asked about again")
+        }
+    }
+
+    /// Without a currency to round in, the price less the discount is held as it is: a
+    /// PiggyCards purchase is approved at $24.325, not at $24.33.
+    func testApprovalWithoutACurrencyHoldsThePriceUnrounded() throws {
+        let approval = try GiftCardPaymentGuard.approve(price: 25, discount: dash("0.027"), currency: nil,
+                                                        rate: rate("40"), now: approvalTime)
+        XCTAssertEqual(approval.fiatAmount, dash("24.325"))
+        XCTAssertEqual(approval.amount, 60_812_500)
     }
 
     /// $50 card at 5% off is $47.50; at $40 per Dash that is 1.1875 Dash.
@@ -407,6 +433,9 @@ final class DashSpendPayApprovalTests: XCTestCase {
             website: nil, phone: nil, logoLocation: nil, coverImage: nil, source: nil)
     }
 
+    /// What CTX has confirmed the test merchant sells: any dollar amount these tests buy.
+    private static let usdTerms = CTXMerchantTerms(currency: "USD", denominationsType: "min-max", denominations: ["1", "1000"])
+
     private var usableRate: GiftCardPaymentGuard.ExchangeRate {
         GiftCardPaymentGuard.ExchangeRate(price: 40, retrievedAt: Int(Date().timeIntervalSince1970))
     }
@@ -422,7 +451,8 @@ final class DashSpendPayApprovalTests: XCTestCase {
         // Retrieved at the view model's own clock: a rate stamped by the real clock can be a
         // second ahead of a clock the test froze earlier, and a rate from the future is stale.
         let rate = rate ?? GiftCardPaymentGuard.ExchangeRate(price: 40, retrievedAt: Int(now().timeIntervalSince1970))
-        let viewModel = DashSpendPayViewModel(merchant: merchant, provider: provider, exchangeRate: { rate }, now: now)
+        let viewModel = DashSpendPayViewModel(merchant: merchant, provider: provider, confirmedTerms: Self.usdTerms,
+                                              exchangeRate: { _ in rate }, now: now)
         // No sheet is on screen in these tests, so nothing reports its dismissal.
         viewModel.sheetDismissalWait = 0.01
         return viewModel
@@ -530,7 +560,7 @@ final class DashSpendPayApprovalTests: XCTestCase {
         XCTAssertEqual(snapshot.approval.fiatAmount, 25 * (1 - snapshot.discount))
         XCTAssertEqual(snapshot.approval.rate, 40)
         XCTAssertEqual(snapshot.approval.amount, try GiftCardPaymentGuard.approve(
-            price: 25, discount: snapshot.discount, rate: usableRate).amount)
+            price: 25, discount: snapshot.discount, currency: "USD", rate: usableRate).amount)
     }
 
     func testCancelOnTheConfirmSheetClosesIt() throws {
@@ -546,8 +576,8 @@ final class DashSpendPayApprovalTests: XCTestCase {
     func testPurchaseStopsBeforeTheProviderWhenTheConfirmedRateWentStale() async throws {
         var clock = Date()
         let rate = GiftCardPaymentGuard.ExchangeRate(price: 40, retrievedAt: Int(clock.timeIntervalSince1970))
-        let viewModel = DashSpendPayViewModel(merchant: merchant, provider: .ctx,
-                                              exchangeRate: { rate }, now: { clock })
+        let viewModel = DashSpendPayViewModel(merchant: merchant, provider: .ctx, confirmedTerms: Self.usdTerms,
+                                              exchangeRate: { _ in rate }, now: { clock })
         try viewModel.beginPurchase(price: 25)
         guard case .confirm(let snapshot)? = viewModel.purchaseSheet else {
             return XCTFail("the Confirm sheet did not open")
@@ -973,13 +1003,14 @@ final class DashSpendPurchaseSheetLayoutTests: XCTestCase {
             confirmedAmount: 493_700_000, confirmedFiat: 192.50,
             requestedAmount: warning ? 552_940_000 : 513_440_000,
             requestedFiat: warning ? 215.60 : 200.20, needsWarning: warning)
-        return height(of: DashSpendPriceUpdatedDialog(change: change, maxHeight: maxHeight, onPay: {}, onCancel: {}))
+        return height(of: DashSpendPriceUpdatedDialog(
+            change: change, currency: "USD", maxHeight: maxHeight, onPay: {}, onCancel: {}))
     }
 
     private func confirm(maxHeight: CGFloat?, quantities: [Decimal: Int]?) -> CGFloat {
         height(of: DashSpendConfirmationDialog(
-            merchantName: "Merchant", merchantIconUrl: "", originalPrice: 200, discount: 0.0375,
-            dashAmount: 493_700_000, quantities: quantities, isWaiting: false, maxHeight: maxHeight,
+            merchantName: "Merchant", merchantIconUrl: "", originalPrice: 200, currency: "USD", discount: 0.0375,
+            payable: 192.5, dashAmount: 493_700_000, quantities: quantities, isWaiting: false, maxHeight: maxHeight,
             onConfirm: {}, onCancel: {}))
     }
 

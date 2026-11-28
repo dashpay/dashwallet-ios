@@ -29,7 +29,11 @@ struct DashSpendConfirmationDialog: View {
     let merchantName: String
     let merchantIconUrl: String
     let originalPrice: Decimal
+    /// The currency the card is priced in.
+    let currency: String
     let discount: Decimal
+    /// What the buyer pays in the card currency: the price the approval holds.
+    let payable: Decimal
     /// What the buyer pays, in duffs at the wallet's rate.
     let dashAmount: UInt64
     let quantities: [Decimal: Int]?
@@ -41,17 +45,17 @@ struct DashSpendConfirmationDialog: View {
     let onConfirm: () -> Void
     let onCancel: () -> Void
 
-    private let fiatFormatter = NumberFormatter.fiatFormatter(currencyCode: kDefaultCurrencyCode)
-    private var youPayAmount: Decimal { originalPrice * (1 - discount) }
+    private var youPayAmount: Decimal { payable }
+    private var currencySymbol: String { GiftCardCurrency.symbol(for: currency) }
+
+    private func fiat(_ amount: Decimal) -> String {
+        GiftCardCurrency.string(amount, currency: currency)
+    }
 
     private var formattedPayAmount: String {
-        let hasCents = youPayAmount != Decimal(Int(truncating: NSDecimalNumber(decimal: youPayAmount)))
-        let formatter = NumberFormatter.fiatFormatter(currencyCode: kDefaultCurrencyCode)
-        if !hasCents {
-            formatter.minimumFractionDigits = 0
-            formatter.maximumFractionDigits = 0
-        }
-        return formatter.string(from: NSDecimalNumber(decimal: youPayAmount))?.strippingCurrencySymbol(formatter) ?? ""
+        GiftCardCurrency.string(youPayAmount, currency: currency, trimsWholeAmounts: true)
+            .replacingOccurrences(of: currencySymbol, with: "")
+            .trimmingCharacters(in: .whitespaces)
     }
 
     private var quantityLines: [String] {
@@ -60,8 +64,7 @@ struct DashSpendConfirmationDialog: View {
             .filter { $0.value > 0 }
             .sorted { $0.key < $1.key }
             .map { denomination, count in
-                let amount = fiatFormatter.string(from: NSDecimalNumber(decimal: denomination)) ?? "$\(denomination)"
-                return "\(count) x \(amount)"
+                "\(count) x \(fiat(denomination))"
             }
     }
 
@@ -69,7 +72,7 @@ struct DashSpendConfirmationDialog: View {
         DashSpendSheetBody(maxHeight: maxHeight) {
             VStack(spacing: 0) {
                 DashSpendAmountView(
-                    currencySymbol: fiatFormatter.currencySymbol,
+                    currencySymbol: currencySymbol,
                     amount: formattedPayAmount
                 )
                 .frame(height: 70)
@@ -137,7 +140,7 @@ struct DashSpendConfirmationDialog: View {
             }
 
             detailsRow(title: String(localized: "Gift card total", comment: "DashSpend")) {
-                Text(fiatFormatter.string(from: NSDecimalNumber(decimal: originalPrice)) ?? "")
+                Text(fiat(originalPrice))
                     .font(.subhead)
                     .foregroundColor(.dash.primaryText)
             }
@@ -162,7 +165,7 @@ struct DashSpendConfirmationDialog: View {
 
             detailsRow(title: String(localized: "You pay", comment: "DashSpend")) {
                 VStack(alignment: .trailing, spacing: 2) {
-                    Text(fiatFormatter.string(from: NSDecimalNumber(decimal: youPayAmount)) ?? "")
+                    Text(fiat(youPayAmount))
                         .font(.subhead)
                         .foregroundColor(.dash.primaryText)
                     DashSpendDashFigure(text: GiftCardAmountText.approximateDash(dashAmount),
@@ -289,12 +292,6 @@ enum GiftCardAmountText {
     }
 }
 
-private extension String {
-    func strippingCurrencySymbol(_ formatter: NumberFormatter) -> String {
-        replacingOccurrences(of: formatter.currencySymbol, with: "").trimmingCharacters(in: .whitespaces)
-    }
-}
-
 #Preview {
     DashSpendConfirmationDialogPreview()
 }
@@ -318,7 +315,8 @@ private struct DashSpendConfirmationDialogPreview: View {
                     merchantName: "Amazon",
                     merchantIconUrl: "",
                     originalPrice: 75.70,
-                    discount: 0.10,
+                    currency: "USD",
+                    discount: 0.10, payable: 68.13,
                     dashAmount: 174_690_000,
                     quantities: [50: 1, 25: 2],
                     isWaiting: false,

@@ -41,6 +41,19 @@ enum DashSpendErrorCaption {
     }
 }
 
+/// "Try Again" under an error that loading the merchant again may clear.
+struct DashSpendRetryButton: View {
+    let action: () -> Void
+
+    var body: some View {
+        Button(String(localized: "Try Again", comment: ""), action: action)
+            .font(.caption)
+            .fontWeight(.semibold)
+            .foregroundColor(Color.dash.blue)
+            .frame(maxWidth: .infinity)
+    }
+}
+
 struct DashSpendSinglePanel: View {
     let isLoading: Bool
     let hasValidLimits: Bool
@@ -61,6 +74,10 @@ struct DashSpendSinglePanel: View {
     let costMessage: String
     let onDenominationSelected: (Int) -> Void
     let onAction: () -> Void
+    /// `false` for a card currency without decimals, like JPY.
+    var allowsDecimals = true
+    /// Loads the merchant again; set when the error on screen is one a new load may clear.
+    var onRetry: (() -> Void)? = nil
 
     var body: some View {
         if isFixedDenomination {
@@ -96,6 +113,10 @@ struct DashSpendSinglePanel: View {
                 .fixedSize(horizontal: false, vertical: true)
                 .padding(.top, 12)
                 .frame(maxWidth: .infinity)
+
+            if let onRetry {
+                DashSpendRetryButton(action: onRetry)
+            }
         } else if hasValidLimits {
             HStack {
                 Text(minimumLimitMessage)
@@ -146,7 +167,7 @@ struct DashSpendSinglePanel: View {
 
             HardwareNumericKeyboardView(
                 value: $input,
-                showDecimalSeparator: true,
+                showDecimalSeparator: allowsDecimals,
                 locale: .autoupdatingCurrent,
                 actionButtonText: String(localized: "Continue", comment: ""),
                 actionEnabled: actionEnabled && !showLimits && hasValidLimits,

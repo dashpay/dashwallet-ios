@@ -32,7 +32,7 @@ struct GiftCardDetailsCardItem: Identifiable {
 struct GiftCardDetailsUIState {
     var merchantName: String = ""
     var merchantUrl: String? = nil
-    var formattedPrice: String = "$0.00"
+    var formattedPrice: String = ""
     var cardNumber: String? = nil
     var cardPin: String? = nil
     var redeemUrlChallenge: String? = nil
@@ -92,6 +92,7 @@ class GiftCardDetailsViewModel: ObservableObject {
     let txId: Data
     @Published private(set) var uiState = GiftCardDetailsUIState()
 
+    /// PiggyCards sells in USD; a CTX card is formatted in its own currency.
     private let currencyFormatter: NumberFormatter = {
         let formatter = NumberFormatter()
         formatter.numberStyle = .currency
@@ -167,7 +168,8 @@ class GiftCardDetailsViewModel: ObservableObject {
     private func loadGiftCard() async {
         guard let card = await giftCardsDAO.get(byTxId: txId) else { return }
 
-        let formattedPrice = currencyFormatter.string(from: card.price as NSDecimalNumber) ?? "$0.00"
+        let formattedPrice = GiftCardCurrency.ofSavedCard(card.currency)
+            .map { GiftCardCurrency.string(card.price, currency: $0) } ?? GiftCardCurrency.number(card.price)
         let displayCards = buildDisplayCards(from: card, fallbackFormattedPrice: formattedPrice)
         let isClaimLink = displayCards.first?.isClaimLink ?? (card.number?.starts(with: "http") ?? false)
         let barcodeImage = displayCards.first?.barcodeImage ?? imageFromBarcode(value: card.barcodeValue, format: card.barcodeFormat)
@@ -309,6 +311,13 @@ class GiftCardDetailsViewModel: ObservableObject {
             // returns the ticker to its base cadence.
             noteSuccessfulPoll()
 
+            // A card saved without a currency gets the one CTX holds for its order.
+            if giftCard.currency == nil,
+               let currency = GiftCardCurrency.normalize(response.cardFiatCurrency)
+                   ?? GiftCardCurrency.normalize(response.fiatCurrency) {
+                await giftCardsDAO.backfillCurrency(txId: txId, currency: currency)
+            }
+
             switch response.status {
             case "fulfilled":
                 if let cardNumber = response.cardNumber, !cardNumber.isEmpty {
@@ -420,7 +429,8 @@ class GiftCardDetailsViewModel: ObservableObject {
                     barcodeFormat: firstEntry?.barcodeFormat,
                     note: serializedNote,
                     provider: giftCard.provider,
-                    redeemUrlChallenge: giftCard.redeemUrlChallenge
+                    redeemUrlChallenge: giftCard.redeemUrlChallenge,
+                    currency: giftCard.currency
                 )
 
                 await giftCardsDAO.update(dto: updatedCard)

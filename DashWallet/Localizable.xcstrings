@@ -525026,6 +525026,9 @@
         }
       }
     },
+    "The currency of this merchant's gift cards could not be confirmed, so nothing can be bought right now. Please try again." : {
+      "comment" : "DashSpend"
+    },
     "The Dash arrives at the recipient's address after the network processes the withdrawal — this can take up to 10 minutes." : {
       "comment" : "Send confirm sheet",
       "localizations" : {
@@ -532653,6 +532656,12 @@
           }
         }
       }
+    },
+    "The gift card provider answered for a different card value than the one ordered. Nothing was sent. Please try again or contact support." : {
+      "comment" : "DashSpend"
+    },
+    "The gift card provider answered in a different currency than the one ordered. Nothing was sent. Please try again or contact support." : {
+      "comment" : "DashSpend"
     },
     "The gift card provider returned an invalid payment address. Nothing was sent. Please try again or contact support." : {
       "comment" : "DashSpend"
@@ -561896,6 +561905,9 @@
         }
       }
     },
+    "There is no exchange rate for this gift card's currency right now, so it cannot be bought. Please try again later." : {
+      "comment" : "DashSpend"
+    },
     "There isn't enough free space to prepare your wallet. Free up storage in iPhone Settings, then try again. Your wallet keys are still stored safely on this device." : {
       "comment" : "Wallet preparation failure",
       "localizations" : {
@@ -578488,6 +578500,9 @@
           }
         }
       }
+    },
+    "This merchant sells one gift card per order. Please choose a single card." : {
+      "comment" : "DashSpend"
     },
     "This name is already in an active network vote. Your request joins it as another contender." : {
       "comment" : "Username marketplace: contested label already has an active vote",

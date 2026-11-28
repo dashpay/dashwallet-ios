@@ -20,6 +20,8 @@ import DashUIKit
 
 struct DashSpendMultiplePanel: View {
     let denominations: [Decimal]
+    /// A card value, formatted in the card currency.
+    let cardValueLabel: (Decimal) -> String
     @Binding var quantities: [Decimal: Int]
     let actionEnabled: Bool
     let inProgress: Bool
@@ -29,6 +31,10 @@ struct DashSpendMultiplePanel: View {
     let inventoryLimits: [Decimal: Int]
     let onContinue: () -> Void
     let onReset: () -> Void
+    /// Loads the merchant again; set when the error on screen is one a new load may clear.
+    var onRetry: (() -> Void)? = nil
+    /// The provider sells one card per order: rows are chosen, with no quantity steppers.
+    var singleCard = false
 
     private var inventoryWarning: String? {
         for (denomination, count) in quantities where count > 0 {
@@ -44,9 +50,11 @@ struct DashSpendMultiplePanel: View {
             ZStack(alignment: .bottom) {
                 DenominationCard(
                     denominations: denominations,
+                    cardValueLabel: cardValueLabel,
                     quantities: $quantities,
                     inventoryLimits: inventoryLimits,
-                    onReset: onReset
+                    onReset: onReset,
+                    singleCard: singleCard
                 )
 
                 if let warning = inventoryWarning {
@@ -72,6 +80,10 @@ struct DashSpendMultiplePanel: View {
                         .fixedSize(horizontal: false, vertical: true)
                         .frame(maxWidth: .infinity)
                         .padding(.bottom, 4)
+
+                    if let onRetry {
+                        DashSpendRetryButton(action: onRetry)
+                    }
                 } else if showCost {
                     Text(costMessage)
                         .font(.subhead)
@@ -96,15 +108,17 @@ struct DashSpendMultiplePanel: View {
 
 private struct DenominationCard: View {
     let denominations: [Decimal]
+    let cardValueLabel: (Decimal) -> String
     @Binding var quantities: [Decimal: Int]
     let inventoryLimits: [Decimal: Int]
     let onReset: () -> Void
+    let singleCard: Bool
 
     var body: some View {
         VStack(spacing: 10) {
             ForEach(denominations, id: \.self) { denomination in
                 DashSpendDenominationRow(
-                    denomination: denomination,
+                    label: cardValueLabel(denomination),
                     count: Binding(
                         get: { quantities[denomination] ?? 0 },
                         set: { newValue in
@@ -115,7 +129,8 @@ private struct DenominationCard: View {
                             }
                         }
                     ),
-                    inventoryLimit: inventoryLimits[denomination]
+                    inventoryLimit: inventoryLimits[denomination],
+                    singleCard: singleCard
                 )
             }
 
@@ -152,6 +167,7 @@ private struct DashSpendMultiplePanelPreview: View {
 
             DashSpendMultiplePanel(
                 denominations: [5, 10, 50, 100],
+                cardValueLabel: { "$\($0)" },
                 quantities: $quantities,
                 actionEnabled: !quantities.isEmpty,
                 inProgress: false,

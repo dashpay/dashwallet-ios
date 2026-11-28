@@ -19,38 +19,55 @@ import SwiftUI
 import DashUIKit
 
 struct DashSpendDenominationRow: View {
-    let denomination: Decimal
+    /// The card value, formatted in the card currency.
+    let label: String
     @Binding var count: Int
     var inventoryLimit: Int? = nil
-
-    private let fiatFormatter: NumberFormatter = {
-        let formatter = NumberFormatter.fiatFormatter(currencyCode: kDefaultCurrencyCode)
-        formatter.minimumFractionDigits = 0
-        return formatter
-    }()
+    /// The provider sells one card per order: the row is chosen, not counted.
+    var singleCard = false
 
     var body: some View {
-        HStack {
-            HStack(spacing: 12) {
-                Icon(name: .custom("icon-gift_card-piggy_cards", maxHeight: 26))
-
-                Text(fiatFormatter.string(from: NSDecimalNumber(decimal: denomination)) ?? "")
-                    .font(.headline)
-                    .fontWeight(.semibold)
-                    .foregroundColor(.dash.primaryText)
+        if singleCard {
+            Button {
+                count = count > 0 ? 0 : 1
+            } label: {
+                HStack {
+                    title
+                    Image(systemName: count > 0 ? "checkmark.circle.fill" : "circle")
+                        .font(.title3)
+                        .foregroundColor(count > 0 ? .dash.blue : .dash.tertiaryText)
+                }
+                .contentShape(Rectangle())
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
-
-            DashStepper(count: $count, maxCount: inventoryLimit)
+            .buttonStyle(.plain)
+            .accessibilityLabel(Text(verbatim: label))
+            .accessibilityAddTraits(count > 0 ? .isSelected : [])
+        } else {
+            HStack {
+                title
+                DashStepper(count: $count, maxCount: inventoryLimit)
+            }
         }
+    }
+
+    private var title: some View {
+        HStack(spacing: 12) {
+            Icon(name: .custom("icon-gift_card-piggy_cards", maxHeight: 26))
+
+            Text(label)
+                .font(.headline)
+                .fontWeight(.semibold)
+                .foregroundColor(.dash.primaryText)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
 
 #Preview {
     VStack(spacing: 10) {
-        DashSpendDenominationRowPreview(denomination: 5)
-        DashSpendDenominationRowPreview(denomination: 25)
-        DashSpendDenominationRowPreview(denomination: 100)
+        DashSpendDenominationRowPreview(label: "$5")
+        DashSpendDenominationRowPreview(label: "$25")
+        DashSpendDenominationRowPreview(label: "$100")
     }
     .padding(20)
     .background(Color.dash.secondaryBackground)
@@ -59,12 +76,12 @@ struct DashSpendDenominationRow: View {
 }
 
 private struct DashSpendDenominationRowPreview: View {
-    let denomination: Decimal
+    let label: String
     @State private var count = 0
 
     var body: some View {
         DashSpendDenominationRow(
-            denomination: denomination,
+            label: label,
             count: $count
         )
     }

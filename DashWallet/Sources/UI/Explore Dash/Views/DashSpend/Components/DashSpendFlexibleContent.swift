@@ -51,7 +51,7 @@ struct DashSpendFlexibleContent: View {
     }
 
     private var multipleShowCost: Bool {
-        guard !quantities.isEmpty, viewModel.error == nil else { return false }
+        guard !quantities.isEmpty, viewModel.canShowCost else { return false }
         guard viewModel.hasValidLimits else { return false }
         return multipleTotalAmount >= viewModel.minimumAmount && multipleTotalAmount <= multipleMaxAmount
     }
@@ -150,7 +150,9 @@ struct DashSpendFlexibleContent: View {
                 showCost: viewModel.showCost,
                 costMessage: viewModel.costMessage,
                 onDenominationSelected: { _ in },
-                onAction: onAction
+                onAction: onAction,
+                allowsDecimals: viewModel.amountFractionDigits > 0,
+                onRetry: viewModel.canRetryMerchantLoad ? { viewModel.retryMerchantLoad() } : nil
             )
 //            .ignoresSafeArea(.all, edges: .bottom)
         }
@@ -227,6 +229,7 @@ struct DashSpendFlexibleContent: View {
             } else {
                 DashSpendMultiplePanel(
                     denominations: multipleDenominations,
+                    cardValueLabel: { viewModel.cardValueLabel($0) },
                     quantities: $quantities,
                     actionEnabled: multipleActionEnabled,
                     inProgress: viewModel.isProcessingPayment,

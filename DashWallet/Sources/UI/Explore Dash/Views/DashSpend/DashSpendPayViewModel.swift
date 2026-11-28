@@ -21,8 +21,6 @@ import Combine
 import UIKit
 #endif
 
-private let defaultCurrency = kDefaultCurrencyCode
-
 private struct GiftCardOrderMetadata: Codable {
     let orderId: String
     let cardAmounts: [String]?
@@ -34,6 +32,8 @@ private struct GiftCardOrderMetadata: Codable {
 struct GiftCardPurchaseSnapshot: Equatable {
     /// The card value.
     let price: Decimal
+    /// The currency `price` is in: the card's.
+    let currency: String
     /// The discount fraction.
     let discount: Decimal
     /// Cards per denomination for a multi-card order; empty for a single card.
@@ -55,10 +55,12 @@ enum GiftCardPurchaseSheet: Equatable {
 @MainActor
 class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHandling {
     private var cancellableBag = Set<AnyCancellable>()
-    private let fiatFormatter = NumberFormatter.fiatFormatter(currencyCode: defaultCurrency)
     private let provider: GiftCardProvider
     private let dependencies: Dependencies
-    private let exchangeRate: () -> GiftCardPaymentGuard.ExchangeRate
+    private let exchangeRate: (String) -> GiftCardPaymentGuard.ExchangeRate
+    private let ratesAreFetching: () -> Bool
+    private var reconnectRetries: Task<Void, Never>?
+    private var isReconnectRetryPending = false
     private let now: () -> Date
 
     /// What a purchase goes through: the provider repositories, the send service and the
@@ -120,12 +122,59 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
     /// no purchase sheet can be shown then, so nobody could answer a price change.
     private var isScreenGone = false
     @Published private(set) var isUserSignedIn = false
-    
-    let currencySymbol: String = {
-        let locale = Locale.current as NSLocale
-        return locale.displayName(forKey: .currencySymbol, value: defaultCurrency) ?? "$"
-    }()
-    
+
+    /// Which load of the CTX merchant names the currency of its cards.
+    @Published private var currencyLoads: CardCurrencyLoads
+    /// Raised when the amount or the cards chosen on screen no longer apply: the screen
+    /// drops its own selection.
+    @Published private(set) var selectionResets = 0
+    /// The currency of the purchase the sheet is about, set when the Confirm sheet opens.
+    private(set) var purchaseCurrency = GiftCardCurrency.usd
+    private var rateObserver: CurrencyExchangerObserver?
+
+    /// What the CTX merchant sells, from the answer that confirmed its currency.
+    private var ctxTerms: CTXMerchantTerms?
+
+    /// The currency of the cards: for CTX the one CTX confirmed, nil until it has and when
+    /// it could not. Amounts are shown without a currency meanwhile. PiggyCards sells in USD.
+    var cardCurrency: String? {
+        provider == .ctx ? currencyLoads.confirmed : GiftCardCurrency.usd
+    }
+
+    var currencySymbol: String {
+        cardCurrency.map { GiftCardCurrency.symbol(for: $0) } ?? ""
+    }
+
+    /// The decimals an amount typed on this screen can have.
+    var amountFractionDigits: Int {
+        guard ctxTerms?.wholeAmountsOnly != true else { return 0 }
+        return cardCurrency.map { GiftCardCurrency.fractionDigits($0) } ?? 0
+    }
+
+    /// `true` when the merchant's currency could not be confirmed and loading it again may help.
+    var canRetryMerchantLoad: Bool {
+        provider == .ctx && currencyLoads.state == .unknown && !isLoading
+    }
+
+    func retryMerchantLoad() {
+        Task { await updateMerchantInfo() }
+    }
+
+    private func fiat(_ amount: Decimal) -> String {
+        cardCurrency.map { GiftCardCurrency.string(amount, currency: $0) } ?? GiftCardCurrency.number(amount)
+    }
+
+    /// A card value as a row of fixed cards shows it: a whole amount without decimals.
+    func cardValueLabel(_ amount: Decimal) -> String {
+        cardCurrency.map { GiftCardCurrency.string(amount, currency: $0, trimsWholeAmounts: true) }
+            ?? GiftCardCurrency.number(amount)
+    }
+
+    /// `amount` as the amount field shows it, beside the currency symbol.
+    func plainAmount(_ amount: Decimal) -> String {
+        cardCurrency.map { GiftCardCurrency.plainString(amount, currency: $0) } ?? GiftCardCurrency.number(amount)
+    }
+
     @Published var merchantTitle: String = ""
     @Published var merchantIconUrl: String = ""
     @Published var walletBalance: UInt64 = 0
@@ -134,7 +183,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
     @Published var maximumAmount: Decimal = 0
     @Published var error: Error? = nil
     @Published var isFixedDenomination: Bool = false
-    @Published var denominations: [Int] = []
+    @Published var denominations: [Decimal] = []
     /// Maps each denomination to its available inventory count
     @Published var denominationInventory: [Int: Int] = [:]
     /// Maps each denomination to its specific discount percentage (after service fee)
@@ -159,6 +208,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
 
     func updateTotalAmount(_ total: Decimal, quantities: [Decimal: Int]? = nil) {
         amount = total
+        closeConfirmationUnlessItShows(cart: quantities)
         basketSavingsFraction = basketDiscountFraction(from: quantities)
         checkAmountForErrors()
     }
@@ -172,11 +222,11 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
                 input = String(input.dropFirst())
             }
             
-            // Validate input to ensure no more than 2 decimal places
+            // No more decimals than the card currency has; none at all for one like JPY.
             if let decimalSeparatorCharacter = decimalSeparator.first,
                let decimalSeparatorIndex = input.firstIndex(of: decimalSeparatorCharacter) {
                 let decimalPart = input[input.index(after: decimalSeparatorIndex)...]
-                if decimalPart.count > 2 {
+                if amountFractionDigits == 0 || decimalPart.count > amountFractionDigits {
                     input = oldValue
                 }
             }
@@ -186,8 +236,17 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
             }
             
             amount = PastedAmountParser.parse(input, locale: .current)?.decimalValue ?? input.decimal(locale: .current) ?? 0
+            closeConfirmationUnlessItShows(cart: nil)
             checkAmountForErrors()
         }
+    }
+
+    /// Closes a confirmation that shows another amount or other cards than the screen now has.
+    private func closeConfirmationUnlessItShows(cart: [Decimal: Int]?) {
+        guard case .confirm(let shown) = purchaseSheet,
+              !CTXGiftCardOrder.confirmationShows(price: shown.price, quantities: shown.quantities,
+                                                  amount: amount, cart: cart) else { return }
+        purchaseSheet = nil
     }
 
     func pasteFromClipboard() {
@@ -201,18 +260,21 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
     }
     
     var costMessage: String {
-        let originalPrice = fiatFormatter.string(for: amount) ?? "0.00"
+        let originalPrice = fiat(amount)
         let savingsToDisplay = displaySavingsFraction
-        let discountedPrice = amount * (1 - savingsToDisplay)
-        let formattedDiscountedPrice = fiatFormatter.string(for: discountedPrice) ?? "0.00"
+        let formattedDiscountedPrice = fiat(payableAmount)
 
         let discountPercent = NSDecimalNumber(decimal: savingsToDisplay * 100).doubleValue
         let discountText = PercentageFormatter.format(percent: discountPercent, includePercent: false)
 
         return String(localized: "You are buying a \(originalPrice) gift card for \(formattedDiscountedPrice) (\(discountText)% discount)", comment: "DashSpend")
     }
+    /// Whether a price line can be shown at all: not over an error, and not before the
+    /// card currency is confirmed. Every panel's own condition comes on top of this.
+    var canShowCost: Bool { error == nil && cardCurrency != nil }
+
     var showCost: Bool {
-        if error != nil { return false }
+        if !canShowCost { return false }
 
         // For fixed denominations, show cost when a valid denomination is selected
         if isFixedDenomination {
@@ -224,8 +286,8 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
     }
     var showLimits: Bool { error == nil && !showCost && hasValidLimits }
     var hasValidLimits: Bool { minimumAmount > 0 || maximumAmount > 0 }
-    var minimumLimitMessage: String { String(localized: "Min: \(fiatFormatter.string(for: minimumAmount) ?? "0.0")", comment: "DashSpend") }
-    var maximumLimitMessage: String { String(localized: "Max: \(fiatFormatter.string(for: maximumAmount) ?? "0.0")", comment: "DashSpend") }
+    var minimumLimitMessage: String { String(localized: "Min: \(fiat(minimumAmount))", comment: "DashSpend") }
+    var maximumLimitMessage: String { String(localized: "Max: \(fiat(maximumAmount))", comment: "DashSpend") }
     /// Always false: legacy DashSync mixing was removed with `CoinJoinService`
     /// (only the SDK sweep survives), so no mix is ever in progress here.
     var isMixing: Bool { false }
@@ -241,7 +303,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
     var maxOrderLimitMessage: String? {
         #if PIGGYCARDS_ENABLED
         if provider == .piggyCards {
-            let formatted = fiatFormatter.string(for: PiggyCardsConstants.maxOrderAmount) ?? "$2,500"
+            let formatted = fiat(PiggyCardsConstants.maxOrderAmount)
             return String(localized: "You can buy up to \(formatted) in gift cards per order", comment: "DashSpend")
         }
         #endif
@@ -250,18 +312,27 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
 
 
     /// - Parameters:
-    ///   - exchangeRate: reads the wallet's USD rate and when it was retrieved. It is read
-    ///     when the Confirm sheet opens; the purchase uses that value.
+    ///   - confirmedTerms: what CTX has already confirmed this merchant sells; `nil` when
+    ///     its details are still to be loaded.
+    ///   - ratesAreFetching: whether the wallet has no rates at all yet.
+    ///   - exchangeRate: reads the wallet's rate for a currency and when it was retrieved. It
+    ///     is read for the card currency when the Confirm sheet opens; the purchase uses
+    ///     that value.
     ///   - now: the clock the rate's age is judged by, when the sheet opens and again on Confirm.
     ///   - dependencies: what a purchase goes through; `nil` for `Dependencies.live()`.
     init(merchant: ExplorePointOfUse, provider: GiftCardProvider = .ctx,
-         exchangeRate: @escaping () -> GiftCardPaymentGuard.ExchangeRate = DashSpendPayViewModel.walletExchangeRate,
+         confirmedTerms: CTXMerchantTerms? = nil,
+         exchangeRate: @escaping (String) -> GiftCardPaymentGuard.ExchangeRate = DashSpendPayViewModel.walletExchangeRate,
+         ratesAreFetching: @escaping () -> Bool = DashSpendPayViewModel.walletRatesAreFetching,
          now: @escaping () -> Date = { Date() },
          dependencies: Dependencies? = nil) {
         self.provider = provider
         self.dependencies = dependencies ?? .live()
         self.exchangeRate = exchangeRate
+        self.ratesAreFetching = ratesAreFetching
         self.now = now
+        ctxTerms = confirmedTerms
+        currencyLoads = CardCurrencyLoads(confirmed: confirmedTerms?.currency)
 
         merchantTitle = merchant.name
         merchantIconUrl = merchant.logoLocation ?? ""
@@ -307,7 +378,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
             let localDenominationType = merchantData.denominationsType
 
             if providerIsFixed == true {
-                self.denominations = localDenominations
+                self.denominations = localDenominations.map { Decimal($0) }
             } else if localDenominationType == DenominationType.Range.rawValue, localDenominations.count >= 2 {
                 self.minimumAmount = Decimal(localDenominations[0])
                 self.maximumAmount = Decimal(localDenominations[1])
@@ -380,6 +451,11 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
             }
             .store(in: &cancellableBag)
         
+        stopObservingRates()
+        rateObserver = CurrencyExchanger.shared.addObserver { [weak self] _ in
+            Task { @MainActor in self?.exchangeRatesDidChange() }
+        }
+
         self.refreshBalance()
         
         // Get updated merchant info from CTX API if user is signed in
@@ -388,24 +464,89 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
         }
     }
     
+    /// Judges again what depends on the card currency's rate: the block for a missing rate,
+    /// and a funds verdict on screen. An error it does not own stays. With no error up only
+    /// the block is raised: a funds verdict then would flag the amount just paid.
+    func exchangeRatesDidChange() {
+        let ownsError = error == nil || error is GiftCardPurchaseBlock
+            || (error as? SendAmountError)?.isFundsVerdict == true
+        guard ownsError, !Self.isResyncingWallet else { return }
+        if error == nil {
+            error = purchaseBlock
+        } else {
+            checkAmountForErrors()
+        }
+    }
+
     /// Opens the Confirm sheet for `price`, with the discount on screen and the Dash amount
     /// the price comes to at the wallet's rate.
     ///
-    /// Throws `GiftCardPaymentGuard.rateUnavailableError` when the wallet has no usable rate:
-    /// the sheet could not show a Dash amount, and a provider's quote could not be compared.
+    /// Throws `GiftCardPaymentGuard.rateUnavailableError` when the wallet has no usable rate
+    /// for the card currency: the sheet could not show a Dash amount, and a provider's quote
+    /// could not be compared. For CTX it also throws when the merchant's currency is not
+    /// confirmed, and when the selection is not one card of an amount the currency can hold.
     func beginPurchase(price: Decimal, quantities: [Decimal: Int] = [:]) throws {
         let discount = displaySavingsFraction
+        let currency: String
         let approval: GiftCardPaymentGuard.Approval
         do {
-            approval = try GiftCardPaymentGuard.approve(price: price, discount: discount, rate: exchangeRate(), now: now())
+            guard let cardCurrency else { throw Self.currencyUnconfirmedError }
+            currency = cardCurrency
+            if provider == .ctx {
+                _ = try ctxOrder(price: price, quantities: quantities, currency: currency)
+            }
+            approval = try GiftCardPaymentGuard.approve(
+                price: price, discount: discount, currency: provider == .ctx ? currency : nil,
+                rate: exchangeRate(currency), now: now())
         } catch {
             DWLogger.log("Gift card purchase not opened: \(error)")
             throw error
         }
         // Pay was tapped on the screen, so the screen is there, whatever was last reported.
         isScreenGone = false
+        purchaseCurrency = currency
         purchaseSheet = .confirm(GiftCardPurchaseSnapshot(
-            price: price, discount: discount, quantities: quantities, approval: approval))
+            price: price, currency: currency, discount: discount, quantities: quantities, approval: approval))
+    }
+
+    /// The one-card order CTX is asked for. Throws when the selection is several cards, the
+    /// price is not an amount above zero that the currency can hold (it is never rounded to
+    /// fit), or the merchant's confirmed terms do not sell a card of that price.
+    private func ctxOrder(price: Decimal, quantities: [Decimal: Int], currency: String) throws -> CTXGiftCardOrder {
+        let order: CTXGiftCardOrder
+        do {
+            order = try CTXGiftCardOrder(price: price, quantities: quantities, currency: currency)
+        } catch CTXGiftCardOrder.Refusal.notOneCard {
+            throw Self.oneCardPerOrderError
+        } catch {
+            throw DashSpendError.invalidAmount
+        }
+        guard let ctxTerms, ctxTerms.currency == currency, ctxTerms.allows(price) else {
+            throw DashSpendError.invalidAmount
+        }
+        return order
+    }
+
+    static var currencyUnconfirmedError: DashSpendError {
+        .customError(GiftCardPurchaseBlock.currencyUnconfirmed.localizedDescription)
+    }
+
+    static var oneCardPerOrderError: DashSpendError {
+        .customError(String(localized: "This merchant sells one gift card per order. Please choose a single card.",
+                            comment: "DashSpend"))
+    }
+
+    /// The provider's answer names another currency than the one ordered.
+    static var currencyMismatchError: DashSpendError {
+        .customError(String(
+            localized: "The gift card provider answered in a different currency than the one ordered. Nothing was sent. Please try again or contact support.",
+            comment: "DashSpend"))
+    }
+
+    static var cardValueMismatchError: DashSpendError {
+        .customError(String(
+            localized: "The gift card provider answered for a different card value than the one ordered. Nothing was sent. Please try again or contact support.",
+            comment: "DashSpend"))
     }
 
     /// Closes the purchase sheet on the buyer's Cancel or swipe. A price change is declined.
@@ -530,6 +671,14 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
             throw GiftCardPaymentGuard.rateUnavailableError
         }
 
+        // The Dash that the provider quotes is paid as it stands, so the order must be in
+        // the currency the sheet showed.
+        guard cardCurrency == snapshot.currency else {
+            DWLogger.log("Gift card purchase stopped: the card currency is no longer the one confirmed")
+            purchaseSheet = nil
+            throw Self.currencyUnconfirmedError
+        }
+
         isProcessingPayment = true
         purchaseSheet = .waitingForProvider(snapshot)
         defer {
@@ -544,7 +693,18 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
 
         switch provider {
         case .ctx:
-            let response = try await purchaseGiftCardAPI(cardValue: confirmedPrice)
+            let order = try ctxOrder(price: confirmedPrice, quantities: snapshot.quantities, currency: snapshot.currency)
+            let response = try await purchaseGiftCardAPI(order)
+
+            guard GiftCardCurrency.answerConfirms(ordered: order.fiatCurrency, payment: response.fiatCurrency,
+                                                  card: response.cardFiatCurrency) else {
+                DWLogger.log("Gift card order stopped: the provider did not answer in the currency ordered. Nothing was sent")
+                throw Self.currencyMismatchError
+            }
+            guard GiftCardCurrency.answerConfirms(cardValue: confirmedPrice, answered: response.cardFiatAmount) else {
+                DWLogger.log("Gift card order stopped: the provider did not answer for the card value ordered. Nothing was sent")
+                throw Self.cardValueMismatchError
+            }
 
             // Process the payment using the payment URL
             guard let url = response.paymentUrls?.first?.value else {
@@ -571,7 +731,8 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
                 // and reading the acknowledgement. Record the order — CTX may be fulfilling it
                 // already — but keep the error, since we genuinely cannot say it was received.
                 DWLogger.log("Gift card payment unacknowledged, recording the order anyway: \(reason)")
-                recordPurchase(txidWire: unacknowledgedTxIdWire, giftCardNote: giftCardNote, price: confirmedPrice)
+                recordPurchase(txidWire: unacknowledgedTxIdWire, giftCardNote: giftCardNote, price: confirmedPrice,
+                               currency: snapshot.currency)
                 throw DashSpendError.paymentNotAcknowledged(
                     txIdWire: unacknowledgedTxIdWire, reason: reason)
             } catch DashSpendError.paymentStatusUnknown(let unconfirmedTxIdWire, let reason) {
@@ -580,7 +741,8 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
                 // txid we do have so the order survives — without this the customer pays,
                 // CTX fulfils the order, and the app keeps no trace of the card at all.
                 DWLogger.log("Gift card payment status unknown, recording the order anyway: \(reason)")
-                recordPurchase(txidWire: unconfirmedTxIdWire, giftCardNote: giftCardNote, price: confirmedPrice)
+                recordPurchase(txidWire: unconfirmedTxIdWire, giftCardNote: giftCardNote, price: confirmedPrice,
+                               currency: snapshot.currency)
                 throw DashSpendError.paymentStatusUnknown(txIdWire: unconfirmedTxIdWire, reason: reason)
             }
 
@@ -593,7 +755,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
             let giftCardInfo = try await dependencies.piggyCards.orderGiftCards(
                 merchantId: merchantId,
                 lineItems: lineItems,
-                fiatCurrency: "USD",
+                fiatCurrency: GiftCardCurrency.usd,
                 cryptoCurrency: "DASH"
             )
 
@@ -623,34 +785,42 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
                 // the txid, as the CTX branch does: without the record a payment that goes
                 // through leaves the buyer with no card, and a second try pays twice.
                 DWLogger.log("Gift card payment status unknown, recording the order anyway: \(reason)")
-                recordPurchase(txidWire: unconfirmedTxIdWire, giftCardNote: giftCardNote, price: confirmedPrice)
+                recordPurchase(txidWire: unconfirmedTxIdWire, giftCardNote: giftCardNote, price: confirmedPrice,
+                               currency: snapshot.currency)
                 throw DashSpendError.paymentStatusUnknown(txIdWire: unconfirmedTxIdWire, reason: reason)
             }
         #endif
         }
 
         // Payment successful - save gift card information
-        recordPurchase(txidWire: txidWire, giftCardNote: giftCardNote, price: confirmedPrice)
+        recordPurchase(txidWire: txidWire, giftCardNote: giftCardNote, price: confirmedPrice, currency: snapshot.currency)
 
         return txidWire
     }
 
-    /// The wallet's current USD rate and the time it was retrieved.
-    nonisolated static func walletExchangeRate() -> GiftCardPaymentGuard.ExchangeRate {
+    /// The wallet's current rate for `currency` and the time it was retrieved.
+    nonisolated static func walletExchangeRate(_ currency: String) -> GiftCardPaymentGuard.ExchangeRate {
         GiftCardPaymentGuard.ExchangeRate(
-            price: try? CurrencyExchanger.shared.rate(for: kDefaultCurrencyCode),
+            price: try? CurrencyExchanger.shared.rate(for: currency),
             retrievedAt: BaseRatesProvider.shared.lastUpdated)
+    }
+
+    /// Whether the wallet has no rates yet, as just after launch.
+    nonisolated static func walletRatesAreFetching() -> Bool {
+        CurrencyExchanger.shared.currencies.isEmpty
     }
 
     /// Persist everything that ties a paid order to its transaction: the tax/service metadata,
     /// the merchant icon, and the `gift_cards` row whose `note` carries the order id the
     /// details poller needs. Shared by the confirmed and the unconfirmed-broadcast paths.
     ///
-    /// - Parameter price: the card value the buyer confirmed, stored as the card's price.
-    private func recordPurchase(txidWire: Data, giftCardNote: String, price: Decimal) {
+    /// - Parameters:
+    ///   - price: the card value the buyer confirmed, stored as the card's price.
+    ///   - currency: the currency the order was made in, not the one on screen by now.
+    private func recordPurchase(txidWire: Data, giftCardNote: String, price: Decimal, currency: String) {
         dependencies.purchases.record(GiftCardPurchaseRecord(
             txidWire: txidWire, provider: provider, merchantName: merchantTitle, merchantUrl: merchantUrl,
-            merchantIconUrl: merchantIconUrl, price: price, note: giftCardNote))
+            merchantIconUrl: merchantIconUrl, price: price, currency: currency, note: giftCardNote))
     }
 
     /// What the buyer is told, before the gift card details, when the payment was handed to
@@ -676,6 +846,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
         var body = "Merchant details\n"
         body += "name: \(merchantTitle)\n"
         body += "id: \(merchantId)\n"
+        body += "currency: \(cardCurrency ?? "unknown")\n"
         body += "min: \(minimumAmount)\n"
         body += "max: \(maximumAmount)\n"
         body += "discount: \(savingsFraction)\n"
@@ -699,6 +870,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
     func unsubscribeFromAll() {
         cancellableBag.removeAll()
         stopNetworkMonitoring()
+        stopObservingRates()
 
         // A price change waiting for the buyer's answer has nobody left to answer it, and a
         // quote that arrives from here on has no screen to go on from: `confirmQuote` ends
@@ -707,6 +879,13 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
         resolvePriceChange(pay: false)
     }
     
+    private func stopObservingRates() {
+        if let rateObserver {
+            CurrencyExchanger.shared.removeObserver(rateObserver)
+        }
+        rateObserver = nil
+    }
+
     private func refreshBalance() {
         walletBalance = SwiftDashSDKWalletState.shared.balance?.total ?? 0
         coinJoinBalance = SwiftDashSDKWalletState.shared.coinJoinBalanceDuffs
@@ -725,6 +904,13 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
             return
         }
 
+        // Before the funds check: without a rate the amount converts to no Dash, which
+        // would pass it.
+        if let block = purchaseBlock {
+            if (error as? GiftCardPurchaseBlock) != block { error = block }
+            return
+        }
+
         #if PIGGYCARDS_ENABLED
         if provider == .piggyCards && amount > 0 {
             guard amount <= PiggyCardsConstants.maxOrderAmount else {
@@ -734,15 +920,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
         }
         #endif
 
-        let state = SwiftDashSDKWalletState.shared
-        let (ceilingDuffs, reserveDuffs) = state.feeAwareMaxSendableAndReserve()
-        // The screen shows the whole balance, the gate counts confirmed coins
-        // only — so right after a receive the shortfall is often just time,
-        // and must not read as "Insufficient funds".
-        if let refusal = SendAmountError(refusing: state.sendVerdict(
-            requestedDuffs: requestedDashDuffs,
-            ceilingDuffs: ceilingDuffs,
-            reserveDuffs: reserveDuffs)) {
+        if let refusal = fundsRefusal(requestedDuffs: requestedDashDuffs) {
             // Re-checked on every balance event while it is up: re-setting the
             // same refusal would only re-render both panels.
             if (error as? SendAmountError) != refusal { error = refusal }
@@ -752,11 +930,41 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
         error = nil
     }
 
-    /// Whether a wallet or sync event may re-check the error on screen: the
+    /// Why the wallet cannot send `requestedDuffs` now; nil when it can.
+    func fundsRefusal(requestedDuffs: UInt64) -> SendAmountError? {
+        let state = SwiftDashSDKWalletState.shared
+        let (ceilingDuffs, reserveDuffs) = state.feeAwareMaxSendableAndReserve()
+        // The screen shows the whole balance, the gate counts confirmed coins
+        // only — so right after a receive the shortfall is often just time,
+        // and must not read as "Insufficient funds".
+        return SendAmountError(refusing: state.sendVerdict(
+            requestedDuffs: requestedDuffs,
+            ceilingDuffs: ceilingDuffs,
+            reserveDuffs: reserveDuffs))
+    }
+
+    /// What blocks every purchase now. Nothing while the first load of a CTX merchant runs:
+    /// the screen is loading then, and nothing can be bought before it ends.
+    private var purchaseBlock: GiftCardPurchaseBlock? {
+        if provider == .ctx, currencyLoads.state == .loading { return nil }
+        return GiftCardPurchaseBlock.check(currency: cardCurrency, rate: { exchangeRate($0).price },
+                                           ratesAreFetching: ratesAreFetching())
+    }
+
+    /// What the buyer pays for the amount on screen: the price a confirmation would hold.
+    /// A CTX price is the one CTX charges, after its rounding of the discount.
+    private var payableAmount: Decimal {
+        guard provider == .ctx, let cardCurrency else { return amount * (1 - displaySavingsFraction) }
+        return GiftCardCurrency.discounted(amount, by: displaySavingsFraction, currency: cardCurrency)
+    }
+
+    /// Whether a wallet or sync event may re-check the error on screen: a purchase block,
+    /// which a rate change during a resync leaves up, the
     /// syncing notice when `fundsVerdictOnly` is false — re-checked like an
     /// edit would — or a funds verdict, unless an amount was entered that does
     /// not convert to DASH: it reads as 0, which would clear the verdict.
     private func canRecheck(fundsVerdictOnly: Bool) -> Bool {
+        if error is GiftCardPurchaseBlock { return true }
         guard let shown = error as? SendAmountError else { return false }
         if shown == .syncingChain { return !fundsVerdictOnly }
         return shown.isFundsVerdict && (amount == 0 || requestedDashDuffs > 0)
@@ -769,13 +977,14 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
     }
 
     private var requestedDashDuffs: UInt64 {
-        let dashAmount = (try? CurrencyExchanger.shared.convertToDash(amount: amount, currency: kDefaultCurrencyCode)) ?? 0
-        return dashAmount.plainDashAmount
+        guard let currency = cardCurrency, let rate = exchangeRate(currency).price, rate > 0 else { return 0 }
+        // PiggyCards keeps its check on the card's face value.
+        return ((provider == .ctx ? payableAmount : amount) / rate).plainDashAmount
     }
     
     // MARK: - CTX Integration
 
-    private func updateMerchantInfo() async {
+    func updateMerchantInfo() async {
         guard !merchantId.isEmpty else { return }
 
         // CTX getMerchant is a public endpoint — fetch limits even when not signed in.
@@ -797,30 +1006,8 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
         do {
             switch provider {
             case .ctx:
-                let merchantInfo = try await dependencies.ctx.getMerchant(merchantId: merchantId)
-
-                let newSavings = Decimal(merchantInfo.discount) / Decimal(10000)
-                let isRange = merchantInfo.denominationType == .Range
-                let apiMin = Decimal(merchantInfo.minimumCardPurchase)
-                let apiMax = Decimal(merchantInfo.maximumCardPurchase)
-                let newMin = isRange ? (apiMin > 0 ? apiMin : minimumAmount) : Decimal(0)
-                let newMax = isRange ? (apiMax > 0 ? apiMax : maximumAmount) : Decimal(0)
-                let newDenominations = isRange ? [] : merchantInfo.denominations.compactMap { parseWholeDollarDenomination($0) }
-
-                await MainActor.run {
-                    self.savingsFraction = newSavings
-                    self.isFixedDenomination = !isRange
-                    self.minimumAmount = newMin
-                    self.maximumAmount = newMax
-                    self.denominations = newDenominations
-                    self.basketSavingsFraction = nil
-
-                    if isRange {
-                        self.selectedDenomination = nil
-                    } else if let selected = self.selectedDenomination, !newDenominations.contains(selected) {
-                        self.selectedDenomination = nil
-                    }
-                }
+                // A load that a later one superseded applies nothing, the loading state included.
+                guard try await loadCTXMerchant() else { return }
 
             #if PIGGYCARDS_ENABLED
             case .piggyCards:
@@ -940,7 +1127,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
                     self.isFixedDenomination = finalFixed
                     self.minimumAmount = finalMin
                     self.maximumAmount = finalMax
-                    self.denominations = finalDenominations
+                    self.denominations = finalDenominations.map { Decimal($0) }
                     self.savingsFraction = finalSavings
                     self.basketSavingsFraction = nil
                     if finalFixed {
@@ -977,43 +1164,128 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
         }
     }
     
-    /// - Parameter cardValue: the card value the buyer confirmed; the order is created for it.
-    private func purchaseGiftCardAPI(cardValue: Decimal) async throws -> GiftCardResponse {
+    /// Loads the CTX merchant and applies what it sells: the currency, the limits or card
+    /// values and the discount, all from the same answer or none of them.
+    ///
+    /// Throws when CTX was not reached for a merchant whose currency is confirmed: everything
+    /// stays as it was. A merchant left without a confirmed currency is not an error here; it
+    /// blocks the purchase until a load confirms one.
+    /// - Returns: `false` for a load that a later one superseded.
+    private func loadCTXMerchant() async throws -> Bool {
+        let load = currencyLoads.begin()
+        var answer: (terms: CTXMerchantTerms, savings: Decimal)?
+        var finding = CardCurrencyLoads.Finding.unusable
+        var failure: Error = DashSpendError.unknown
+
+        do {
+            let merchantInfo = try await dependencies.ctx.getMerchant(merchantId: merchantId)
+            if let terms = CTXMerchantTerms(currency: merchantInfo.currency,
+                                            denominationsType: merchantInfo.denominationsType,
+                                            denominations: merchantInfo.denominations) {
+                answer = (terms, Decimal(merchantInfo.discount) / Decimal(10000))
+                finding = .currency(terms.currency)
+            }
+        } catch DashSpendError.parsingError, DashSpendError.invalidMerchant {
+            // CTX answered: with something that cannot be read, or that it has no such merchant.
+        } catch {
+            finding = .noAnswer
+            failure = error
+        }
+
+        switch currencyLoads.finish(load, finding) {
+        case .superseded:
+            return false
+        case .kept:
+            throw failure
+        case .applied(let clearsSelection):
+            let wasFixed = isFixedDenomination
+            let offeredBefore = denominations
+            ctxTerms = answer?.terms
+            if let (terms, savings) = answer {
+                savingsFraction = savings
+                isFixedDenomination = terms.isFixed
+                minimumAmount = terms.minimum ?? 0
+                maximumAmount = terms.maximum ?? 0
+                denominations = terms.denominations
+                basketSavingsFraction = nil
+
+                if !terms.isFixed {
+                    selectedDenomination = nil
+                } else if let selected = selectedDenomination, !terms.denominations.contains(Decimal(selected)) {
+                    selectedDenomination = nil
+                }
+            } else {
+                DWLogger.log("DashSpend: the CTX merchant's currency could not be confirmed: \(AppLogMessage.errorSummary(failure))")
+                minimumAmount = 0
+                maximumAmount = 0
+                denominations = []
+            }
+
+            // The cards chosen on screen were offered by the list they were chosen from.
+            if clearsSelection || isFixedDenomination != wasFixed
+                || (isFixedDenomination && denominations != offeredBefore) {
+                clearSelection()
+            } else if case .confirm(let shown) = purchaseSheet, ctxTerms?.allows(shown.price) != true {
+                purchaseSheet = nil
+            }
+        }
+        return true
+    }
+
+    /// Drops the amount and the cards chosen on screen, and a confirmation that showed them:
+    /// they were chosen in another currency or for another kind of merchant.
+    private func clearSelection() {
+        selectedDenomination = nil
+        basketSavingsFraction = nil
+        selectionResets += 1
+        if case .confirm = purchaseSheet {
+            purchaseSheet = nil
+        }
+    }
+
+    private func purchaseGiftCardAPI(_ order: CTXGiftCardOrder) async throws -> GiftCardResponse {
         guard !merchantId.isEmpty, session.isUserSignedIn else {
             throw DashSpendError.unauthorized
         }
 
-        // Use locale-invariant formatter to ensure consistent decimal formatting
-        let formatter = NumberFormatter()
-        formatter.locale = Locale(identifier: "en_US_POSIX")
-        formatter.numberStyle = .decimal
-        formatter.minimumFractionDigits = 2
-        formatter.maximumFractionDigits = 2
-        formatter.decimalSeparator = "."
-        formatter.usesGroupingSeparator = false
-
-        // Round to 2 decimal places without converting to Double
-        let roundedAmount = NSDecimalNumber(decimal: cardValue)
-        let fiatAmountString = formatter.string(from: roundedAmount) ?? "0.00"
-
         DWLogger.log("Attempting to purchase gift card for merchant \(merchantId)")
 
-        do {
-            let response = try await dependencies.ctx.purchaseGiftCard(
-                merchantId: merchantId,
-                fiatAmount: fiatAmountString,
-                fiatCurrency: "USD",
-                cryptoCurrency: "DASH"
-            )
-            return response
-        } catch {
-            throw error
-        }
+        return try await dependencies.ctx.purchaseGiftCard(
+            merchantId: merchantId,
+            fiatAmount: order.fiatAmount,
+            fiatCurrency: order.fiatCurrency,
+            cryptoCurrency: "DASH"
+        )
     }
     
     private func handleNetworkStatusChange(_ status: NetworkStatus) {
         // Re-check errors when network status changes
         checkAmountForErrors()
+        // Not before the first load has begun: opening the screen online reports the network
+        // first, and that load is about to start by itself.
+        let hasLoadToFollow = isLoading || currencyLoads.state == .unknown
+        if status == .online, provider == .ctx, cardCurrency == nil, hasLoadToFollow {
+            isReconnectRetryPending = true
+            if reconnectRetries == nil {
+                reconnectRetries = Task { [weak self] in
+                    await self?.runReconnectRetries()
+                    self?.reconnectRetries = nil
+                }
+            }
+        }
+    }
+
+    /// Serves the pending retry, one load at a time: the load now running, which may have
+    /// begun without the network, ends first, and the merchant is loaded again only if that
+    /// left the currency unconfirmed. The network coming back during any of these loads
+    /// leaves one retry pending again, so a load follows a reconnect and nothing else.
+    private func runReconnectRetries() async {
+        while isReconnectRetryPending {
+            for await loading in $isLoading.values where !loading { break }
+            isReconnectRetryPending = false
+            guard cardCurrency == nil else { return }
+            await updateMerchantInfo()
+        }
     }
 
     private func buildPiggyOrderLineItems(selectedQuantities: [Decimal: Int],
@@ -1120,5 +1392,22 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
         }
 
         return nil
+    }
+}
+
+extension GiftCardPurchaseBlock: LocalizedError {
+    var errorDescription: String? {
+        switch self {
+        case .currencyUnconfirmed:
+            return String(
+                localized: "The currency of this merchant's gift cards could not be confirmed, so nothing can be bought right now. Please try again.",
+                comment: "DashSpend")
+        case .ratesFetching:
+            return String(localized: "Fetching rates…", comment: "Balance")
+        case .rateMissing:
+            return String(
+                localized: "There is no exchange rate for this gift card's currency right now, so it cannot be bought. Please try again later.",
+                comment: "DashSpend")
+        }
     }
 }

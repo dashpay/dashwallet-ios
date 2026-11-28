@@ -1249,8 +1249,12 @@ F992AE17D040F0C0E6E79AF7 /* QuickVotingSheet.swift in Sources */ = {isa = PBXBui
 		BAE12C061B2DEEF700895CC5 /* DWTodayViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = BAE12C051B2DEEF700895CC5 /* DWTodayViewController.m */; };
 		BB0000012DUMMYID001234567 /* DashSpend/DashSpendError.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB0000072DUMMYID001234567 /* DashSpend/DashSpendError.swift */; };
 		6C1F7A00000000000000A001 /* DashSpend/GiftCardPaymentGuard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C1F7A00000000000000A003 /* DashSpend/GiftCardPaymentGuard.swift */; };
+		7AC0DE5E000000000000C001 /* DashSpend/CTXCardCurrency.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7AC0DE5E000000000000C003 /* DashSpend/CTXCardCurrency.swift */; };
+		7AC0DE5E000000000000B001 /* DashSpend/GiftCardCurrency.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7AC0DE5E000000000000B003 /* DashSpend/GiftCardCurrency.swift */; };
 		6C1F7A00000000000000B001 /* DashSpend/GiftCardPurchaseSeams.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C1F7A00000000000000B003 /* DashSpend/GiftCardPurchaseSeams.swift */; };
 		6C1F7A00000000000000A002 /* DashSpend/GiftCardPaymentGuard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C1F7A00000000000000A003 /* DashSpend/GiftCardPaymentGuard.swift */; };
+		7AC0DE5E000000000000C002 /* DashSpend/CTXCardCurrency.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7AC0DE5E000000000000C003 /* DashSpend/CTXCardCurrency.swift */; };
+		7AC0DE5E000000000000B002 /* DashSpend/GiftCardCurrency.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7AC0DE5E000000000000B003 /* DashSpend/GiftCardCurrency.swift */; };
 		6C1F7A00000000000000B002 /* DashSpend/GiftCardPurchaseSeams.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C1F7A00000000000000B003 /* DashSpend/GiftCardPurchaseSeams.swift */; };
 		BB0000022DUMMYID001234567 /* DashSpend/DashSpendError.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB0000072DUMMYID001234567 /* DashSpend/DashSpendError.swift */; };
 		BB0000032DUMMYID001234567 /* DashSpend/DashSpendRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB0000082DUMMYID001234567 /* DashSpend/DashSpendRepository.swift */; };
@@ -1905,7 +1909,9 @@ F992AE17D040F0C0E6E79AF7 /* QuickVotingSheet.swift in Sources */ = {isa = PBXBui
 		9CF7E38ADBDD66CB317E0DD5 /* AppLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51E2693039F322E5326196F0 /* AppLogger.swift */; };
 		F498EAE11BC0B3684DBABCC7 /* DiagnosticLogExporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0448A6769BCF20987BE9960C /* DiagnosticLogExporter.swift */; };
 		F4C406090000000100000001 /* AddRedeemUrlChallengeToGiftCardsTable.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4C406090000000100000003 /* AddRedeemUrlChallengeToGiftCardsTable.swift */; };
+		7AC0DE5E000000000000D001 /* AddCurrencyToGiftCardsTable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7AC0DE5E000000000000D003 /* AddCurrencyToGiftCardsTable.swift */; };
 		F4C406090000000100000002 /* AddRedeemUrlChallengeToGiftCardsTable.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4C406090000000100000003 /* AddRedeemUrlChallengeToGiftCardsTable.swift */; };
+		7AC0DE5E000000000000D002 /* AddCurrencyToGiftCardsTable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7AC0DE5E000000000000D003 /* AddCurrencyToGiftCardsTable.swift */; };
 		F7EBDD4B9AB462305738F562 /* SwiftDashSDKReceiveAddressProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = D38C4CD6A6423DBD22320CB0 /* SwiftDashSDKReceiveAddressProvider.swift */; };
 		F8BA4B9BBB650F7F50AD936F /* SwapMenuStyles.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0286D4D1CADBBD51F09BE8E8 /* SwapMenuStyles.swift */; };
 		FACED5DF2BA8E7234BE6BE8D /* DWRecoverModel+Mnemonic.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EE4B9497B1F276EA0BDB20D /* DWRecoverModel+Mnemonic.swift */; };
@@ -2015,6 +2021,8 @@ FF9D88432B0292498590D377 /* QuickVotingViewModelTests.swift in Sources */ = {isa
 		BABA10000000000000000008 /* DiagnosticLogExporterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABA10000000000000000007 /* DiagnosticLogExporterTests.swift */; };
 		BABA1000000000000000000A /* PaymentProtocolTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABA10000000000000000009 /* PaymentProtocolTests.swift */; };
 		6C1F7A00000000000000A004 /* GiftCardPaymentGuardTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C1F7A00000000000000A005 /* GiftCardPaymentGuardTests.swift */; };
+		7AC0DE5E000000000000F104 /* GiftCardCurrencyStorageTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7AC0DE5E000000000000F105 /* GiftCardCurrencyStorageTests.swift */; };
+		7AC0DE5E000000000000E004 /* GiftCardCurrencyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7AC0DE5E000000000000E005 /* GiftCardCurrencyTests.swift */; };
 		6C1F7A00000000000000B004 /* DashSpendPurchaseTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C1F7A00000000000000B005 /* DashSpendPurchaseTests.swift */; };
 		BABA1000000000000000000C /* PhraseRepairEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABA1000000000000000000B /* PhraseRepairEngineTests.swift */; };
 		BABA1000000000000000000E /* WalletLifecycleTransitionStateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABA1000000000000000000D /* WalletLifecycleTransitionStateTests.swift */; };
@@ -3271,6 +3279,8 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 		BAE12C051B2DEEF700895CC5 /* DWTodayViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWTodayViewController.m; sourceTree = "<group>"; };
 		BB0000072DUMMYID001234567 /* DashSpend/DashSpendError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashSpend/DashSpendError.swift; sourceTree = "<group>"; };
 		6C1F7A00000000000000A003 /* DashSpend/GiftCardPaymentGuard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashSpend/GiftCardPaymentGuard.swift; sourceTree = "<group>"; };
+		7AC0DE5E000000000000C003 /* DashSpend/CTXCardCurrency.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashSpend/CTXCardCurrency.swift; sourceTree = "<group>"; };
+		7AC0DE5E000000000000B003 /* DashSpend/GiftCardCurrency.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashSpend/GiftCardCurrency.swift; sourceTree = "<group>"; };
 		6C1F7A00000000000000B003 /* DashSpend/GiftCardPurchaseSeams.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashSpend/GiftCardPurchaseSeams.swift; sourceTree = "<group>"; };
 		BB0000082DUMMYID001234567 /* DashSpend/DashSpendRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashSpend/DashSpendRepository.swift; sourceTree = "<group>"; };
 		BB0000092DUMMYID001234567 /* DashSpend/DashSpendRepositoryFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashSpend/DashSpendRepositoryFactory.swift; sourceTree = "<group>"; };
@@ -3688,6 +3698,7 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 		F334C7FE582BF48AB47BDAA2 /* WalletAccountsViewModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WalletAccountsViewModel.swift; sourceTree = "<group>"; };
 		F454341FADB260861FE05EB4 /* SendScreenViewController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SendScreenViewController.swift; sourceTree = "<group>"; };
 		F4C406090000000100000003 /* AddRedeemUrlChallengeToGiftCardsTable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddRedeemUrlChallengeToGiftCardsTable.swift; sourceTree = "<group>"; };
+		7AC0DE5E000000000000D003 /* AddCurrencyToGiftCardsTable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddCurrencyToGiftCardsTable.swift; sourceTree = "<group>"; };
 		F5121ED6CEEEAEDBE95414EE /* Pods-DashWalletTests.testflight.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DashWalletTests.testflight.xcconfig"; path = "Target Support Files/Pods-DashWalletTests/Pods-DashWalletTests.testflight.xcconfig"; sourceTree = "<group>"; };
 		F57DA9DBE5AAF88B3727E148 /* InternalTransferHostingController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = InternalTransferHostingController.swift; sourceTree = "<group>"; };
 		F6BFD41DDFE194362A163BC7 /* WalletAccountDetailScreen.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WalletAccountDetailScreen.swift; sourceTree = "<group>"; };
@@ -3780,6 +3791,8 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 		BABA10000000000000000007 /* DiagnosticLogExporterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiagnosticLogExporterTests.swift; sourceTree = "<group>"; };
 		BABA10000000000000000009 /* PaymentProtocolTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentProtocolTests.swift; sourceTree = "<group>"; };
 		6C1F7A00000000000000A005 /* GiftCardPaymentGuardTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GiftCardPaymentGuardTests.swift; sourceTree = "<group>"; };
+		7AC0DE5E000000000000F105 /* GiftCardCurrencyStorageTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GiftCardCurrencyStorageTests.swift; sourceTree = "<group>"; };
+		7AC0DE5E000000000000E005 /* GiftCardCurrencyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GiftCardCurrencyTests.swift; sourceTree = "<group>"; };
 		6C1F7A00000000000000B005 /* DashSpendPurchaseTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashSpendPurchaseTests.swift; sourceTree = "<group>"; };
 		BABA1000000000000000000B /* PhraseRepairEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhraseRepairEngineTests.swift; sourceTree = "<group>"; };
 		BABA1000000000000000000D /* WalletLifecycleTransitionStateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletLifecycleTransitionStateTests.swift; sourceTree = "<group>"; };
@@ -5678,6 +5691,7 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				75D9EBB72DE5CC3A009416A2 /* AddGiftCardsTable.swift */,
 				AA0000032DUMMYID001234567 /* AddProviderToGiftCardsTable.swift */,
 				F4C406090000000100000003 /* AddRedeemUrlChallengeToGiftCardsTable.swift */,
+				7AC0DE5E000000000000D003 /* AddCurrencyToGiftCardsTable.swift */,
 				AA00300B2FD000000000000B /* AddSwapOrdersTable.swift */,
 			);
 			path = Migrations;
@@ -6184,6 +6198,8 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				754565C72DAA52A000DA4E8E /* DashSpend/CTX/CTXSpendRepository.swift */,
 				BB0000072DUMMYID001234567 /* DashSpend/DashSpendError.swift */,
 				6C1F7A00000000000000A003 /* DashSpend/GiftCardPaymentGuard.swift */,
+				7AC0DE5E000000000000C003 /* DashSpend/CTXCardCurrency.swift */,
+				7AC0DE5E000000000000B003 /* DashSpend/GiftCardCurrency.swift */,
 				6C1F7A00000000000000B003 /* DashSpend/GiftCardPurchaseSeams.swift */,
 				BB0000082DUMMYID001234567 /* DashSpend/DashSpendRepository.swift */,
 				BB0000092DUMMYID001234567 /* DashSpend/DashSpendRepositoryFactory.swift */,
@@ -7124,6 +7140,8 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				BABA10000000000000000007 /* DiagnosticLogExporterTests.swift */,
 				BABA10000000000000000009 /* PaymentProtocolTests.swift */,
 				6C1F7A00000000000000A005 /* GiftCardPaymentGuardTests.swift */,
+				7AC0DE5E000000000000F105 /* GiftCardCurrencyStorageTests.swift */,
+				7AC0DE5E000000000000E005 /* GiftCardCurrencyTests.swift */,
 				6C1F7A00000000000000B005 /* DashSpendPurchaseTests.swift */,
 				BABA1000000000000000000B /* PhraseRepairEngineTests.swift */,
 				BABA1000000000000000000D /* WalletLifecycleTransitionStateTests.swift */,
@@ -9749,6 +9767,7 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				7549BE602DEAF628004F0BAF /* AddIconBitmapsTable.swift in Sources */,
 				AA0000012DUMMYID001234567 /* AddProviderToGiftCardsTable.swift in Sources */,
 				F4C406090000000100000001 /* AddRedeemUrlChallengeToGiftCardsTable.swift in Sources */,
+				7AC0DE5E000000000000D001 /* AddCurrencyToGiftCardsTable.swift in Sources */,
 				AA00300C2FD000000000000C /* AddSwapOrdersTable.swift in Sources */,
 				AA0030022FD0000000000002 /* SwapOrder.swift in Sources */,
 				AA0030052FD0000000000005 /* SwapTrackingService.swift in Sources */,
@@ -9758,6 +9777,8 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				AA0000042DUMMYID001234567 /* DashSpend/GiftCardProvider.swift in Sources */,
 				BB0000012DUMMYID001234567 /* DashSpend/DashSpendError.swift in Sources */,
 				6C1F7A00000000000000A001 /* DashSpend/GiftCardPaymentGuard.swift in Sources */,
+				7AC0DE5E000000000000C001 /* DashSpend/CTXCardCurrency.swift in Sources */,
+				7AC0DE5E000000000000B001 /* DashSpend/GiftCardCurrency.swift in Sources */,
 				6C1F7A00000000000000B001 /* DashSpend/GiftCardPurchaseSeams.swift in Sources */,
 				BB0000032DUMMYID001234567 /* DashSpend/DashSpendRepository.swift in Sources */,
 				BB0000052DUMMYID001234567 /* DashSpend/DashSpendRepositoryFactory.swift in Sources */,
@@ -10265,6 +10286,8 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				BABA10000000000000000008 /* DiagnosticLogExporterTests.swift in Sources */,
 				BABA1000000000000000000A /* PaymentProtocolTests.swift in Sources */,
 				6C1F7A00000000000000A004 /* GiftCardPaymentGuardTests.swift in Sources */,
+				7AC0DE5E000000000000F104 /* GiftCardCurrencyStorageTests.swift in Sources */,
+				7AC0DE5E000000000000E004 /* GiftCardCurrencyTests.swift in Sources */,
 				6C1F7A00000000000000B004 /* DashSpendPurchaseTests.swift in Sources */,
 				BABA1000000000000000000C /* PhraseRepairEngineTests.swift in Sources */,
 				BABA1000000000000000000E /* WalletLifecycleTransitionStateTests.swift in Sources */,
@@ -10808,6 +10831,7 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				7549BE612DEAF628004F0BAF /* AddIconBitmapsTable.swift in Sources */,
 				AA0000022DUMMYID001234567 /* AddProviderToGiftCardsTable.swift in Sources */,
 				F4C406090000000100000002 /* AddRedeemUrlChallengeToGiftCardsTable.swift in Sources */,
+				7AC0DE5E000000000000D002 /* AddCurrencyToGiftCardsTable.swift in Sources */,
 				AA00300D2FD000000000000D /* AddSwapOrdersTable.swift in Sources */,
 				AA0030032FD0000000000003 /* SwapOrder.swift in Sources */,
 				AA0030062FD0000000000006 /* SwapTrackingService.swift in Sources */,
@@ -10817,6 +10841,8 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				AA0000052DUMMYID001234567 /* DashSpend/GiftCardProvider.swift in Sources */,
 				BB0000022DUMMYID001234567 /* DashSpend/DashSpendError.swift in Sources */,
 				6C1F7A00000000000000A002 /* DashSpend/GiftCardPaymentGuard.swift in Sources */,
+				7AC0DE5E000000000000C002 /* DashSpend/CTXCardCurrency.swift in Sources */,
+				7AC0DE5E000000000000B002 /* DashSpend/GiftCardCurrency.swift in Sources */,
 				6C1F7A00000000000000B002 /* DashSpend/GiftCardPurchaseSeams.swift in Sources */,
 				BB0000042DUMMYID001234567 /* DashSpend/DashSpendRepository.swift in Sources */,
 				BB0000062DUMMYID001234567 /* DashSpend/DashSpendRepositoryFactory.swift in Sources */,
